@@ -1,0 +1,84 @@
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+<script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+ {#    Carrousel#}
+        <div class="modal fade selector" id="{{ modal_id }}" tabindex="-1" role="dialog" aria-hidden="true"
+             data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog">
+                <a href='#' id="closeImgCarousel">
+                    <button type="button" class="close" onclick='' data-dismiss="modal"
+                            aria-hidden="true">&times;</button>
+                </a>
+                <div class="modal-content">
+                    <div id="img{{ modal_id }}" class="carousel slide">
+{#                        <ol class="carousel-indicators">#}
+{#                           {% for photo in photo_list %}#}
+{#                                <li data-target="#img{{ modal_id }}" data-slide-to="{{ forloop.counter0 }}"></li>#}
+{#                            {% endfor %}#}
+{#                        </ol>#}
+                        <!-- Carousel items -->
+                        <div class="carousel-inner">
+                            {% for photo in photos %}
+                                <div class="item">
+                                    <img id="{{ photo.id }}" src="/media/{{ photo.image }}" class="img-polaroid"/>
+                                    <label for="">{{ photo.name }}</label>
+                                    <p style="color: #fff">{{ photo.description }}</p>
+                                </div>
+                            {% endfor %}
+                            {% for menu in menus %}
+                                {% if menu.image %}
+                                <div class="item">
+                                    <img id="{{ menu.id }}" src="/media/{{ menu.image }}" class="img-polaroid"/>
+{#                                    <label for="">{{ menu.name }}</label>#}
+{#                                    <p style="color: #fff">{{ menu.description }}</p>#}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+
+                        </div>
+                        <!-- Carousel nav -->
+                        <a class="carousel-control left" href="#img{{ modal_id }}" data-slide="prev">&lsaquo;</a>
+                        <a class="carousel-control right" href="#img{{ modal_id }}" data-slide="next">&rsaquo;</a>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+{% block javascripts_bottom %}
+
+    <script>
+
+        function show_modal(idImg) {
+
+            $({{ modal_id }}).modal('show');
+            $("#" +"{{ modal_id }}"+" .carousel-inner > div").removeClass('active')
+            $("#" +"{{ modal_id }}"+" .carousel-indicators > li").removeAttr('class')
+
+
+            $parent_element = $({{ modal_id }}).attr('id');
+            console.debug($parent_element);
+            $element = $("#" +$parent_element+" .carousel-inner > div")[idImg]
+
+{#            $indicator = $("#" +$parent_element+" .carousel-indicators > li")[idImg]#}
+
+            $element.className = 'item active';
+            //$indicator.createAttribute('class')
+            $indicator.setAttribute('class', 'active')
+
+        }
+
+        $(document).ready(function () {
+
+            $({{ modal_id }}).modal({
+                show: false,
+                keyboard: true
+            })
+
+
+        })
+    </script>
+{% endblock %}

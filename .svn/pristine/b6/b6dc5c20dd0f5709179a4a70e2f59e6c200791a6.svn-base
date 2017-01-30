@@ -1,0 +1,90 @@
+<section class="cards">
+    <div class="page-header">
+        <h1>
+            <i class="md md-cloud"></i>
+            Website | Template
+        </h1>
+
+        <p class="lead">
+            Material design defines cards as floating containers.
+            There are several types of cards.
+        </p>
+    </div>
+
+
+</section>
+
+
+<div class="col-md-9" ng-controller="WebsiteController">
+    <wizard edit-mode="true">
+        <wz-step wz-title="Template">
+            <div class="well white m-t-30">
+                <form class="form-floating card-form" novalidate="novalidate">
+                    <fieldset>
+                        <legend class="subtitle  ">Template selection</legend>
+                        <div class="card-container m-t-30">
+                            <div class="col-md-4">
+                                <div class="card bordered">
+                                    <div class="card-image">
+                                        <img src="/static/assets/img/photos/4.jpg"/>
+
+                                        <div class="card-title" ng-bind="website.template.name">Card profile icon</div>
+                                    </div>
+                                    <div class="card-content">
+                                        <p ng-bind="website.template.description"></p>
+                                    </div>
+                                    <div class="card-action clearfix">
+                                        <a href="" class="btn btn-link btn-icon" ng-model="website.template.id"><i
+                                                class="md md-favorite red-text"></i>
+
+                                            <div class="ripple-wrapper"></div>
+                                        </a>
+
+                                        <div class="pull-right">
+                                            <a href="" class="btn btn-link black-text">preview</a>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="clearfix"></div>
+                        <div class="form-group pull-right">
+                            <button type="submit"  class="btn btn-primary">Save</button>
+                            <button type="submit" wz-next class="btn btn-primary">Save and continue</button>
+                          <!--  <button type="" class="btn btn-default">Cancel</button> -->
+                        </div>
+
+                    </fieldset>
+                </form>
+            </div>
+        </wz-step>
+        <wz-step wz-title="Basic info">
+            <div ng-include="'static/assets/tpl/website/basic-info-step.html'"></div>
+        </wz-step>
+        <wz-step wz-title="Image gallery">
+            <div ng-include="'static/assets/tpl/website/image-gallery-step.html'"></div>
+        </wz-step>
+        <wz-step wz-title="Menu">
+        </wz-step>
+        <wz-step wz-title="Social network">
+             <div ng-include="'static/assets/tpl/website/social-step.html'"></div>
+        </wz-step>
+        <wz-step wz-title="Contact Us">
+             <div ng-include="'static/assets/tpl/website/contactus-step.html'"></div>
+        </wz-step>
+        <wz-step wz-title="Staff and Services">
+        </wz-step>
+    </wizard>
+
+
+
+
+</div>
+
+<div class="col-md-3 no-padding">
+    <website-status>
+
+    </website-status>
+</div>

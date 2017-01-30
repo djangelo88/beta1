@@ -1,0 +1,227 @@
+<section class="forms-advanced" >
+  <div class="page-header">
+    <h1>
+      <i class="md md-input"></i>
+      Perfil
+    </h1>
+    <p class="lead">
+      <a ng-show="business && !business.stripe_account" class="btn btn-default" href="{{ profile.connect_stripe_url }}">Conéctate a Stripe</a>
+
+    </p>
+  </div>
+
+
+  <div class="row m-b-10" >
+    <div class="col-md-4 col-md-push-8" id="general-elements-intro" >
+      <section class="cards">
+    <div class="row m-b-20" ng-show="business && !business.has_been_subscribed">
+
+    <div class="">
+      <div class="card bordered small">
+        <div class="card-header">
+          <div class="card-title">Suscripcion</div>
+        </div>
+        <div class="card-content">
+          <p><strong>Costo:</strong> $19.99 al mes</p>
+           <p ng-show="business.is_pending()">Tu periodo de pruebe finaliza el {{ business.trial_end| date }}</p>
+           <p ng-show="!business.is_pending()">Tu periodo de pruebe finalizo el {{ business.trial_end|date }}</p>
+        </div>
+        <div class="card-action clearfix">
+
+          <div class="pull-right">
+            <a ui-sref="subscribe" class="btn btn-link black-text"><span ng-show="!business.is_pending()">Cambia tu tarjeta</span><span ng-show="business.is_pending()">Suscribete aqui</span></a>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+        </div>
+
+    <div class="row m-b-20" ng-show="business && business.has_been_subscribed">
+
+    <div class="">
+      <div class="card bordered small">
+        <div class="card-header">
+          <div class="card-title">PAQUETE ACTUAL</div>
+        </div>
+        <div class="card-content">
+          <p><strong>Costo:</strong> $19.99 al mes</p>
+           <p>El próximo cobro de $19.99 sera el {{ business.stripecustomer.subscription.current_period_end| date }}</p>
+        </div>
+        <div class="card-action clearfix">
+
+          <div class="pull-right">
+            <button ng-click="cancel_subscription()" class="btn btn-link black-text">Cancelar subscripción</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+    <div class="row m-b-20" ng-show="business && business.has_been_subscribed">
+
+    <div class="">
+      <div class="card bordered small">
+        <div class="card-header">
+          <div class="card-title">TARJETA DE CREDITO ACTUAL</div>
+        </div>
+        <div class="card-content">
+          <p><strong>Propietario:</strong> {{ business.owner.first_name}} {{ business.owner.last_name }}</p>
+          <!--<p><strong>Direccion:</strong> {{ business.stripecustomer.card.billing_address}}</p>-->
+            <p><strong>Direccion:</strong> {{ business.address.first_line}}, {{ business.address.zip }}, {{ business.address.city }},
+            {{ business.address.state.name }}, {{ business.address.country.name }}</p>
+          <p><strong>Numero de tarjeta:</strong> ************{{ business.stripecustomer.card.stripe_last4}}</p>
+          <p><strong>Valida hasta:</strong> {{ business.stripecustomer.card.stripe_exp_month }}/{{ business.stripecustomer.card.stripe_exp_year }}</p>
+        </div>
+        <div class="card-action clearfix">
+
+          <div class="pull-right">
+            <a href="#/stripe/card" class="btn btn-link black-text">Cambiar tarjeta de credito</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+<div class="row m-b-20" ng-show="business && business.has_been_subscribed">
+
+    <div class="">
+      <div class="card bordered small">
+        <div class="card-header">
+          <div class="card-title">CORREO PARA LA SUBSCRIPCIÓN</div>
+        </div>
+        <div class="card-content">
+          <form name="billing_form" novalidate>
+          <p><strong>CORREO:</strong> <input name="billing_email" type="email" ng-model="business.stripecustomer.billing_email"></p>
+
+            </form>
+        </div>
+        <div class="card-action clearfix">
+
+          <div class="pull-right">
+            <button ng-click="update_billing_email()" ng-disabled="billing_form.$invalid" class="btn btn-link black-text">Actualizar correo</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+   <div class="row m-b-20"  ng-show="business && business.has_been_subscribed && business.stripecustomer.subscription.billing_receipts">
+
+    <div class="">
+      <div class="card bordered small">
+        <div class="card-header">
+          <div class="card-title">RECIBOS DE PAGO</div>
+        </div>
+        <div class="card-content">
+           <div class="table-responsive">
+          <table class="table table-full table-full-small">
+            <thead>
+            <tr>
+              <th>FECHA</th>
+              <th>TRANSACTION NO.</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="receipt in business.stripecustomer.subscription.billing_receipts">
+              <td>{{ receipt.created_at| date }}</td>
+              <td>{{ receipt.receipt_number }}</td>
+            </tr>
+
+            </tbody>
+          </table>
+        </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+
+    </section>
+
+    </div>
+
+    <div class="col-md-7 col-md-pull-4">
+      <div class="well white">
+        <form class="form-floating placeholder-form" novalidate name="profileForm">
+          <fieldset>
+            <legend>Datos generales</legend>
+            <div class="form-group">
+              <label for="input" class="control-label">Nombre <span class="required-field">*</span></label>
+              <input type="text" name="first_name" class="form-control" ng-model="business.owner.first_name" required>
+            </div>
+           <div class="form-group">
+              <label for="input" class="control-label">Apellidos <span class="required-field">*</span></label>
+              <input type="text" name="last_name" class="form-control" ng-model="business.owner.last_name" required>
+            </div>
+          <div class="form-group">
+              <label for="input" class="control-label">Nombre del negocio <span class="required-field">*</span></label>
+              <input type="text" name="name" class="form-control" ng-model="business.name" required>
+            </div>
+          <address-block address="business.address" validation_errors="validation_errors"
+                                       editing="true"></address-block>
+          <div class="form-group filled">
+              <label for="inputEmail" class="control-label">Correo electronico <span class="required-field">*</span></label>
+              <input type="email" name="email" class="form-control" ng-model="business.owner.email" required>
+              <div ng-show="errors.email" ng-repeat="error in errors.email">
+                    <span class="help-block has-error error-msg"> {{ error.message }} </span>
+              </div>
+            </div>
+           <div class="form-group">
+              <label for="input" class="control-label">Telefono <span class="required-field">*</span></label>
+              <input type="text" name="phone" class="form-control" ng-model="business.phone" ng-pattern="/[0-9]$/" required>
+            </div>
+            <div class="form-group filled">
+              <label for="inputNumber" class="control-label">Tasa impositiva (Tax) <span class="required-field">*</span></label>
+              <input type="number" name="tax" class="form-control" ng-model="business.tax" step="0.01" required>
+
+            </div>
+            <div class="form-group filled">
+              <label for="inputNumber" class="control-label">Capacidad de eventos</label>
+              <input type="number" name="capacity" class="form-control" ng-model="business.capacity" min="0">
+            </div>
+               <div class="form-group filled">
+              <label for="input" class="control-label">Website url</label>
+              <input type="url" name="websiteurl" class="form-control" ng-model="business.websiteurl">
+            </div>
+            <div class="form-group" ng-show="business.can_choose_default_site">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="default_site" ng-model="business.default_site_mine"> Sitio Propio por defecto
+                    </label>
+                </div>
+            </div>
+              
+          <div class="form-group">
+              <img class="img-responsive img-thumbnail"  style="max-height: 50px; max-width: 50px" ng-src="{{ business.logo }}">
+              <!--<label for="input" class="control-label">Logo</label>
+
+              <input type="file" ngf-select name="file" class="form-control" ng-model="logofile">-->
+               <div class="btn btn-info" ngf-select ng-model="logofile">Cambiar Logo</div>
+
+            </div>
+
+
+        <div class="form-group">
+              <button type="submit" ng-disabled="profileForm.$invalid" ng-click="update_profile(businesss)" class="btn btn-primary">Aceptar</button>
+
+               <a class="btn btn-default" href="#business/change_password">Cambiar contraseña</a>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+</section>

@@ -1,0 +1,10 @@
+{% extends 'base_print.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+ 
+{% block print_content %}
+
+    {% include 'base/invoice/includes/event.html' with event=invoice.proposal.event proposal=invoice.proposal invoice=True %}
+
+{% endblock %}

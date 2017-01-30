@@ -1,0 +1,67 @@
+{% load staticfiles %}
+<table class="table table-striped projects table-responsive" id="customers_table">
+    <thead>
+    <tr>
+        <th   class="text-uppercase">Nombre</th>
+        <th class="text-uppercase">Correo electrónico</th>
+        <th class="text-uppercase">Telefono</th>
+        <th   class="text-uppercase">ACCIOnes</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for customer in customers %}
+        <tr>
+            <td>
+                {{ customer.full_name }}
+
+            </td>
+            <td>
+                {{ customer.email }}
+            </td>
+
+            <td>
+                {% if customer.cellphone %}
+                    {{ customer.cellphone }}
+                {% else %}
+                {% endif %}
+            </td>
+            <td>
+
+                {#                                <button type="button" class="btn btn-warning btn-xs edit" data-toggle="modal"#}
+                {#                                        data-target="#newCustomerModal" data-elem-id="{{ customer.id }}"#}
+                {#                                        data-modal-title="Editar contacto">#}
+                {#                                    <i class="fa fa-pencil"></i> </span>#}
+                {#                                </button>#}
+                 <a href="" class="view" data-toggle="modal" data-target="#newCustomerModal"
+                   data-elem-id="{{ customer.id }}"
+                   data-modal-title="Detalles de contacto" > <i class="fa fa-list-ul"></i> </a>
+
+                <a href="" class="edit" data-toggle="modal" data-target="#newCustomerModal"
+                   data-elem-id="{{ customer.id }}"
+                   data-modal-title="Editar contacto" > <i class="fa fa-pencil"></i> </a>
+                {% csrf_token %}
+                <button type="button" class="btn btn-danger btn-xs remove" data-elem-id="{{ customer.id }}">
+                    <i class="fa fa-trash-o"></i>    </span>
+                </button>
+                {##}
+                {#                 <a href="" class="remove"  data-elem-id="{{ customer.id }}"#}
+                {#                        > <i class="fa fa-trash-o"></i> </a>#}
+
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<script type="text/javascript" src="{% static 'js/components/custom.datatablesmodalform.js' %}"></script>
+
+{#<script>#}
+{##}
+{#    $(document).ready(function () {#}
+{#        $.CustomDatatableFormObject.model_name = "customers";#}
+{#        $.CustomDatatableFormObject.datatable_container = "#tableContainer";#}
+{#        $.CustomDatatableFormObject.datatable_id = "#customers_table";#}
+{#        $.CustomDatatableFormObject.modal_dialog_id = "#newCustomerModal";#}
+{#        $.CustomDatatableFormObject.form_id = "#newCustomerModal";#}
+{##}
+{#    });#}
+{#</script>#}

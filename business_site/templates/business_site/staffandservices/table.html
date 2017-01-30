@@ -1,0 +1,107 @@
+{% load staticfiles %}
+{% load app_filters %}
+<table class="table table-striped projects table-responsive" id="images_table">
+    <thead>
+    <th>Sevice</th>
+    <th>Description</th>
+    <th>Image</th>
+    <th>Price</th>
+    <th>Actions</th>
+    </thead>
+    <tbody>
+    {% for st in staff %}
+        <tr>
+            <td>{{ st.service }}</td>
+            <td>{{ st.description }}</td>
+            <td><a href="/media/{{ st.image }}" target="_blank">{{ st.image|get_last }}</a></td>
+            {#            <td><a href="{{ photo.image }}">{{ photo.image|get_last }}</a></td>#}
+            <td>{{ st.price }}</td>
+            <td>
+                <a href="/site/photos/edit/{{ st.id }}" class="edit"> <i class="fa fa-pencil"></i> </a>
+                {% csrf_token %}
+                <button type="button" class="btn btn-danger btn-xs remove" data-elem-id="{{ st.id }}">
+                    <i class="fa fa-trash-o"></i></span>
+                </button>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<script>
+    $(document).ready(function () {
+
+
+
+        {#            Eliminar#}
+        $('.remove').click(function (e) {
+            {#            e.preventDefault();#}
+            var $button = $(e.currentTarget) // Button that triggered the modal
+            var elem_id = $button.data('elem-id');
+
+            swal({
+                        title: "Confirma que desea eliminar?",
+                        text: "Si lo elimina ya no podrá deshacer los cambios!",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "Aceptar",
+                        cancelButtonText: "Cancelar",
+                        closeOnConfirm: false,
+                        closeOnCancel: false
+                    },
+                    function (isConfirm) {
+                        if (isConfirm) {
+
+                            var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+
+                            function csrfSafeMethod(method) {
+                                // these HTTP methods do not require CSRF protection
+                                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+                            }
+
+                            $.ajaxSetup({
+                                beforeSend: function (xhr, settings) {
+                                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                                        //alert(csrftoken);
+                                    }
+                                }
+                            });
+
+
+                            $.ajax({
+                                        url: "/site/photos/remove/" + elem_id,
+                                        type: "POST",
+                                        statusCode: {
+                                            200: function () {
+                                                swal("Eliminado!", "Se ha eliminado correctamente el elemento seleccionado.", "success");
+                                                $.ajax({url: "/site/photos/"});
+                                                UpdateDataTable();
+                                            },
+                                            405: function () {
+
+                                            },
+                                            500: function (response) {
+                                                swal("Error!", "Ha existido un error al eliminar el elemento seleccionado", "error");
+                                                console.log(response.responseText);
+
+                                            }
+                                        }}
+                            )
+                        } else {
+                            swal("Cancelado", "No se ha realizado ninguna acción", "error");
+                        }
+                    });
+        });
+        function UpdateDataTable() {
+            $.ajax({
+                type: 'GET',
+                url: '/site/photos/',
+                success: function (data) {
+                    $("#tableContainer").empty().append(data);
+                    $('#images_table').dataTable({"language": {"url": "/static/i18n/Spanish.json"}});
+                }
+            });
+        }
+    });
+</script>

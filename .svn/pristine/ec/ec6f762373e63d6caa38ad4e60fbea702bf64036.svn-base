@@ -1,0 +1,2 @@
+Estimado {{ user.full_name }} usted debe confirmar su registro mediante el siguiente link
+{{ domain }}{% url 'registration_confirm' key token %}.

@@ -1,0 +1,19 @@
+Amado
+Clientes
+    Listado de clientes{prefijos, sifijos, direccion {country,sate,city*}}
+
+
+
+Hector
+  Descargar $alert especifiaciones
+  Excluir rutas URL
+  errores validacion en
+
+
+Maykel
+    Obtener Productos y sercicios
+        Servicios me devuelve error 500 por business_id
+        incluir el id en los campos que devuelve
+        quitar el items en la respuesta
+
+

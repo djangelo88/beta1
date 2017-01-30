@@ -1,0 +1,226 @@
+/**
+ * Created by Hector on 12/01/2017.
+ */
+app.controller('ProposalsController', ['$scope', '$window', '$aside', 'PlaceholderTextService', '$alert', '$http', 'NomenclatorService', '$location', 'ProposalService', 'WizardHandler', 'CustomerService', function ($scope, $window, $aside, PlaceholderTextService, $alert, $http, NomenclatorService, $location, ProposalService, WizardHandler, CustomerService) {
+
+    // settings
+    $scope.settings = {
+        singular: 'Presupuesto',
+        plural: 'Presupuestos',
+        cmd: 'Nuevo',
+        showAddItemForm: true
+
+    };
+    //page
+    $scope.page = {
+        title: 'Presupuestos',
+        description: 'In most applications you need basic table listings and editing capabilities.' +
+        ' With this app you can create simple admin functionality based on a json web service.',
+        icon: 'md md-group'
+    };
+
+    // adding proposals data
+    var data = [];
+    ProposalService.getAll()
+        .success(function (data, status, headers, config) {
+
+            angular.forEach(data, function (item) {
+                item.icon = ProposalService.createIcon(item.status);
+            });
+            $scope.data = data;
+            console.log($scope.data);
+        });
+
+    //adding others stuffs
+    //adding clients
+    CustomerService.getAll()
+        .success(function (data, status, headers, config) {
+            angular.forEach(data, function (item) {
+                item.icon = CustomerService.createIcon(item.new);
+            });
+
+            $scope.clients = data;
+        });
+
+
+    // defining template
+    var formTpl = $aside({
+        scope: $scope,
+        templateUrl: '/static/assets/tpl/proposals/proposals-form.html',
+        show: false,
+        placement: 'left',
+        backdrop: false,
+        animation: 'am-slide-left'
+    });
+
+    // methods
+    $scope.checkAll = function () {
+        angular.forEach($scope.data, function (item) {
+            item.selected = !item.selected;
+        });
+    };
+
+    $scope.editItem = function (item) {
+        if (item) {
+            item.editing = true;
+            $scope.item = item;
+            $scope.item.address = item.event.address;
+            $scope.settings.cmd = 'Edit';
+            showForm();
+        }
+    };
+
+    $scope.viewItem = function (item) {
+        if (item) {
+            item.editing = false;
+            $scope.item = item;
+            $scope.settings.cmd = 'View';
+            $scope.item.address = item.event.address;
+            showForm();
+        }
+    };
+
+    $scope.createItem = function () {
+        var item = {
+            editing: true,
+            items:[]
+        }
+        $scope.settings.cmd = 'New';
+        $scope.item = item;
+        $scope.showAddItemForm = true;
+
+
+
+        //angular.element('.tooltip').remove();
+        //$location.path("/proposals/wizard1")
+        showForm();
+    };
+
+    $scope.saveItem = function (item) {
+        //$scope.item.address = item.event.address;
+        console.log($scope.settings.cmd);
+        if ($scope.settings.cmd == 'Nuevo') {
+            //$scope.data.push($scope.item);
+
+            $scope.showAddItemForm = true;
+        }
+        console.debug(item);
+        //hideForm();
+        WizardHandler.wizard().next();
+    };
+
+    $scope.remove = function (item) {
+        console.log(item);
+
+        swal({
+                title: "Confirma que desea eliminar?",
+                text: "Si acepta ya no podrá deshacer los cambios!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Aceptar",
+                cancelButtonText: "Cancelar",
+                closeOnConfirm: false,
+                closeOnCancel: false
+            },
+            function (isConfirm) {
+                if (isConfirm) {
+
+                    //Llamar al servicio  para eliminar
+                    if (code == 200) {
+                        swal("Eliminado!", "Se ha eliminado correctamente el elemento seleccionado.", "success");
+                        //actualizar tabla
+                    } else if (code == 400) {
+                        swal("Error!", "Ha existido un error al eliminar el elemento seleccionado", "error");
+                    }
+
+
+                } else {
+                    swal("Cancelado", "No se ha realizado ninguna acción", "error");
+                }
+            });
+        //if (confirm('Are you sure?')) {
+        //
+        //
+        //    if (item) {
+        //        $scope.data.splice($scope.data.indexOf(item), 1);
+        //    } else {
+        //        var seleccionados = $scope.data.filter(
+        //            function (item) {
+        //                return item.selected;
+        //            }
+        //        );
+        //        //eliminar estos objetos
+        //        console.log(seleccionados);
+        //        $scope.selectAll = false;
+        //    }
+        //}
+    };
+
+    showForm = function () {
+        angular.element('.tooltip').remove();
+        formTpl.show();
+    };
+
+    hideForm = function () {
+        formTpl.hide();
+    };
+
+    $scope.$on('$destroy', function () {
+        hideForm();
+    });
+
+
+    $scope.print = function () {
+        return $window.print();
+    }
+    /*Items*/
+    NomenclatorService.getAll('request').success(function (data) {
+        $scope.itemTypes = data;
+    });
+
+    $scope.proposalSettings = {}
+
+    $scope.newProposalItem = function (item) {
+        $scope.proposalItem = {
+            editing: true,
+            cant:0,
+            price:0,
+            tax:7,
+            descuento:0,
+            subtotal:0
+
+        }
+
+
+    }
+
+    $scope.saveProposalItem = function (item, proposalItem) {
+
+        if (item.items === undefined) {
+            item.items = [];
+        }
+
+        item.items.push(proposalItem);
+        console.debug(proposalItem);
+        console.debug(item);
+
+        $scope.newProposalItem();
+
+        if ($scope.onlyAdd) {
+            $scope.settings.showAddItemForm = false;
+
+        } else {
+
+        }
+
+        proposalItem = {};
+    }
+    $scope.onlyAdd = true
+
+    $scope.saveAndAddProposalItem = function (valor) {
+        $scope.onlyAdd = valor;
+    }
+
+
+}]);

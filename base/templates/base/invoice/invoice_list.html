@@ -1,0 +1,125 @@
+{% extends 'base2.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+
+{% block title %} Invoices {% endblock %}
+{% block item_invoices %} active {% endblock %}
+
+{% block content_header %}
+    <h1>
+        <i class="fa fa-book"></i> Invoices
+        <small class="hidden-xs">Listado de invoices</small>
+    </h1>
+    <ol class="breadcrumb no-print">
+        <li><a href="#"><i class="fa fa-book"></i> Home</a></li>
+        <li class="active">Invoices</li>
+    </ol>
+
+{% endblock %}
+
+<!-- Main content -->
+
+{% block main_content %}
+
+    <div class="clearfix">
+        <div class="pull-right crud-actions">
+
+            <a href="{% url 'invoice_event_create' %}" class="btn btn-github add no-print "><i class="fa fa-plus"></i>
+                Nuevo invoice</a>
+            {#            <button type="button" class="btn btn-github add no-print" data-toggle="modal"#}
+            {#                    data-target="#newCustomerModal"#}
+            {#                    data-modal-title="Nuevo proposal">#}
+            {#                <i class="fa fa-plus"></i> <span class="hidden-xs">Nuevo proposal</span>#}
+            {#            </button>#}
+            <a href="#" class="btn btn-github btn-print no-print "> <i class="fa fa-print"></i> <span
+                    class="hidden-xs"> Imprimir</span></a>
+
+{#            <a href="#" class="btn btn-github no-print disabled"> <i class="fa fa-file-text"></i> <span#}
+{#                    class="hidden-xs"> Exportar a PDF</span></a>#}
+        </div>
+    </div>
+    <div id="tableContainer" class="clearfix">
+        {% include 'base/invoice/table_invoice.html' %}
+    </div>
+
+
+    <div class="modal fade" id="newCustomerModal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="gridSystemModalLabel"></h4>
+                </div>
+                <div class="modal-body" style="display: flex">
+
+                </div>
+                <div class="modal-footer">
+                    <button id="saveAdd" type="button" class="btn btn-success add-btn">Guardar y adicionar otro</button>
+                    <button id="save" type="button" class="btn btn-success add-btn">Guardar</button>
+                    <button id="saveEdit" type="button" class="btn btn-warning edit-btn">Guardar</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <script type="text/javascript" src="{% static 'js/components/custom.form.js' %}"></script>
+    </div>
+
+{% endblock %}
+
+{% block js_block_one %}
+    <script>
+        $(document).ready(function () {
+
+            $.CustomDatatableFormObject.model_name = "invoice";
+            $.CustomDatatableFormObject.datatable_container = "#tableContainer";
+            $.CustomDatatableFormObject.datatable_id = "#invoice_table";
+
+            $("#invoice_table").dataTable({"language": {"url": "/static/i18n/Spanish.json"}});
+            $(".btn-print").click(function () {
+                return window.print();
+            });
+
+            localStorage.setItem('activeStep', -1);
+            $model_name = 'invoice';
+        });
+    </script>
+    <script type="text/javascript" src="{% static 'base/js/invoice/item.js' %}"></script>
+{% endblock %}
+{% block css_block %}
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/datatables/dataTables.bootstrap.css' %}"/>
+{% endblock %}
+{##}
+{% block print_block %}
+    {% include 'base/invoice/invoice_list_print_view.html' %}
+{% endblock %}
+
+
+{##}
+{##}
+{##}
+{#<table>#}
+{#    <thead>#}
+{#        <th>Nombre</th>#}
+{#        <th>Cliente</th>#}
+{#        <th>Fecha</th>#}
+{#        <th>Fecha de pago</th>#}
+{#        <th>Estado</th>#}
+{#    </thead>#}
+{#    <tbody>#}
+{#        {% for inv in invoices %}#}
+{#            <tr>#}
+{#                <td>{{ inv.proposal.event.name }}</td>#}
+{#                <td>{{ inv.proposal.event.customer }}</td>#}
+{#                <td>{{ inv.proposal.event.event_date }}</td>#}
+{#                <td>{{ inv.proposal.event.due_date }}</td>#}
+{#                <td>{{ inv.status }}</td>#}
+{#            </tr>#}
+{#        {% endfor %}#}
+{#    </tbody>#}
+{#</table>#}

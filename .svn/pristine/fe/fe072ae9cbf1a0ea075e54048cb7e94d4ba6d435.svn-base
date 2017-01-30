@@ -1,0 +1,244 @@
+from datetime import datetime
+from django.conf import settings
+from django.db import transaction
+import stripe
+from base.signals import trial_memeber, past_due_active, become_past_due, trial_will_end, canceled_subscription, \
+    payment_failed, charge_failed
+from stripe_cater.exceptions import StripeException
+from stripe_cater.models import StripeCustomer, StripeSubscripcion, PaymentOrder, Charge, StripeAccount, StripeCard
+
+ERROR = -1
+AMOUNT_ERROR = -2
+STRIPE_ERROR = -3
+CARD_ERROR = -4
+
+ERRORS = [ERROR, AMOUNT_ERROR, STRIPE_ERROR, CARD_ERROR]
+
+#Subscriptions
+def subscribe(local_customer,trial_end=None):
+    if not trial_end:
+        subscrription = stripe.Subscription.create(
+          customer=local_customer.stripeid,
+          plan=settings.STRIPE_PLAN_ID
+        )
+    else:
+        subscrription = stripe.Subscription.create(
+          customer=local_customer.stripeid,
+          plan=settings.STRIPE_PLAN_ID,
+          trial_end=trial_end
+        )
+    local_customer.add_subscription(subscrription)
+
+
+def initial_subscribe_bussines(token, email, trial_end):
+    stripe.api_key = settings.STRIPE_API_KEY
+
+    try:
+        customer = stripe.Customer.create(
+          email=email,
+          source=token # obtained with Stripe.js
+        )
+        stripe_source = customer.default_source
+        stripe_card = customer.sources.retrieve(stripe_source)
+        local_customer = StripeCustomer.objects.save_local_customer(customer=customer)
+        StripeCard.objects.save_local_card(local_customer=local_customer, stripe_card=stripe_card)
+        subscribe(local_customer, trial_end=trial_end)
+
+        return local_customer
+    except:
+        raise StripeException()
+
+def update_billing_email(localcustomer, new_email):
+    stripe.api_key = settings.STRIPE_API_KEY
+    try:
+        customer = stripe.Customer.retrieve(localcustomer.stripeid)
+        customer.email = new_email
+        customer = customer.save()
+        localcustomer.update_email(new_email=new_email)
+        return localcustomer
+    except:
+        return ERROR
+
+def update_customer_source(newtoken, localcustomer):
+    stripe.api_key = settings.STRIPE_API_KEY
+    try:
+        customer = stripe.Customer.retrieve(localcustomer.stripeid)
+        customer.source = newtoken
+        customer = customer.save()
+        stripe_source = customer.default_source
+        stripe_card = customer.sources.retrieve(stripe_source)
+        localcustomer.update_source(new_token=newtoken, new_stripe_card=stripe_card)
+        return localcustomer
+    except:
+        return ERROR
+
+# def refresh_card(localcustomer):
+#
+#     local_card = localcustomer.get_card()
+#     customer = stripe.Customer.retrieve(localcustomer.stripeid)
+#     stripe_card = customer.sources.retrieve(local_card.stripe_id)
+#     local_card.update_from_stripe(stripe_card)
+
+
+def reopen_subscription(localcustomer, newtoken):
+    response = update_customer_source(localcustomer=localcustomer, newtoken=newtoken)
+    if response != ERROR:
+        subscribe(localcustomer, trial_end='now')
+        return localcustomer
+    else:
+        return ERROR
+
+def create_payment(amount):
+    order = PaymentOrder.objects.create_paymanet(amount=amount)
+    return order
+
+def create_charge_on_paymentorder(paymentorder, idempotency_key, amount, stripe_account, source):
+    stripe.api_key = settings.STRIPE_API_KEY
+
+    local_charge = paymentorder.init_charge(amount=amount, destination=stripe_account)
+
+    if local_charge == PaymentOrder.AMOUNT_ERROR:
+        return AMOUNT_ERROR
+    else:
+
+        response = local_charge
+        try:
+           charge = stripe.Charge.create(
+              amount=local_charge.get_amount_ready_to_charge_by_stripe(),
+              currency=settings.STRIPE_DEFAULT_CURRENCY,
+              source=source, # obtained with Stripe.js
+              stripe_account=stripe_account,
+              idempotency_key=idempotency_key,
+              capture = False
+            )
+           local_charge.stripe_id = charge.id
+           local_charge.status = Charge.PAID
+           try:
+               with transaction.atomic():
+                   paymentorder.save_charge(local_charge)
+           except:
+               return ERROR
+           try:
+               charge.capture()
+               local_charge.captured = True
+           except:
+               pass
+
+        except stripe.error.CardError as e:
+            local_charge.status = Charge.FAILED
+            # FIRE SIGNAL TO SEND EMAIL WITH A LITTLE MORE EXPLANATION
+            body = e.json_body
+            err  = body['error']
+            charge_failed.send(sender=None, stripe_charge=local_charge, stripe_json_error=err)
+            response =  CARD_ERROR
+        except stripe.error.StripeError:
+            response =  STRIPE_ERROR
+        except Exception:
+            response =  ERROR
+        local_charge.save()
+        return response
+
+def capture_charge(local_id):
+
+    local_charge = Charge.objects.get_charge(id=local_id)
+    if local_charge:
+        try:
+            stripe.api_key = settings.STRIPE_API_KEY
+            stripe_charge = stripe.Charge.retrieve(local_charge.stripe_id)
+            stripe_charge.capture()
+            local_charge.captured = True
+            local_charge.save()
+        except:
+            return ERROR
+    else:
+        return ERROR
+
+
+def create_account(access_token, stripe_user_id, stripe_publishable_key):
+    localaccount = StripeAccount.objects.create_account(access_token=access_token, stripe_user_id=stripe_user_id,
+                                         stripe_publishable_key=stripe_publishable_key)
+    return localaccount
+
+def cancel_subscription(local_customer):
+    subs = local_customer.current_subscription()
+    if subs:
+        stripeid = subs.stripeid
+        stripesub = stripe.Subscription.retrieve(stripeid)
+        stripesub = stripesub.delete()
+        subs.cancel()
+        canceled_subscription.send(sender=None, subscription=subs)
+
+#WEB HOOKS SERVICES
+    #Subscriptions
+def customer_subscription_updated(event_json):
+    subscription = event_json['data']['object']
+    local = StripeSubscripcion.objects.get_by_stripe_id(id=subscription['id'])
+    if local:
+        new_status = subscription['status']
+
+        if new_status == StripeSubscripcion.ACTIVE:
+            if local.stripestatus == StripeSubscripcion.TRIAL:
+                #fire signal to change the business mode from Trial to member
+                trial_memeber.send(sender=None, subscription=local)
+            elif local.stripestatus == StripeSubscripcion.PAST_DUE:
+                #fire signal to notify the business the problem has been solved
+                past_due_active.send(sender=None, subscription=local)
+        elif new_status == StripeSubscripcion.PAST_DUE:
+            #fire signal to notify the business that a problem with his data had happened
+            become_past_due.send(sender=None, subscription=local)
+        local.update_from_stripe(subscription)
+
+def customer_subscription_trial_will_end(event_json):
+    subscription = event_json['data']['object']
+    local = StripeSubscripcion.objects.get_by_stripe_id(id=subscription['id'])
+    trial_end =  datetime.fromtimestamp((subscription['trial_end']))
+    if local:
+        customer = local.stripecustomer
+        #fire a signal to notify this business by email
+        trial_will_end.send(sender=None, subscription=local, trial_end=trial_end)
+
+def customer_subscription_deleted(event_json):
+    subscription = event_json['data']['object']
+    local = StripeSubscripcion.objects.get_by_stripe_id(id=subscription['id'])
+    local.cancel()
+    #fire signal to change the business mode to basic
+    canceled_subscription.send(sender=None, subscription=local)
+
+def invoice_created(event_json):
+    invoice = event_json['data']['object']
+    subscription = invoice['subscription']
+    local = StripeSubscripcion.objects.get_by_stripe_id(subscription)
+    if local:
+        local.add_invoice(invoice)
+
+
+def invoice_payment_succeeded(event_json):
+    invoice = event_json['data']['object']
+    subscription = invoice['subscription']
+    local_sub = StripeSubscripcion.objects.get_by_stripe_id(id=subscription)
+    if local_sub:
+        local_invoice = local_sub.find_invoice(invoice['id'])
+        if local_invoice:
+            local_invoice.success(invoice_json=invoice)
+            item_line = invoice['lines']['data'][0]
+            start = datetime.fromtimestamp((item_line['period']['start']))
+            end = datetime.fromtimestamp((item_line['period']['end']))
+            local_sub.update_billing_cycle(start=start, end=end)
+
+def invoice_payment_failed(event_json):
+    invoice = event_json['data']['object']
+    subscription = invoice['subscription']
+    local_sub = StripeSubscripcion.objects.get_by_stripe_id(id=subscription)
+    if local_sub:
+        local_invoice = local_sub.find_invoice(invoice['id'])
+        if local_invoice:
+            local_invoice.failed(invoice)
+            next_attempt = invoice['next_payment_attempt']
+            if next_attempt:
+                next_attempt = datetime.fromtimestamp(next_attempt)
+            if invoice.attempt_count < settings.STRIPE_MAX_PAYMENT_ATTEMPTS - 1:
+                #fire signal to notify the business by email
+                payment_failed.send(sender=None, stripe_invoice=local_invoice, last_attempt=False)
+            else:
+                #fire signal to notify the business by email WARNIG there is only one payment attempt left
+                payment_failed.send(sender=None, stripe_invoice=local_invoice, last_attempt=True)

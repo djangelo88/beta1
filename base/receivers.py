@@ -1,0 +1,286 @@
+from smtplib import SMTPException
+
+from django.conf import settings
+from django.contrib.auth.signals import user_logged_in
+from django.core.mail.message import EmailMultiAlternatives
+from django.db import transaction
+from django.dispatch.dispatcher import receiver
+from django.template import loader
+from django.template.context import Context
+
+from base.model_invoice import Invoice, N_Proposal_Status, Proposal, N_Invoice_Status
+from base.models import Business
+from base.signals import trial_memeber_change_status, trial_memeber, canceled_subscription, \
+    canceled_subscription_change_status, trial_memeber_email, canceled_subscription_email, trial_will_end, \
+    become_past_due, past_due_active, payment_failed, proposal_accepted, changing_event_data, changing_item_data, \
+    event_booking_success, charge_failed
+from base.tasks import task_send_invoice, task_check_invoice_past_due, task_send_proposal, \
+    task_send_booking_nt_to_business
+
+
+@receiver(trial_memeber_change_status)
+@receiver(canceled_subscription_change_status)
+@receiver(trial_memeber)
+@receiver(canceled_subscription)
+def check_susbcrition_status(sender, **kwargs):
+    st_subscription = kwargs.get('subscription')
+    if st_subscription:
+        st_customer = st_subscription.stripecustomer
+        business = Business.objects.get_by_stripe_customer(stripe_customer=st_customer)
+        try:
+            business.check_subscription_status()
+        #     if kwargs has task notify task done
+        except:
+            pass
+
+@receiver(trial_memeber)
+@receiver(trial_memeber_email)
+def send_email_trail_member(sender, **kwargs):
+    st_subscription = kwargs.get('subscription')
+    if st_subscription:
+        st_customer = st_subscription.stripecustomer
+        business = Business.objects.get_by_stripe_customer(stripe_customer=st_customer)
+        email = business.contact_email()
+
+        subject = "Fin del Periodo Trial"
+        from_email = settings.ADMIN_EMAIL
+        to = email
+        template = loader.get_template("base/email/stripe/trial_member.html")
+
+
+        context = Context({'business':business,'subscription':st_subscription})
+        text_content = template.render(context)
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        try:
+            msg.send(fail_silently=False)
+
+            # if kwargs has task notify task done
+        except SMTPException as e:
+           pass
+
+@receiver(canceled_subscription)
+@receiver(canceled_subscription_email)
+def send_email_trail_member(sender, **kwargs):
+    st_subscription = kwargs.get('subscription')
+    if st_subscription:
+        st_customer = st_subscription.stripecustomer
+        business = Business.objects.get_by_stripe_customer(stripe_customer=st_customer)
+        email = business.contact_email()
+
+        subject = "Subscripcion cancelada"
+        from_email = settings.ADMIN_EMAIL
+        to = email
+        template = loader.get_template("base/email/stripe/canceled_subscription.html")
+
+
+        context = Context({'business':business,'subscription':st_subscription})
+        text_content = template.render(context)
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        try:
+            msg.send(fail_silently=False)
+
+            # if kwargs has task notify task done
+        except SMTPException as e:
+           pass
+
+@receiver(trial_will_end)
+def send_email_trail_will_end(sender, **kwargs):
+    st_subscription = kwargs.get('subscription')
+    if st_subscription:
+        trial_end = kwargs.get('trial_end')
+        st_customer = st_subscription.stripecustomer
+        business = Business.objects.get_by_stripe_customer(stripe_customer=st_customer)
+        email = business.contact_email()
+
+        subject = "Se acaba el periodo se prueba"
+        from_email = settings.ADMIN_EMAIL
+        to = email
+        template = loader.get_template("base/email/stripe/trial_will_end.html")
+
+
+        context = Context({'business':business,'subscription':st_subscription,
+                           'trial_end':trial_end})
+        text_content = template.render(context)
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        try:
+            msg.send(fail_silently=False)
+
+            # if kwargs has task notify task done
+        except SMTPException as e:
+           pass
+
+@receiver(charge_failed)
+def send_email_charge_failed(sender, **kwargs):
+    st_charge = kwargs.get('stripe_charge')
+    if st_charge:
+        payment = st_charge.payment
+        invoice = Invoice.objects.get_invoice_by_payment(payment=payment)
+
+        customer = invoice.proposal.event.customer
+        email = customer.email
+
+        subject = "Intento de pago invalido"
+        from_email = settings.ADMIN_EMAIL
+        to = email
+        template = loader.get_template("base/email/stripe/charge_failed.html")
+
+        stripe_json_error = kwargs.get('stripe_json_error')
+        context = Context({'customer':customer,'invoice':invoice,'charge':st_charge,
+                           'stripe_json_error':stripe_json_error})
+        text_content = template.render(context)
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        try:
+            msg.send(fail_silently=False)
+
+            # if kwargs has task notify task done
+        except SMTPException as e:
+           pass
+
+@receiver(become_past_due)
+def send_email_subscription_past_due(sender, **kwargs):
+    st_subscription = kwargs.get('subscription')
+    if st_subscription:
+        st_customer = st_subscription.stripecustomer
+        business = Business.objects.get_by_stripe_customer(stripe_customer=st_customer)
+        email = business.contact_email()
+
+        subject = "Subscripcion sin pagar"
+        from_email = settings.ADMIN_EMAIL
+        to = email
+        template = loader.get_template("base/email/stripe/past_due_subscription.html")
+
+
+        context = Context({'business':business,'subscription':st_subscription})
+        text_content = template.render(context)
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        try:
+            msg.send(fail_silently=False)
+
+            # if kwargs has task notify task done
+        except SMTPException as e:
+            pass
+
+@receiver(past_due_active)
+def send_email_subscription_past_due_active(sender, **kwargs):
+    st_subscription = kwargs.get('subscription')
+    if st_subscription:
+        st_customer = st_subscription.stripecustomer
+        business = Business.objects.get_by_stripe_customer(stripe_customer=st_customer)
+        email = business.contact_email()
+
+        subject = "Probelma resuelto"
+        from_email = settings.ADMIN_EMAIL
+        to = email
+        template = loader.get_template("base/email/stripe/past_due_to_active_subscription.html")
+
+
+        context = Context({'business':business,'subscription':st_subscription})
+        text_content = template.render(context)
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        try:
+            msg.send(fail_silently=False)
+
+            # if kwargs has task notify task done
+        except SMTPException as e:
+            pass
+
+@receiver(payment_failed)
+def send_email_payment_failed(sender, **kwargs):
+    st_invoice = kwargs.get('stripe_invoice')
+    last_attempt = kwargs.get('last_attempt')
+    if st_invoice:
+        st_subscription = st_invoice.subscription
+        st_customer = st_subscription.stripecustomer
+        business = Business.objects.get_by_stripe_customer(stripe_customer=st_customer)
+        email = business.contact_email()
+
+        subject = "Fallo al cobrar por su subscripcion"
+        from_email = settings.ADMIN_EMAIL
+        to = email
+        template = loader.get_template("base/email/stripe/invoice_failed.html")
+
+
+        context = Context({'business':business,'subscription':st_subscription, 'stripe_invoice':st_invoice,
+                           'last_attempt':last_attempt})
+        text_content = template.render(context)
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        try:
+            msg.send(fail_silently=False)
+
+            # if kwargs has task notify task done
+        except SMTPException as e:
+            pass
+
+@receiver(proposal_accepted)
+def proposal_accepted_send_invoice_email(sender, **kwargs):
+    proposal = kwargs.get('proposal')
+    invoice = Invoice.objects.get_by_proposal(proposal=proposal)
+    if invoice:
+        old_status = invoice.status
+        if old_status.id != N_Invoice_Status.PENDING:
+            invoice.status = N_Invoice_Status.objects.get(pk=N_Invoice_Status.PENDING)
+            invoice.save()
+        task_send_invoice(invoice=invoice, old_status=old_status)
+
+
+# @receiver(invoice_has_been_send, sender=Invoice)
+# def create_payment_on_invoice(sender, **kwargs):
+#     invoice = kwargs.get('invoice')
+#     payment = create_payment(amount=invoice.proposal.get_total())
+#     invoice.payment_order = payment
+#     invoice.save()
+
+@receiver(user_logged_in)
+def login_cheking_task(sender, **kwargs):
+    b = Business.objects.get_business_by_user(kwargs.get('user'))
+    if b:
+       task_check_invoice_past_due(business=b)
+       b.check_trial_period()
+
+@receiver(changing_event_data, sender=Proposal)
+@receiver(changing_item_data)
+def change_prop_status_to_edit(sender, **kwargs):
+    proposal=kwargs.get('proposal')
+    if proposal:
+        status = proposal.status
+        if status.id not in [N_Proposal_Status.ACCEPTED, N_Proposal_Status.EDITTING, N_Proposal_Status.DENIED]:
+           proposal.status = N_Proposal_Status.objects.get(pk=N_Proposal_Status.EDITTING)
+           proposal.reset_token()
+           proposal.save()
+
+@receiver(changing_event_data, sender=Invoice)
+@receiver(changing_item_data)
+def change_inv_status_to_edit(sender, **kwargs):
+    invoice=kwargs.get('invoice')
+    proposal = kwargs.get('proposal')
+    if proposal and not invoice:
+       invoice = Invoice.objects.filter(proposal=proposal).first()
+    if invoice:
+        status = invoice.status
+        if status.id not in [N_Invoice_Status.PAID, N_Invoice_Status.EDITTING]:
+           invoice.status = N_Invoice_Status.objects.get(pk=N_Invoice_Status.EDITTING)
+           invoice.reset_token()
+           invoice.save()
+           invoice.payment_order.update_amount(new_amount=invoice.proposal.get_total())
+
+@receiver(event_booking_success)
+def check_booking_activity(sender, **kwargs):
+    event = kwargs.get('event')
+    print(event.may_create_proposal())
+    if event.may_create_proposal():
+        try:
+            with transaction.atomic():
+                proposal = Proposal.objects.create_proposal_from_external_source(event=event)
+                if proposal in Proposal.objects.ERRORS:
+                    raise RuntimeError()
+                all_requests = event.get_requests()
+                proposal.create_items_from_requests(all_requests)
+                if event.may_send_proposal():
+                    task_send_proposal(proposal=proposal)
+                    task_send_booking_nt_to_business(event=event)
+        except Exception as e:
+            print(e)
+            pass
+
+
+

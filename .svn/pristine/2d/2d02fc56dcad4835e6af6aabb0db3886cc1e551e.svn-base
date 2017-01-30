@@ -1,0 +1,30 @@
+import json
+from django.http.response import JsonResponse, HttpResponse
+from django.views.generic.base import View
+from base.api.util import serialize_query
+from base.model_invoice import Proposal
+
+__author__ = 'amado'
+
+class ProposalView(View):
+
+    def get(self, request, *args, **kwargs):
+
+        if kwargs.get('id'):
+            id = kwargs.get('id')
+
+            prop = Proposal.objects.filter(id=id).first()
+            if not prop:
+                return HttpResponse(status=404)
+            data = prop.serialize()
+        else:
+            proposal = Proposal.objects.all()
+
+            data = serialize_query(proposal)
+
+        return JsonResponse(safe=False, data=data)
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body.encode())
+        print(data)
+        return HttpResponse()

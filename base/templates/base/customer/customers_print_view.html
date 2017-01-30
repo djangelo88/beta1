@@ -1,0 +1,37 @@
+{% extends 'base_print.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+{% block print_title %}{{ model }} {% endblock %}
+{% block print_subtitle %}Listado de clientes {% endblock %}
+{% block print_content %}
+
+    <table class="table table-bordered" id="customers_print_table">
+        <thead>
+        <tr>
+            <th class="text-uppercase">Nombre</th>
+            <th class="text-uppercase">Correo electrónico</th>
+            <th class="text-uppercase">Compañía</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for customer in customers %}
+            <tr>
+                <td>
+                    {{ customer.full_name }}
+
+                </td>
+                <td>
+                    {{ customer.email }}
+                </td>
+
+                <td>
+                    {{ customer.company }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+{% endblock %}

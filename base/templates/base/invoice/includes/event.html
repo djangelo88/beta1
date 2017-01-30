@@ -1,0 +1,201 @@
+<div class="clearfix" style="margin-top: 10px"></div>
+
+<div class="col-xs-12   event-detail {% if invoice %}invoic{% elif proposal %}proposal{% endif %}"
+     style="display: block">
+    <div class="row">
+        <div class="col-xs-6 col-sm-5 ">
+            <h3 class="h3-title">
+                {% if invoice %}
+                    factura a
+                {% elif proposal %}
+                    presupuesto a
+                {% endif %}
+
+            </h3>
+        </div>
+        <div class="col-xs-6 col-sm-4  pull-right">
+            <h1 class="h1-title">
+                {% if invoice %}
+                    factura
+                {% elif proposal %}
+                    presupuesto
+                {% endif %}
+            </h1>
+        </div>
+    </div>
+    <div class="row client">
+        <div class="col-sm-6">
+            <p class="pull-left">
+                {{ event.customer }}
+            </p>
+        </div>
+
+        {% if invoice %}
+            <div class="col-sm-6">
+                <p class="pull-right">
+                    {{ invoice.number }}
+                </p>
+            </div>
+
+        {% endif %}
+
+    </div>
+    <div class="row descriptions">
+        <div class="col-sm-6">
+            <p>          {{ event.customer.email }}     </p>
+
+            <p>          {{ event.customer.cell_phone }}     </p>
+
+            <p><strong> {{ event.name }} </strong></p>
+
+            <p>{{ event.address }} </p>
+
+            <p>{{ event.date }} </p>
+            {% if invoice %}
+                <p>{{ due_date }} </p>
+            {% endif %}
+        </div>
+        <div class="col-sm-6 text-right">
+            {#            <p><strong> {{ event.name }} </strong></p>#}
+            {##}
+            {#            <p>{{ event.address }} </p>#}
+            {##}
+            {#            <p>{{ event.date }} </p>#}
+            {#            {% if invoice %}#}
+            {#                <p>{{ due_date }} </p>#}
+            {#            {% endif %}#}
+
+        </div>
+    </div>
+    <div class="row items col-sm-10 pull-right">
+
+
+        {% if proposal.get_items %}
+
+            <table class="table table-bordered table-responsive  detail-items-table">
+                <thead>
+                <tr>
+                    <th>item</th>
+                    <th>descripcion</th>
+                    <th>cantidad</th>
+                    <th>costo unitario</th>
+                    <th class="descuento">descuento</th>
+                    <th class="total">   total  </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in proposal.get_items %}
+                    <tr>
+                        <td> {{ item.oferta.name }}</td>
+                        <td> {{ item.description }}</td>
+                        <td class="text-center"> {{ item.quantity }}</td>
+                        <td class="text-right"> $ {{ item.unit_cost }}</td>
+                        <td class="text-right disc"> {{ item.discount }} %</td>
+                        <td class="text-right"> $ {{ item.total|floatformat:"2" }}</td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="4" class="no-border-subtotal"></td>
+                    <td class="subtotal-title">Subtotal</td>
+                    <td class="subtotal-value">$ {{ proposal.get_subtotal|floatformat:"2" }}</td>
+                </tr>
+                </tbody>
+            </table>
+            <br/>
+            <div class="event-status  {% if invoice %}{{ invoice.status |lower}}{% else %}{{ proposal.status|lower }}{% endif %}">
+                {% if invoice %}
+                    {{ invoice.status }}
+                {% else %}
+                    {{ proposal.status }}
+                {% endif %}
+
+            {% if invoice.status.name == "DENEGADO" or  proposal.status.name == "DENEGADO" %}
+                {% if proposal.denied_by_system %}
+                    {% else %}
+                       <br/> <small style="font-size: 10pt"> por  el cliente</small>
+                {% endif %}
+            {% endif %}
+
+            </div>
+
+
+
+
+
+            <div class="col-md-4 pull-right no-padding-right">
+                <table class="table table-bordered table-responsive detail-items-table">
+                    <thead>
+                    <tr>
+                         <th class="descuento" style="border-right: none !important;">taxes</th>
+                        <th class="descuento">descuento</th>
+                        <th class="total">total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                         <td class="subtotal-title text-right" >
+                            $ {{ proposal.get_taxes|floatformat:"2" }}</td>
+                        <td class="subtotal-title text-right">
+                            $ {{ proposal.get_total_discount|floatformat:"2" }}</td>
+                        <td class="subtotal-value">$ {{ proposal.get_total|floatformat:"2" }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>El evento no contiene items.</p>
+        {% endif %}
+    </div>
+    <div class="clearfix"></div>
+
+
+    <div class=" detail-footer-content no-padding-right pull-right text-right">
+
+        <p>{{ BUSINESS_DATA.name }}</p>
+        <h4>{{ BUSINESS_DATA.owner.get_full_name }}</h4>
+        {% if BUSINESS_DATA.phone %}
+            <p>  {{ BUSINESS_DATA.phone }} <i class="fa fa-phone"></i></p>
+        {% endif %}
+
+        {% if BUSINESS_DATA.address %}
+            <p> {{ BUSINESS_DATA.address }} <i class="fa fa-map-marker"></i></p>
+        {% endif %}
+
+        {% if  BUSINESS_DATA.website_url %}
+            <p>  {{ BUSINESS_DATA.website_url }} <i class="fa fa-link"></i></p>
+        {% endif %}
+
+
+    </div>
+    {#<div class="col-sm-6 detail-footer-content no-padding-left">#}
+    {#        <h4>Criterio de pago</h4>#}
+    {##}
+    {#        <p>50% por adelantado, 50% al entregar</p>#}
+    {#    </div>#}
+    {#    <div class="col-xs-12 no-padding-left">#}
+    {#        <div class="col-sm-6 detail-footer-content no-padding-left">#}
+    {#            <h4>Metodo de pago</h4>#}
+    {##}
+    {#            <p><strong>Stripe:</strong> www.stripe.com</p>#}
+    {##}
+    {#            <p>Aceptamos:</p>#}
+    {#            <ul class="payment-cards">#}
+    {#                <li>visa</li>#}
+    {#                <li>master card</li>#}
+    {#                <li>american express</li>#}
+    {#            </ul>#}
+    {#        </div>#}
+    {#        <div class="col-sm-6 pull-right detail-footer-content">#}
+    {#            <div class="detail-business-owner text-right">#}
+    {#                <h4>{{ BUSINESS_DATA.owner.get_full_name }}</h4>#}
+    {##}
+    {#                <p class="text-uppercase">Gerente</p>#}
+    {#            </div>#}
+    {#        </div>#}
+    {##}
+    {#    </div>#}
+
+</div>
+
+
+<div class="clearfix"></div>

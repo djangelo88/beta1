@@ -1,0 +1,15 @@
+{% extends 'base2.html' %}
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+{% block title %} Wesite - Create {% endblock %}
+{% block main_content %}
+    <div class="text-center well-xg well ">
+        <h1>Crear sitio web</h1>
+        <h4>Use nuestro asistente y cree su nuevo sitio web</h4>
+        <a href="{% url 'template' %}" class="btn btn-success btn-flat btn-lg">Crear sitio web</a>
+    </div>
+
+{% endblock %}

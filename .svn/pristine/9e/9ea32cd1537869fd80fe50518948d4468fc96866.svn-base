@@ -1,0 +1,56 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()"><i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+            <form class="form-floating caterfull-form" novalidate="novalidate">
+                <fieldset>
+                    <legend>
+                        <span>
+                            <i class="md md-photo grey lighten-1 icon-color"></i>
+
+                        </span>
+                        <span ng-bind-html="item.icon">  </span> {{ gallery.cmd }} {{ gallery.singular }}
+                    </legend>
+                </fieldset>
+            </form>
+            <form class="form-floating" novalidate="">
+                <div class="grey lighten-4 text-center m-b-5">
+                    <i class="md md-photo fa-5x" style="line-height: 5;"></i>
+                </div>
+
+                <div class="btn btn-info" ngf-select ng-model="logofile">Upload logo</div>
+
+                <div class="form-group filled">
+                    <label class="control-label ">Nombre para mostrar</label>
+                    <input type="text" class="form-control" ng-model="galleryPhoto.name">
+                </div>
+                <div class="form-group filled">
+                    <label class="control-label ">Descripción</label>
+                    <textarea class="form-control vertical" rows="3" ng-model="galleryPhoto.description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="control-label normal">Set as background</label>
+
+                    <div class="switch">
+                        <label>
+                            Off
+                            <input type="checkbox">
+                            <span class="lever"></span>
+                            On
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" >Save</button>
+                    <button type="submit" class="btn btn-primary">Save and add other</button>
+                    <button type="reset" class="btn btn-default">Cancel</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

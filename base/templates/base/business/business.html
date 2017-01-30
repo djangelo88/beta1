@@ -1,0 +1,229 @@
+{% extends 'base_angular_static.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+{% block title %}Register{% endblock %}
+{% block body %}
+
+<body class="page-login theme-template-light theme-light-green" init-ripples ng-app="materialism">
+    <div class="center">
+        <div class="card bordered z-depth-2" style="margin:0% auto; max-width:400px;">
+            <div class="card-header">
+                <div class="brand-logo">
+                    <div id="logo">
+                        <div class="foot1"></div>
+                        <div class="foot2"></div>
+                        <div class="foot3"></div>
+                        <div class="foot4"></div>
+                    </div>
+                    Caterfull
+                </div>
+            </div>
+            <form action="{{ app_path }}" method="post" id="login-form" class="form-floating">{% csrf_token %}
+                <div class="card-content">
+
+                    <div class="m-b-30">
+                        <div class="card-title strong light-green-text">Login</div>
+                        <p class="card-title-desc">
+                            Welcome to Materialism! The admin template for material design lovers.
+                        </p>
+                    </div>
+
+
+                    <div class="form-group filled">
+
+                        {% render_field form.name class="form-control " %}
+
+                        {% for error in  form.name.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+
+                    </div>
+                   <div class="form-group {% if form.first_name.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Name' %}</label>#}
+                        {% render_field form.first_name class="form-control " %}
+                        {% for error in  form.first_name.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group {% if form.last_name.errors %} has-error {% endif %} ">
+                        {#                    <label class="roboto">{% trans 'Last name' %}</label>#}
+                        {% render_field form.last_name class="form-control " %}
+                        {% for error in  form.last_name.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group has-feedback {% if form.email.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Email' %}</label>#}
+                        {% render_field form.email class="form-control " %}
+                        <span class="fa fa-envelope form-control-feedback" id="ënvelope-feed"></span>
+                        {% for error in  form.email.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    {% if email_error %}
+                        <div class="text-validation-error"><i class="fa fa-warning"></i> {{ email_error }} </div>
+                    {% endif %}
+                    </div>
+
+                    <div class="form-group has-feedback {% if form.password.errors %} has-error {% endif %}">
+                        {#                    <label>{% trans 'Password' %}</label>#}
+                        {#   <input type="password" class="form-control" placeholder="Password"/>#}
+                        {% render_field form.password class="form-control " %}
+
+                        <span class="fa fa-lock form-control-feedback "></span>
+                        {% for error in  form.password.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+
+                    </div>
+                    <div class="form-group has-feedback {% if form.password_confirm.errors %} has-error {% endif %}">
+                        {#                    <label>{% trans 'Password' %}</label>#}
+                        {#   <input type="password" class="form-control" placeholder="Password"/>#}
+                        {% render_field form.password_confirm class="form-control " %}
+
+                        <span class="fa fa-check form-control-feedback"></span>
+                        {% for error in  form.password_confirm.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+
+                    </div>
+                    <div class="form-group has-feedback {% if form.phone.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Phone' %}</label>#}
+                        {% render_field form.phone class="form-control " %}
+                        <span class="fa fa-phone form-control-feedback" id="ënvelope-feed"></span>
+                        {% for error in  form.phone.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group has-feedback {% if form.address.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Address' %}</label>#}
+                        {% render_field form.address class="form-control " %}
+                        <span class="fa fa-map-marker form-control-feedback" id="ënvelope-feed"></span>
+                        {% for error in  form.address.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group has-feedback {% if form.tax.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Username' %}</label>#}
+                        {% render_field form.tax class="form-control " %}
+                        <span class="fa fa-user form-control-feedback "></span>
+                        {% for error in  form.tax.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    {#                    <div class="form-group no-list">#}
+                    {#                        <label class="roboto">{% trans 'Subscriptions' %}   </label>#}
+                    {#                        {% render_field form.subscriptions class="" %}#}
+                    {#                        {% for error in  form.subscriptions.errors %}#}
+                    {#                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>#}
+                    {#                        {% endfor %}#}
+                    {#                    </div>#}
+                <address-block></address-block>
+                    <div class="form-group has-feedback {% if form.first_line.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Username' %}</label>#}
+                        {% render_field form.first_line class="form-control " %}
+                        <span class="fa fa-street-view form-control-feedback "></span>
+                        {% for error in  form.first_line.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group has-feedback {% if form.second_line.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Username' %}</label>#}
+                        {% render_field form.second_line class="form-control " %}
+                        <span class="fa fa-street-view form-control-feedback "></span>
+                        {% for error in  form.second_line.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group has-feedback {% if form.zip.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Username' %}</label>#}
+                        {% render_field form.zip class="form-control " %}
+                        <span class="fa fa-address-card form-control-feedback "></span>
+                        {% for error in  form.zip.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group has-feedback {% if form.city.errors %} has-error {% endif %}">
+                            {#                    <label class="roboto">{% trans 'Username' %}</label>#}
+                            {% render_field form.city class="form-control " %}
+                            <span class="fa fa-home form-control-feedback "></span>
+                            {% for error in  form.city.errors %}
+                                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                            {% endfor %}
+                    </div>
+                    <div class="form-group has-feedback {% if form.country.errors %} has-error {% endif %}">
+                            {#                    <label class="roboto">{% trans 'Username' %}</label>#}
+                            {% render_field form.country class="form-control " %}
+                            <span class="fa fa-home form-control-feedback "></span>
+                            {% for error in  form.country.errors %}
+                                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                            {% endfor %}
+                    </div>
+
+                    <div class="form-group has-feedback {% if form.state.errors %} has-error {% endif %}">
+                             <select id="id_state" name="state" class="form-control">
+                                <option value="" selected="selected">--Seleccione un estado--</option>
+                            {% for state in states %}
+                                <option value="{{ state.id }}" class="state_option country_{{ state.country.id }}">{{ state.name }}</option>
+                             {% endfor %}
+                            </select>
+
+                         <div class="text-validation-error" id="error_country"></div>
+                    </div>
+
+
+
+
+                </div>
+                <div class="card-action clearfix">
+                    <div class="pull-right">
+                        <a href="{% url 'password_reset' %}" class="btn btn-default light-green-text">Forgot password</a>
+                        <button type="submit" class="btn btn-primary ">Login</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {#    <script charset="utf-8" src="//code.jquery.com/jquery-1.11.3.min.js"></script>#}
+
+
+    </body>
+
+
+{% endblock %}
+{% block js_bottom %}
+    <script charset="utf-8" src="{% static  'assets/js/login.js' %}"></script>
+{% endblock %}
+
+
+
+
+{% block js_block_one %}
+    <!-- iCheck -->
+    <script type="text/javascript" src="{% static 'plugins/iCheck/icheck.min.js' %}"></script>
+    <script>
+        $(function () {
+            $('input').iCheck({
+                checkboxClass: 'icheckbox_minimal-grey',
+                radioClass: 'iradio_minimal-grey',
+                increaseArea: '20%' // optional
+            });
+
+                   $('#id_country').change(function(){
+                   console.log('afdf');
+{#                   alert();#}
+           var class_name = 'country_' + $(this).val();
+           $('#id_state .state_option').hide();
+           $('.'+class_name).show();
+           $('#id_state').val('');
+{#           alert($(this).val());#}
+        });
+
+
+        });
+    </script>
+
+
+
+{% endblock %}

@@ -1,0 +1,355 @@
+{% extends 'base2.html' %}
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+{% block title %} Perfil {% endblock %}
+
+{% block content_header %}
+    <h1><i class="fa fa-user"></i> Perfil </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-user"></i> Home</a></li>
+        <li class="active">Perfil</li>
+    </ol>
+{% endblock %}
+
+{% block main_content %}
+    <ul class="nav nav-tabs" role="tablist" id="profile_tabs">
+        <li role="presentation" class="active"><a href="#profile" aria-controls="profile" role="tab"
+                                                  data-toggle="tab">Datos generales </a></li>
+        <li role="presentation"><a href="#suscription" aria-controls="suscription" role="tab" data-toggle="tab">Suscripción</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="profile">
+        <form method="post" enctype="multipart/form-data" class="form-horizontal">
+            {% csrf_token %}
+
+
+            <h4></h4>
+
+            <div class="form-group {% if form.first_name.errors %} has-error {% endif %}">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Nombre <span
+                        class="required-field">*</span> </label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.first_name class="form-control" %}
+                    </div>
+                    {% for error in  form.first_name.errors %}
+                        <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+            <div class="form-group {% if form.last_name.errors %} has-error {% endif %}">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Apellidos <span
+                        class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.last_name class="form-control" %}
+                    </div>
+                    {% for error in  form.last_name.errors %}
+                        <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+            <div class="form-group {% if form.name.errors %} has-error {% endif %}">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Nombre del
+                    negocio
+                    <span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.name class="form-control" %}
+                    </div>
+                    {% for error in  form.name.errors %}
+                        <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+            <div class="form-group {% if form.address.errors %} has-error {% endif %}">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Dirección <span
+                        class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.address class="form-control" %}
+                    </div>
+                    {% for error in  form.address.errors %}
+                        <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+            <div class="form-group {% if form.email.errors %} has-error {% endif %}">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Correo
+                    electrónico
+                    <span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.email class="form-control" %}
+                    </div>
+                    {% for error in  form.email.errors %}
+                        <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <div class="form-group {% if form.phone.errors %} has-error {% endif %}">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Teléfono <span
+                        class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.phone class="form-control" %}
+                    </div>
+                    {% for error in  form.phone.errors %}
+                        <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <div class="form-group {% if form.tax.errors %} has-error {% endif %}">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Tasa
+                    impositiva
+                    (Tax) <span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.tax class="form-control" %}
+                    </div>
+                    {% for error in  form.tax.errors %}
+                        <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+            <div class="clearfix col-xs-12">
+                <label class="  col-xs-12 col-sm-7 col-md-6 col-lg-4 no-padding-right text-right"></label>
+
+                {% if logo_url != None %}
+                    <img src="{{ logo_url }}" class="user-profile ">
+                {% endif %}
+
+            </div>
+            <div class="form-group {% if form.logo.errors %} has-error {% endif %}">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Logo <span
+                        class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+
+                        {% render_field form.logo class="form-control" %}
+                    </div>
+                    {% for error in  form.logo.errors %}
+                        <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+        <div class="form-group {% if form.websiteurl.errors %} has-error {% endif %}">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Website Url </label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+
+                        {% render_field form.websiteurl class="form-control" %}
+                    </div>
+                    {% for error in  form.websiteurl.errors %}
+                        <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            {% if business.can_choose_default_site %}
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Sitio propio por defecto </label>
+
+                    <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                        <div class="clearfix">
+                            {% render_field form.default_site %}
+                        </div>
+                    </div>
+
+                </div>
+
+            {% endif %}
+            <div>
+                {% for error, msg in errors.items %}
+                    <p>{{ error }}: {{ msg }}</p>
+                {% endfor %}
+            </div>
+            <hr/>
+            <div class="form-group {% if form.logo.errors %} has-error {% endif %}">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right"></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+
+                    <a href="{% url 'password_change' %}" class="btn btn-warning btn-flat">Cambiar contraseña</a>
+                    <input type="submit" value="Aceptar" class="btn btn-success btn-flat "/>
+                    <a href="{% url 'dashboard' %}" class="btn btn-success btn-flat ">Cancelar</a>
+
+                </div>
+            </div>
+
+        </form>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="suscription">
+        <h1></h1>
+        {% if business.has_been_subscribed %}
+            <div class="container susription-container">
+            <div class="col-md-3">
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Paquete actual</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <p>Costo: $19.99 al mes</p>
+
+                        <p>El próximo cobro de $19.99 sera el {{ subscription.current_period_end|date }}</p>
+                        <a href="{% url 'cancel_subcription' %}" class="btn btn-warning btn-flat">Cancelar
+                            subscripción</a>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Tarjeta de credito actual</h3>
+
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <table class="table table-bordered table-responsive table-condensed">
+                            <tbody>
+                            <tr>
+                                <th>Propietario</th>
+                                <td>{{ business.owner }}</td>
+                            </tr>
+                            <tr>
+                                <th>Direccion</th>
+                                <td>{{ business.stripecustomer.get_card.get_billing_address }}</td>
+                            </tr>
+                            <tr>
+                                <th>Numero de tarjeta</th>
+                                <td>************{{ business.stripecustomer.get_card.stripe_last4 }}</td>
+                            </tr>
+                            <tr>
+                                <th>Valida hasta</th>
+                                <td>{{ business.stripecustomer.get_card.stripe_exp_month }}/{{ business.stripecustomer.get_card.stripe_exp_year }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <br/>
+                        <a href="{% url 'change_card' %}" class="btn  btn-success btn-flat">Actualizar tarjeta de
+                            credito</a>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+            </div>
+
+
+            <div class="col-md-3">
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Correo para la subscripción</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <table class="table table-condensed table-bordered table-responsive">
+                            <tbody>
+                            <tr>
+                                <th>Correo</th>
+                                <td>{{ business.stripecustomer.billing_email }}</td>
+                            </tr>
+                            </tbody>
+
+                        </table>
+                        <br/>
+                        <a href="{% url 'change_billing_email' %}" class="btn btn-success btn-flat">Actualizar
+                            correo</a>
+
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Recibos de pago</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <table class="table table-condensed table-bordered table-responsive">
+                            <thead>
+                            <th>Fecha</th>
+                            <th>Transaction No.</th>
+                            </thead>
+                            <tbody>
+                            {% for invoice in subscription.get_billing_receipts %}
+                                <tr>
+                                    <td>{{ invoice.created_at|date }}</td>
+                                    <td>{{ invoice.receipt_number }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+            </div>
+
+        </div>
+        {% else %}
+            <h1><a href="{% url 'stripe_subscribe' %}">Suscribete!</a></h1>
+            {% if PENDING %}
+                Tu periodo de pruebe finaliza el {{ business.trial_end }}
+            {% else %}
+                Tu periodo de pruebe finalizo el {{ business.trial_end }}
+            {% endif %}
+        {% endif %}
+
+
+    </div>
+
+</div>
+
+
+
+    <div class="clearfix"></div>
+{% endblock %}
+{#{% if  need_payment %}#}
+{#    <form method="POST" action="{% url 'payment_subs' %}">#}
+{#        {% csrf_token %}#}
+{#        <input type="submit" value="Yo si puedo">#}
+{#    </form>#}
+{#{% endif %}#}
+{% block js_block_two %}
+    <script>
+        $(document).ready(function () {
+            $('#profile_tabs a').click(function (e) {
+                e.preventDefault()
+                $(this).tab('show')
+            })
+        })
+    </script>
+
+
+{% endblock %}

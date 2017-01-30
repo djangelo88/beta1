@@ -1,0 +1,11 @@
+<ul ng-controller="CustomersController" class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownListExample">
+  <li role="presentation" class="dropdown-header"><i class="md md-cloud"></i> Actions</li>
+  <li role="presentation"><a role="menuitem" href="/media/excel/customers.xls"><i class="md md-file-download"></i> Plantilla</a></li>
+  <li role="presentation">
+      <div ngf-select ng-model="importfile"><i class="md md-file-upload"></i> Importar</div>
+  </li>
+
+
+<!-- <li role="presentation" class="divider"></li>
+  <li role="presentation"><a role="menuitem" href><i class="md md-refresh"></i> Refresh</a></li> -->
+</ul>

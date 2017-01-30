@@ -1,0 +1,93 @@
+/**
+ * Created by Hector on 12/01/2017.
+ */
+app.factory('ProposalService', ['$rootScope', '$filter', '$http', 'BASE_URL', function ($rootScope, $filter, $http, BASE_URL) {
+
+    //var _baseURL = 'http://app.caterfull.com:8000/api';
+    //var local_model = 'proposals';
+
+    //var _resource = function(){
+    //    return $resource(BASE_URL + local_model);
+    //}
+
+    var _getAll = function (local_model) {
+        return $http.get(BASE_URL + local_model);
+    };
+
+    var _getById = function (local_model, model, id) {
+        return $http.get(BASE_URL + '?model=' + model + '&id=' + id);
+    };
+
+    var _post = function (local_model, object) {
+        return $http.post(BASE_URL + local_model, object);
+    };
+    var _postEdit = function (local_model, id, object) {
+        return $http.post(BASE_URL + local_model + '/' + id, object);
+    };
+    var _postDelete = function (local_model, objects) {
+        return $http.post(BASE_URL + local_model + '/delete', objects);
+    };
+    var _createIcon = function (local_model, status) {
+
+        switch (local_model) {
+            case "proposals":
+                switch (status) {
+                    case 1:
+                        return '<i class="md md-mode-edit blue lighten-1 icon-color"></i>';
+                        break;
+                    case 2:
+                        return '<i class="md md-query-builder orange lighten-1 icon-color"></i>';
+                        break;
+                    case 3:
+                        return '<i class="md md-done light-green lighten-1 icon-color"></i>';
+                        break;
+                    case 4:
+                        return '<i class="md md-report deep-orange lighten-1 icon-color"></i>';
+                        break;
+                    case 5:
+                        return '<i class="md md-clear red accent-3 icon-color"></i>';
+                        break;
+                    default :
+                        return '<i class="md md-assignment grey lighten-1 icon-color"></i>';
+                }
+                break;
+            case "invoices":
+                switch (status) {
+                    case 2:
+                        return '<i class="md md-mode-edit blue lighten-1 icon-color"></i>';
+                        break;
+                    case 3:
+                        return '<i class="md md-query-builder orange lighten-1 icon-color"></i>';
+                        break;
+                    case 4:
+                        return '<i class="md md-done light-green lighten-1 icon-color"></i>';
+                        break;
+                    case 7:
+                        return '<i class="md  md-attach-money red accent-3 icon-color"></i>';
+                        break;
+                    default :
+                        return '<i class="md md-assignment grey lighten-1 icon-color"></i>';
+                        break;
+                }
+
+
+        }
+
+
+
+
+    }
+
+    return {
+        getAll: _getAll,
+        getById: _getById,
+        add: _post,
+        edit: _postEdit,
+        delete: _postDelete,
+        createIcon: _createIcon,
+        baseUrl: BASE_URL
+
+    };
+
+
+}]);

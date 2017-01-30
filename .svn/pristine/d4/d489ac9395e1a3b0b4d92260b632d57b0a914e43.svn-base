@@ -1,0 +1,52 @@
+/**
+ * Created by Hector on 22/01/2017.
+ */
+
+app.controller('WebsiteController', ['$scope', 'NotificationService', 'AlertConfirmService', function ($scope, NotificationService, AlertConfirmService) {
+
+    $scope.website = {
+        template: {id:1,name:'Template # 1',description:'I am a very simple card. I am good at containing small bits of information. I am convenient'+
+                        'because I require little markup to use effectively.'},
+        basic_info: {
+            name: 'Clientes',
+            description: 'I am a very simple card. I am good at containing small bits of information. I am convenient'+
+                        'because I require little markup to use effectively.',
+            logo: ''
+        },
+        gallery: {
+            comments: 'In most applications you need basic table listings and editing capabilities.' +
+            ' With this app you can create simple admin functionality based on a json web service.',
+            images: [
+                {
+                    image: '',
+                    name: '',
+                    description: '',
+                    background: false
+                }
+            ]
+        },
+        menu: [{
+            image: '',
+            name: '',
+            description: ''
+        }],
+        social_networks: {
+            twitter: 'http://www.twitter.com/user_page',
+            instagram: 'http://www.instagram.com/user_page',
+            facebook: 'http://www.facebook.com/user_page',
+            yelp: 'http://www.yelp.com/user_page',
+            gplus: 'http://www.gplus.com/user_page'
+        },
+        contact_info: {
+            phone: '',
+            email: '',
+            address: {}
+        },
+        staff: []
+    };
+
+    console.log($scope.website);
+
+
+
+}]);

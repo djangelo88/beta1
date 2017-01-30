@@ -1,0 +1,126 @@
+{% extends 'base2.html' %}
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+{% block title %} Website - Gallery {% endblock %}
+{% block main_content %}
+
+    {% include 'business_site/website_wizard.html' with gallery_form=form gallery_status="active" basic_info_status="complete" template_status="complete" %}
+
+
+
+{% endblock %}
+
+{% block js_block_one %}
+ <script>
+        {#    #}
+        $(document).ready(function () {
+
+            function PutIdRadioCheck() {
+                var i;
+                var j;
+                var val =0;
+                var long = $('#images_table > tbody > tr').length
+                if($('#images_table > tbody > tr > td').attr('class') != "dataTables_empty"){
+                        for (i = 0; i < long; i++) {
+                            var cant = $('#images_table > tbody > tr')[i].children.length;
+                            for (j = 0; j < cant; j++) {
+                                if ($('#images_table > tbody > tr')[i].children[j].firstChild.checked == true) {
+                                    val = $('#images_table > tbody > tr')[i].children[j].firstChild.attributes['data-elem-id'].value;
+
+                                }
+                            }
+                        }return val;
+                    }
+                    else {
+                          return -1;
+                }
+            }
+
+            {#        $('#gallery_form').submit(function(){#}
+            {#            PutIdRadioCheck();#}
+            {#        });#}
+
+            $('#next').click(function (e) {
+                e.preventDefault();
+                var val = PutIdRadioCheck();
+                if(val == -1){
+                    toastr.error('Debe adicionar al menos una imagen a la galeria');
+                    return
+                }
+                if(val == 0){
+                    toastr.error('Debe seleccionar una imagen como background');
+                    return
+                }
+                    $('#as_back').val(val);
+                    $('#gallery_form').submit();
+            });
+{#            $('#plus').click(function(){#}
+{#            if($('#plus').attr('data-name')=='plus'){#}
+{#                console.log('plus');#}
+                $('#form_image').ajaxForm({
+                    success: function (response) {
+                        $("#image_name").removeClass("has-error");
+                        $("id_image").removeAttr("style");
+                        UpdateDataTable();
+                        ClearForm();
+                    },
+                    error: function (data) {
+{#                        alert('sa');#}
+                        var error = data.responseJSON;
+                        console.log(error.type)
+                        if(error.type == 'image'){
+                            toastr.error(error.errorMessage);
+                           $("#id_image").css('border-color','#dd4b39');
+                        }else{
+                             toastr.error(error.errorMessage);
+                             $("#image_name").addClass("has-error");
+                        }
+                    }
+                });
+{#            }#}
+{#{);#}
+            function ClearForm() {
+                $('#id_name').val('');
+                document.getElementById("id_image").value = "";
+                $('#id_description').val('');
+            }
+
+            function UpdateDataTable() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/site/photos/',
+                    success: function (data) {
+                        $("#tableContainer").empty().append(data);
+                        $('#images_table').dataTable({
+                            "language": {"url": "/static/i18n/Spanish.json"},
+                            "paging": false,
+                            "ordering": false,
+                            "info": false,
+                            "searching": false
+                        });
+                    }
+                });
+            }
+
+        });
+        $(function () {
+            // Initialize Datatable
+            $('#images_table').dataTable(
+                    {
+                        "language": {"url": "/static/i18n/Spanish.json"},
+                        "paging": false,
+                        "ordering": false,
+                        "info": false,
+                        "searching": false
+                    }
+            );
+        });
+    </script>
+
+{% endblock %}
+{% block css_block %}
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/datatables/dataTables.bootstrap.css' %}"/>
+{% endblock %}

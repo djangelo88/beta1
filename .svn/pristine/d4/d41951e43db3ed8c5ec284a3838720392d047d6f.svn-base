@@ -1,0 +1,40 @@
+{% load staticfiles %}
+
+
+
+<div class="clearfix ">
+    <div class="pull-right clearfix">
+        <a href="#" class="btn btn-github btn-print  "> <i class="fa fa-print"></i> <span
+                class="hidden-xs"> Imprimir</span></a>
+        <a  href="{% url 'invoice_download' invoice.id %}" class="btn btn-pdf btn-github">
+            <i class="  fa fa-file-text"></i>
+          <span class="hidden-xs"> Exportar a PDF</span>
+        </a>
+        {% if invoice.may_send_email %}
+            {% csrf_token %}
+
+            <button id="send_invoice" class="btn btn-send btn-github "
+                    data-url="{% url 'invoice_send' invoice.id %}">
+                <i class="  fa fa-envelope"></i>
+                <span class="hidden-xs"> Enviar</span>
+            </button>
+        {% endif %}
+    </div>
+</div>
+
+{% include 'base/invoice/includes/event.html' with event=invoice.proposal.event due_date=invoice.due_date proposal=invoice.proposal invoice=invoice %}
+
+{#{% if invoice.may_send_email %}#}
+{#    {% csrf_token %}#}
+{#    <button id="send_invoice" data-url="{% url 'invoice_send' invoice.id %}">Enviar</button>#}
+{#{% endif %}#}
+
+<script src="{% static 'base/js/jquery.js' %}"></script>
+<script src="{% static 'base/js/invoice/send_invoice.js' %}"></script>
+<script>
+    $(".btn-print").click(function () {
+        return window.print();
+    });
+
+</script>
+

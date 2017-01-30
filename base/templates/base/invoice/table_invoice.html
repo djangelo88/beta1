@@ -1,0 +1,82 @@
+{% load staticfiles %}
+<table class="table table-striped projects table-responsive no-print" id="invoice_table">
+            <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Fecha de pago</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for inv in invoices %}
+                <tr>
+                    <td><a href="/invoice/{{ inv.id }}">{{ inv.proposal.event.name }}</a></td>
+                    <td>{{ inv.proposal.event.customer }}</td>
+                    <td>{{ inv.proposal.event.event_date }}</td>
+                    <td>
+                        {{ inv.due_date }}
+                    </td>
+                    <td>
+                <span class="label
+                    {% ifequal inv.status.name 'CREADA' %} label-success {% endifequal %}
+                    {% ifequal inv.status.name 'PAGADA' %} label-default {% endifequal %}
+                    {% ifequal inv.status.name 'DEUDA' %} label-danger {% endifequal %}
+                    {% ifequal inv.status.name 'PENDIENTE' %} label-waring {% endifequal %}
+                    {% ifequal inv.status.name 'EDICION' %} label-info {% endifequal %}
+                ">
+
+                {{ inv.status.name }}
+
+                    </span>
+                    </td>
+
+                    <td>
+
+
+                        {% if inv.status.name == 'EDICION' or inv.status.name == 'PENDIENTE' %}
+                            <a href="{% url 'invoice_event_edit' inv.id %}"> <i class="fa fa-pencil"></i> </a>
+                            </a>
+                        {% else %}
+                            <span class="text-muted"> <i class="fa fa-pencil"></i> </span>
+                        {% endif %}
+
+                        {% csrf_token %}
+                        <button type="button" class="btn btn-danger btn-xs remove" data-elem-id="{{ inv.id }}">
+                            <i class="fa fa-trash-o"></i>    </span>
+                        </button>
+                        {##}
+                        {#                 <a href="" class="remove"  data-elem-id="{{ customer.id }}"#}
+                        {#                        > <i class="fa fa-trash-o"></i> </a>#}
+
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+{#<script type="text/javascript" src="{% static 'js/components/custom.datatablesmodalform.js' %}"></script>#}
+<script>
+
+</script>
+<script type="text/javascript" src="{% static 'base/js/invoice/item.js' %}"></script>
+
+{#<script>#}
+{##}
+{#    $(document).ready(function () {#}
+{##}
+{#        $("#invoice_table").dataTable({"language": {"url": "/static/i18n/Spanish.json"}});#}
+{##}
+        {#        $.CustomDatatableFormObject.model_name = "proposal";#}
+        {#        $.CustomDatatableFormObject.datatable_container = "#tableContainer";#}
+        {#        $.CustomDatatableFormObject.datatable_id = "#proposal_table";#}
+        {#        $.CustomDatatableFormObject.modal_dialog_id = "#newCustomerModal";#}
+        {#        $.CustomDatatableFormObject.form_id = "#eventForm";#}
+        {#        $.CustomDatatableFormObject.set_url_add("event");#}
+        {#        $.CustomDatatableFormObject.set_url_edit("event");#}
+{##}
+{#    });#}
+{#</script>#}
+{##}
+

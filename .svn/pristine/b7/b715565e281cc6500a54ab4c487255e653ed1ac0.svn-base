@@ -1,0 +1,42 @@
+{% extends 'base_angular_static.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+{% block title %} Password reset {% endblock %}
+{% block body %}
+    <body class="page-login  theme-template-light theme-light-green" init-ripples>
+    <div class="center">
+        <div class="card bordered z-depth-2" style="margin:0% auto; max-width:400px;">
+            <div class="card-header">
+                    <div class="brand-logo">
+                        <div id="logo">
+                            <div class="foot1"></div>
+                            <div class="foot2"></div>
+                            <div class="foot3"></div>
+                            <div class="foot4"></div>
+                        </div>
+                        Materialism
+                    </div>
+                </div>
+            <div class="card-content">
+
+                <p>{% trans "We've emailed you instructions for setting your password, if an account exists with the email you entered. You should receive them shortly." %}</p>
+
+                <p>{% trans "If you don't receive an email, please make sure you've entered the address you registered with, and check your spam folder." %}</p>
+
+
+            </div>
+            <div class="card-action clearfix">
+                <a href="/accounts/password_reset" class="btn btn-link pull-right">Password recovery</a>
+            </div>
+        </div>
+    </div>
+
+    {#    <script charset="utf-8" src="//code.jquery.com/jquery-1.11.3.min.js"></script>#}
+
+
+    </body>
+{% endblock %}
+{% block js_bottom %}
+    <script charset="utf-8" src="{% static  'assets/js/login.js' %}"></script>
+{% endblock %}

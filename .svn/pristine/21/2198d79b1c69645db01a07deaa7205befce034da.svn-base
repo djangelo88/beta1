@@ -1,0 +1,71 @@
+import json
+from django.http.response import JsonResponse, HttpResponse
+from django.views.generic.base import View
+from base.api.forms import BusinessProfileForm
+from base.models import Business
+from base.util import check_permission
+
+
+class BusinessView(View):
+
+    def get(self, request, *args, **kwargs):
+        user  = request.user
+        business = Business.objects.get_business_by_user(user=user)
+
+        data = business.serialize()
+
+        return JsonResponse(data=data, safe=False)
+
+    def _extract_data(self, data):
+        owner = data.get('owner')
+        address = data.get('address')
+
+        profile_data = {}
+        profile_data['phone'] = data.get('phone')
+        profile_data['name'] = data.get('name')
+        profile_data['tax'] = data.get('tax')
+        profile_data['default_site'] = data.get('default_site_mine')
+        profile_data['websiteurl'] = data.get('websiteurl')
+        profile_data['capacity'] = data.get('capacity')
+
+        profile_data['first_name'] = owner.get('first_name')
+        profile_data['last_name'] = owner.get('last_name')
+        profile_data['email'] = owner.get('email')
+
+        profile_data['first_line'] = address.get('first_line')
+        profile_data['second_line'] = address.get('second_line')
+        profile_data['zip'] = address.get('zip')
+        profile_data['city'] = address.get('city')
+        profile_data['state'] = address.get('state').get('id')
+        profile_data['country'] = address.get('country').get('id')
+
+        return profile_data
+
+
+
+
+    def post(self, request, *args, **kwargs):
+        if not check_permission(request=request, permission='update_profile'):
+            return HttpResponse(status=401)
+        user  = request.user
+        business = Business.objects.get_business_by_user(user=user)
+        data = json.loads(request.body.decode())
+
+        profile_data = self._extract_data(data=data)
+        print('Es le usuario el que esta editado su profile:', user.email == profile_data.get('email'))
+
+        # print(profile_data)
+
+        form = BusinessProfileForm(profile_data)
+        if form.is_valid():
+            data_to_save = form.cleaned_data
+            response = Business.objects.update_business_data(business=business, data=data_to_save)
+            if response in Business.objects.ERRORS:
+                if response == Business.objects.EMAIL_ERROR:
+                    data = {'email':[{'code':'repeated', 'message':'Este correo ya esta en uso'}]}
+                return JsonResponse(status=400, safe=False, data=json.JSONEncoder().encode(data))
+            return HttpResponse(status=200)
+        else:
+            return JsonResponse(status=400, safe=False, data=form.errors.as_json())
+
+

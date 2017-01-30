@@ -1,0 +1,124 @@
+<section>
+    <div class="page-header">
+        <h1>
+            <i class="md md-assignment"></i>
+            <span>Nuevo presupuesto</span>
+            <!-- <span ng-bind="pageTitle">Nuevo proposal</span> -->
+        </h1>
+
+        <p class="lead">
+            {{ page.description }}
+        </p>
+    </div>
+</section>
+<wizard on-finish="finishedWizard()">
+    <wz-step wz-title="Evento">
+
+        <div class="row   m-t-40">
+            <div class="col-md-8 col-xs-12 col-md-push-2">
+                <div class="well white">
+                    <form class="form-floating">
+                        <fieldset>
+                            <legend>Datos del evento</legend>
+                            <div class="form-group filled">
+                                <label class="control-label">Nombre del evento <span
+                                        class="required-field">*</span></label>
+                                <input type="text" class="form-control" ng-model="" required="">
+                            </div>
+                            <h5>Dirección</h5>
+
+                            <div class="form-group filled ">
+                                <label class="control-label">Line 1</label>
+                                <input type="text" class="form-control" ng-model="item.address.line1">
+                            </div>
+                            <div class="form-group filled ">
+                                <label class="control-label">Line 2</label>
+                                <input type="text" class="form-control" ng-model="item.address.line2">
+                            </div>
+                            <div class="form-group filled col-sm-6 no-padding-left">
+                                <label class="control-label">Country</label>
+                                <input type="text" class="form-control" ng-model="item.address.country">
+                            </div>
+                            <div class="form-group filled col-sm-6 no-padding-right">
+                                <label class="control-label correct-margin-left">State</label>
+                                <input type="text" class="form-control" ng-model="item.address.state">
+                            </div>
+                            <div class="form-group filled col-sm-6 no-padding-left">
+                                <label class="control-label">City</label>
+                                <input type="text" class="form-control" ng-model="item.address.city">
+                            </div>
+                            <div class="form-group filled col-sm-6 no-padding-right">
+                                <label class="control-label correct-margin-left">Zip Code</label>
+                                <input type="number" class="form-control" ng-model="item.address.zip_code">
+                            </div>
+                            <div class="clearfix"></div>
+
+                            <div class="form-group col-sm-6 no-padding-left ">
+                                                               <div class="input-group">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" ng-model="sharedDate"
+                                                   data-autoclose="1" placeholder="Date"
+                                                   bs-datepicker>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input type="text" class="form-control" ng-model="sharedTime"
+                                                   data-autoclose="1" placeholder="Time"
+                                                   bs-timepicker>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group col-sm-6 no-padding-right">
+                                <ui-select ng-model="person.selected" theme="select2" title="Choose a person"
+                                           search-enabled="false" style="margin-top: -15px">
+                                    <ui-select-match placeholder="Cliente">
+                                        {{$select.selected.name}}</ui-select-match>
+                                    <ui-select-choices repeat="item in people | filter: $select.search">
+                                        <div ng-bind-html="item.name | highlight: $select.search"></div>
+                                        <small ng-bind-html="item.email | highlight: $select.search"></small>
+                                    </ui-select-choices>
+                                </ui-select>
+                            </div>
+                        <div class="clearfix"></div>
+                            <div class="form-group">
+                                <label for="textArea" class="control-label">Textarea with autogrow</label>
+                                <textarea class="form-control vertical " rows="3" id="textArea"></textarea>
+                                <span class="help-block">Help.</span>
+                            </div>
+
+                        <div class="form-group pull-right">
+                                           <button type="submit" class="btn btn-primary">Submit</button>
+                                           <button type="reset" class="btn btn-default">Cancel</button>
+                                       </div>
+
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="row m-b-15  ">
+            <div class="col-md-8 col-xs-12 col-md-push-2">
+                <div class="well white ">
+                    <input type="submit" wz-next class="btn btn-primary pull-right " value="Continue"/>
+
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+
+
+    </wz-step>
+    <wz-step wz-title="Items">
+        <h1>Continuing</h1>
+
+        <p>You have continued here!</p>
+        <input type="submit" wz-Previous value="Prev"/>
+        <input type="submit" wz-next value="Go on"/>
+    </wz-step>
+    <wz-step wz-title="Finalizar">
+        <p>Even more steps!!</p>
+        <input type="submit" wz-next value="Finish now"/>
+    </wz-step>
+</wizard>

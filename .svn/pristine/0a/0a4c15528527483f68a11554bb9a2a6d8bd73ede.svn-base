@@ -1,0 +1,19 @@
+from django.forms.models import ModelForm
+from base.prodserv_models import Measure, Ingredients
+
+__author__ = 'maykel'
+
+from django import forms
+
+class MeasureForm(ModelForm):
+    class Meta:
+        model = Measure
+        fields = ['name', 'siglas', 'description']
+
+class IngredientsForm(ModelForm):
+    class Meta:
+        model = Ingredients
+        fields = ['name', 'description']
+
+# class RecipesForm(forms.Form):
+

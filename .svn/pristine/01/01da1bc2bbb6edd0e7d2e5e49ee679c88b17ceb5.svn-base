@@ -1,0 +1,15 @@
+from django.http.response import JsonResponse
+from django.views.generic.base import View
+from base.models import Business
+
+
+class BusinessView(View):
+
+    def get(self, request, *args, **kwargs):
+        user  = request.user
+        business = Business.objects.get_business_by_user(user=user)
+
+        data = business.serialize()
+
+        return JsonResponse(data=data, safe=False)
+

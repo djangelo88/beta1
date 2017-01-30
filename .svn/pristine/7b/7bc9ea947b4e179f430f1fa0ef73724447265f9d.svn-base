@@ -1,0 +1,9 @@
+/**
+ * Created by amado on 25/01/17.
+ */
+app.controller('StripeController',[
+    '$scope',
+    function ($scope) {
+        console.log('Stripe');
+    }
+]);

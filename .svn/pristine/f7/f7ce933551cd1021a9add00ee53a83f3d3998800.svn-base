@@ -1,0 +1,130 @@
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+<form method="POST" action="" id="newCustomerForm">
+
+    {% csrf_token %}
+
+    <div class="form-group col-xs-12 col-sm-2 {% if form.prefix.errors %} has-error {% endif %}">
+        <label> {{ form.prefix.label }} </label>
+        {% render_field form.prefix class="form-control" %}
+        {% if form.prefix.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {{ form.prefix.errors }} </div>
+        {% endif %}
+    </div>
+
+    <div class="form-group col-xs-12 col-sm-5 {% if form.first_name.errors %} has-error {% endif %}">
+        <label> {{ form.first_name.label }} <span class="required-field">*</span></label>
+        {% render_field form.first_name class="form-control" %}
+
+        {% for error in  form.first_name.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group col-xs-12 col-sm-5 {% if form.last_name.errors %} has-error {% endif %}">
+        <label> {{ form.last_name.label }} <span class="required-field">*</span></label>
+        {% render_field form.last_name class="form-control" %}
+        {% for error in  form.last_name.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group col-xs-12 col-sm-2 {% if form.suffix.errors %} has-error {% endif %}">
+        <label> {{ form.suffix.label }}</label>
+        {% render_field form.suffix class="form-control" %}
+        {% if form.suffix.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {{ form.suffix.errors }} </div>
+        {% endif %}
+    </div>
+
+    <div class="form-group col-xs-12 col-sm-5 {% if form.email.errors %} has-error {% endif %}">
+        <label> {{ form.email.label }} <span class="required-field">*</span></label>
+        {% render_field form.email class="form-control" %}
+        {% for error in  form.email.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+        {% if errors.unique_email %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {{ errors.unique_email }} </div>
+        {% endif %}
+    </div>
+
+    <div class="form-group col-xs-12 col-sm-5 {% if form.company.errors %} has-error {% endif %}">
+        <label> {{ form.company.label }}</label>
+        {% render_field form.company class="form-control" %}
+        {% if form.company.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {{ form.company.errors }} </div>
+        {% endif %}
+    </div>
+    <div class="form-group col-xs-12 col-sm-4  {% if form.cellphone.errors %} has-error {% endif %}">
+        <label> {{ form.cellphone.label }}</label>
+        {% render_field form.cellphone class="form-control" %}
+        {% if form.cellphone.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {{ form.cellphone.errors }} </div>
+        {% endif %}
+    </div>
+    <div class="form-group col-xs-12 col-sm-4  {% if form.phone_home.errors %} has-error {% endif %}">
+        <label> {{ form.phone_home.label }}</label>
+        {% render_field form.phone_home class="form-control" %}
+        {% if form.phone_home.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {{ form.phone_home.errors }} </div>
+        {% endif %}
+    </div>
+{#    <div class="form-group col-xs-12 col-sm-4  {% if form.birthday.errors %} has-error {% endif %}">#}
+{#        <label> {{ form.birthday.label }}</label>#}
+{#        {% render_field form.birthday class="form-control date-picker" %}#}
+{#        {% if form.birthday.errors %}#}
+{#            <div class="text-validation-error"><i class="fa fa-warning"></i> {{ form.birthday.errors }} </div>#}
+{#        {% endif %}#}
+{#    </div>#}
+    <div class="form-group  col-xs-12 col-sm-4 {% if form.birthday.errors %} has-error {% endif %}">
+        <label class="control-label  no-padding-right">Dia de nacimineto</label>
+
+        <div class=" ">
+            <div class="input-group">
+                {% render_field form.birthday class="form-control date-picker" %}
+                  <span class="input-group-btn">
+                        <button class="btn btn-flat btn-default"
+                                type="button">
+                            <i class="ace-icon fa fa-calendar "></i>
+
+                        </button>
+                    </span>
+            </div>
+            {% for error in  form.birthday.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+        </div>
+    </div>
+ <div class="form-group col-xs-12  col-sm-6 {% if form.address.errors %} has-error {% endif %}">
+        <label> {{ form.address.label }}</label>
+        {% render_field form.address class="form-control" rows="5"%}
+        {% if form.address.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {{ form.address.errors }} </div>
+        {% endif %}
+    </div>
+    <div class="form-group col-xs-12  col-sm-6 {% if form.comments.errors %} has-error {% endif %}">
+        <label> {{ form.comments.label }}</label>
+        {% render_field form.comments class="form-control" rows="5"%}
+        {% if form.comments.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {{ form.comments.errors }} </div>
+        {% endif %}
+    </div>
+
+
+</form>
+
+<script>
+    $(document).ready(function(){
+         $('.date-picker').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format:'yyyy-mm-dd',
+
+            language:"es"
+        })
+            //show datepicker when clicking on the icon
+                .next().on('click', function () {
+                    $(this).prev().focus();
+                });
+    });
+</script>

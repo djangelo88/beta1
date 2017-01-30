@@ -1,0 +1,18 @@
+from django.http.response import HttpResponse, JsonResponse
+from django.views.generic.base import View
+from base.model_invoice import N_Request_Type, N_Event_Status, N_Invoice_Status, N_Proposal_Status
+from base.models import N_Prefix, N_Suffix
+
+NOMENCLATOR_CLASS = {'request':N_Request_Type, 'event_status':N_Event_Status,
+                     'invoice_status':N_Invoice_Status, 'proposal_status':N_Proposal_Status,
+                        'prefix': N_Prefix, 'suffix':N_Suffix}
+
+class Nomenclator(View):
+
+    def get(self, request, *args, **kwargs):
+        model_key = (request.GET.get('model'))
+        model = NOMENCLATOR_CLASS.get(model_key)
+        if model:
+            respones = list(model.objects.all().values())
+            return JsonResponse(safe=False, data=respones)
+        return HttpResponse(status=404)

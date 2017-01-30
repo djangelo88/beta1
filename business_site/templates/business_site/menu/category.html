@@ -1,0 +1,12 @@
+{% extends 'base2.html' %}
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+{% block title %} Website - AddCategory {% endblock %}
+{% block main_content %}
+    {% for cat in categorys %}
+        <div>{{ cat.id }}{{ cat.description }}</div>
+    {% endfor %}
+{% endblock %}

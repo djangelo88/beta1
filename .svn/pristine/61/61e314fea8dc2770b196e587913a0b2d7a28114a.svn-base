@@ -1,0 +1,113 @@
+import json
+
+from django.conf import settings
+from django.db import transaction
+from django.http.response import JsonResponse
+from django.views.generic.base import View
+
+from base.api.views.business import BusinessView
+from base.forms import BillingEmailForm
+from base.models import Business
+from stripe_cater.exceptions import StripeException
+from stripe_cater.services import update_billing_email, cancel_subscription, initial_subscribe_bussines, \
+    reopen_subscription, update_customer_source
+from stripe_cater.services import ERRORS
+
+
+class UpdateBillingEmail(View):
+
+    
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+        localcustomer = business.stripecustomer
+        data = json.loads(request.body.decode())
+
+        form = BillingEmailForm(data)
+        if form.is_valid():
+            response = update_billing_email(localcustomer=localcustomer, new_email=form.cleaned_data['email'])
+            print(response)
+            if response in ERRORS:
+                return JsonResponse(status=500, data={'message':'Lo sentimos, por favor intente nuevamente'}, safe=False)
+            return JsonResponse(data={'message':'Su correo para los cobros ha sido actualizado'})
+        else:
+            return JsonResponse(status=400, safe=False, data=form.errors.as_json())
+
+class CancelSubscription(View):
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+        try:
+            cancel_subscription(business.stripecustomer)
+            return JsonResponse(data={'message':'Su suscripcion fue cancelada'}, safe=False)
+        except Exception as e:
+            print(e)
+            return JsonResponse(status=500, data={'message': 'Lo sentimos, por favor intente nuevamente'}, safe=False)
+
+
+class StripePublishableKey(View):
+
+    def get(self, request, *args, **kwargs):
+        pk = settings.STRIPE_PUBLISHABLE_KEY
+        return JsonResponse(data={'publishable_key':pk})
+
+class Subscribe(View):
+
+    def post(self, request, *args, **kwargs):
+            # if not check_permission(request=request, permission='update_subscription'):
+            #    return HttpResponseRedirect(redirect_to=reverse('login'))
+
+            user = request.user
+            business = Business.objects.get_business_by_user(user=user)
+            business_id = business.id
+
+            current_group = business.current_group()
+
+            # stripeToken = request.POST.get('stripeToken')
+            try:
+                  with transaction.atomic():
+
+                      # stripeToken = request.POST.get('stripeToken')
+                      stripeToken = json.loads(request.body.decode()).get('stripeToken')
+
+                      if current_group.name == settings.BUSINESS_BASIC:
+                          response = reopen_subscription(localcustomer=business.stripecustomer,newtoken=stripeToken)
+                          if response in ERRORS:
+                              raise RuntimeError()
+                      else:
+                          response = initial_subscribe_bussines(token=stripeToken, email=business.owner.email, trial_end=business.get_trial_end_value_to_subscribe())
+
+                      business.set_stripe_customer(customer=response)
+
+                      return BusinessView().get(request,*args, **kwargs)
+
+            except StripeException:
+                errors = {'message':'Error en los datos de su cuenta para subscribirlo a stripe'}
+            except Exception:
+                errors = {'message':'Error al procesar su peticion. Intente de nuevo'}
+
+            return JsonResponse(safe=False, data=errors, status=500)
+
+                # return render_to_response('base/stripe_account/subscribe.html', RequestContext(request, {'error':errors,'PUBLISHABLE_KEY':PUBLISHABLE_KEY,'business_id':business_id}))
+
+class ChangeCard(View):
+
+    def post(self, request, *args, **kwargs):
+        # if not check_permission(request=request, permission='update_subscription'):
+        #    return HttpResponseRedirect(redirect_to=reverse('login'))
+
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+        business_id = business.id
+
+        # stripeToken = request.POST.get('stripeToken')
+        stripeToken = json.loads(request.body.decode()).get('stripeToken')
+
+
+        response = update_customer_source(newtoken=stripeToken, localcustomer=business.stripecustomer)
+        if response in ERRORS:
+            errors = {'message':'Error al procesar su peticion. Intente de nuevo'}
+            return JsonResponse(status=500, safe=False, data=errors)
+
+        return BusinessView().get(request,*args, **kwargs)

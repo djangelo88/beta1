@@ -1,0 +1,119 @@
+{% extends 'base2.html' %}
+{% load staticfiles %}
+{% load static %}
+{% load i18n admin_static %}
+
+
+{% block title %} {{ model }} {% endblock %}
+{% block item_customers %} active {% endblock %}
+
+{% block content_header %}
+    <h1>
+        <i class="fa fa-users"></i> {{ model }}
+        <small class="hidden-xs">{{ description }}</small>
+    </h1>
+    <ol class="breadcrumb no-print">
+        <li><a href="#"><i class="fa fa-users"></i> Home</a></li>
+        <li class="active">{{ model }}</li>
+    </ol>
+
+{% endblock %}
+
+<!-- Main content -->
+
+{% block main_content %}
+
+    <div class="clearfix no-print">
+        <div class="pull-right crud-actions">
+
+            <button type="button" class="btn btn-github add no-print" data-toggle="modal"
+                    data-target="#newCustomerModal"
+                    data-modal-title="Nuevo cliente">
+                <i class="fa fa-plus"></i> <span class="hidden-xs">Nuevo cliente</span>
+            </button>
+            <a href="#" class="btn btn-github btn-print no-print"> <i class="fa fa-print"></i> <span class="hidden-xs"> Imprimir</span></a>
+
+            {#            <a href="" class="btn btn-github no-print "> <i class="fa fa-file-text"></i> <span#}
+            {#                    class="hidden-xs"> Exportar a PDF</span></a>#}
+            <a href="{% url 'customers_export' %}" class="btn btn-github no-print "> <i class="fa fa-file-excel-o"></i> <span
+                    class="hidden-xs"> Exportar a Excel</span></a>
+
+
+            <button class="btn btn-github no-print " id="importBtn"
+                    data-modal-title="Importar archivo .csv"><i class="fa fa-file-excel-o"></i> <span
+                    class="hidden-xs"> Importar contactos</span></button>
+            {#            <a href="{% url 'customers_import' %}" class="btn btn-github no-print "> <i class="fa fa-file-excel-o"></i> <span#}
+            {#                    class="hidden-xs"> Importar contactos</span></a>#}
+        </div>
+    </div>
+    <div class="importContainer  col-xs-12 col-sm-4 pull-right no-padding" style="display: none" >
+            <div class="client-detail" style="margin: 0"></div>
+    </div>
+    <div class="clearfix"></div>
+    <div id="tableContainer" class="clearfix no-print">
+        {% include 'base/customer/table.html' %}
+    </div>
+
+    <script>
+
+        $(document).ready(function () {
+            $.CustomDatatableFormObject.modal_dialog_id = "#newCustomerModal";
+            $.CustomDatatableFormObject.model_name = "customers";
+            $.CustomDatatableFormObject.datatable_container = "#tableContainer";
+            $.CustomDatatableFormObject.datatable_id = "#customers_table";
+            $.CustomDatatableFormObject.form_id = "#newCustomerForm";
+
+        });
+
+        $(".btn-print").click(function () {
+
+            $.when($.get({
+                url:{% url 'customers' %},
+                data: {q: 'print'},
+                success: function (response) {
+                    $("div.print").html(response);
+                    {#                    console.debug(response);#}
+                }
+            }))
+                    .done(function () {
+                        return window.print();
+                    });
+
+
+        });
+        {#     {% include 'base/customer/import.html' %}#}
+        {% url 'customers_import' as url_import %}
+        $("#importBtn").click(function () {
+{#            $(".importContainer").toggleClass('collapse');#}
+            $(".importContainer").animate({opacity:'toggle',height:'toggle'},'slow');
+                 $(".client-detail").empty();
+                $.get({
+                    url: '{{ url_import }}',
+                    success: function (response) {
+                        $(".client-detail").append(response);
+                        $(".importContainer input").css('display', 'inline-block');
+                    }
+                })
+
+
+        });
+
+
+    </script>
+    {% include 'base/includes/modalFormCusomer.html' %}
+
+
+
+{% endblock %}
+
+{% block js_block_one %}
+
+{% endblock %}
+{% block css_block %}
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/datatables/dataTables.bootstrap.css' %}"/>
+{% endblock %}
+
+{% block print_block %}
+    {% include 'base/customer/customers_print_view.html' %}
+{% endblock %}
+

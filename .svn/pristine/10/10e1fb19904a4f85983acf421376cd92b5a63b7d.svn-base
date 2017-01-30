@@ -1,0 +1,52 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()"><i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+            <form class="form-floating caterfull-form" novalidate="novalidate">
+                <fieldset>
+                    <legend>
+                        <span>
+                            <i class="md md-photo grey lighten-1 icon-color"></i>
+
+                        </span>
+                        <span ng-bind-html="item.icon">  </span> {{ settings.cmd }} {{ settings.singular }}
+                    </legend>
+                </fieldset>
+            </form>
+            <form class="form-floating" novalidate="" ng-submit="saveStaffItem(staffItem)" ng-controller="WebsiteController">
+                <!-- <div class="grey lighten-4 text-center m-b-5">
+                    <i class="md md-photo fa-5x" style="line-height: 5;"></i>
+                </div>  -->
+                <img src="{{ item.image }}" alt="" style="max-width: 300px;" class="thumbnail"/>
+
+                <div class="btn btn-info" ngf-select ng-model="$parent.staffphoto" required="">Upload Image</div>
+                <div class="form-group filled">
+                    <label class="control-label ">Servicio</label>
+                    <input type="text" class="form-control" ng-model="staffItem.service">
+                </div>
+                <div class="form-group filled">
+                    <label class="control-label ">Precio</label>
+                    <input type="number" class="form-control" ng-model="staffItem.price">
+                </div>
+                <div class="form-group filled">
+                    <label class="control-label ">Descripción</label>
+                    <textarea class="form-control vertical" rows="3" ng-model="staffItem.description"></textarea>
+                </div>
+
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" ng-click="saveItemBtn()">Save</button>
+                    <button type="submit" class="btn btn-primary" ng-click="saveAndAddItemBtn()">Save and add
+                        other
+                    </button>
+                <!--    <button type="reset" class="btn btn-default">Cancel</button> -->
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

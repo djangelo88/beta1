@@ -1,0 +1,154 @@
+from datetime import timedelta
+from django.db import transaction
+from django.db.models.aggregates import Count
+from django.db.models.fields import DateTimeField, DateField
+from django.http.response import HttpResponse, JsonResponse
+from django.views.generic.base import View
+from base.api.forms import InvoiceEventForm
+from base.api.util import serialize_query
+from base.model_invoice import Invoice, Proposal, Event
+from base.models import Business
+from django.utils import formats
+
+import json
+from base.tasks import start_thread, task_send_invoice, OK
+from base.util import check_permission
+
+
+class InvoiceView(View):
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        business = Business.objects.filter(owner=user).first()
+
+        if kwargs.get('id'):
+            id = kwargs.get('id')
+
+            inv = Invoice.objects.get_by_id(id=id, business=business)
+
+            if inv in Invoice.objects.ERRORS:
+                return HttpResponse(status=404)
+            data = inv.proposal.serialize(fields=Proposal.default_fields + ['invoice'])
+        else:
+            # proposal = Proposal.objects.annotate(ni=Count('invoice')).filter(ni=1).\
+            #     filter(event__customer__business=business).filter(invoice__deleted=True)
+            invocies = Proposal.objects.get_invoices_all(business=business)
+
+            data = serialize_query(invocies, fields=Proposal.default_fields + ['invoice'])
+
+        return JsonResponse(safe=False, data=data)
+
+    def prepre_data(self, data):
+        result = {}
+        evento = data.get('event')
+        address = evento.get('address')
+        customer = evento.get('customer')
+        invoice = data.get('invoice')
+        event_data = {}
+        event_data['due_date'] = invoice.get('due_date')
+        due_date = DateTimeField().to_python(event_data['due_date'])
+        event_data['due_date'] = formats.date_format(due_date, 'Y-m-d')
+        event_data['name'] = evento.get('name')
+        event_data['customer'] = customer.get('id')
+        event_data['comments'] = data.get('comments')
+        event_data['first_line'] = address.get('first_line')
+        event_data['second_line'] = address.get('second_line')
+        event_data['zip'] = address.get('zip')
+        event_data['city'] = address.get('city')
+        event_data['city'] = address.get('city')
+        event_data['state'] = address.get('state').get('id')
+        # print(evento.get('event_date'))
+        event_date = DateTimeField().to_python(evento.get('event_date')).date()
+        event_date = DateTimeField().to_python(event_date.isoformat())
+        event_time = DateTimeField().to_python(evento.get('event_time'))
+        delta = timedelta(hours=event_time.hour, minutes=event_time.minute)
+        print(event_date)
+        event_date = event_date + delta
+        event_data['event_date'] = formats.date_format(event_date, 'Y-m-d H:m')
+        result['event_data'] = event_data
+        result['address'] = address
+        return result
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        business = Business.objects.filter(owner=user).first()
+        data = json.loads(request.body.decode())
+        send = data.get('send')
+        prepared_data = self.prepre_data(data=data)
+        event_data = prepared_data['event_data']
+        # print(event_data)
+        items = data.get('items')
+
+        eventform = InvoiceEventForm(event_data)
+        if eventform.is_valid():
+            # print(eventform.cleaned_data)
+            # respones = Event.objects.create_or_update_event(data=eventform.cleaned_data)
+            try:
+                with transaction.atomic():
+                    invoice = None
+                    if data.get('invoice').get('id'):
+                        id = data.get('invoice').get('id')
+                        invoice = Invoice.objects.get_by_id(id=id, business=business)
+
+                    response = Event.objects.create_or_update_invoice_from_event(data=eventform.cleaned_data, invoice=invoice)
+                    if response in Event.objects.ERRORS:
+                        raise RuntimeError()
+                    print(items)
+                    response.add_items_list(items)
+                    if send:
+                        old_status = response.status
+                        response.prepare_to_send()
+                        start_thread(task_send_invoice, response, old_status)
+                    return JsonResponse(data=response.proposal.serialize(fields=Proposal.default_fields + ['invoice']), safe=False)
+            except Exception as e:
+                print(e)
+                return JsonResponse(data={'global':[{'message':'Lo sentimos'}]},status=400, safe=False)
+        else:
+            print(eventform.errors.as_json())
+            print('meti la pata')
+            return JsonResponse(data=eventform.errors.as_json(),status=400, safe=False)
+
+class InvoiceDeleteView(View):
+
+    def post(self, request, *args, **kwargs):
+
+        if not check_permission(request=request, permission='delete_invoice'):
+           return HttpResponse(status=401)
+        user = request.user
+        business = Business.objects.filter(owner=user).first()
+
+        data = json.loads(request.body.decode())
+
+
+
+        ids = [inv.get('invoice').get('id') for inv in data]
+
+        try:
+            deleted = Invoice.objects.bulk_delete(ids_list=ids, business=business)
+            return JsonResponse(status=200, data={'deleted':deleted})
+        except Exception as e:
+            print(e)
+            return HttpResponse(status=400)
+
+class InvoiceEmailSend(View):
+
+    def post(self, request, *arg, **kwargs):
+        if not check_permission(request=request, permission='mail_invoice'):
+           return HttpResponse(status=401)
+        id = kwargs.get('id')
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+
+        invoice = Invoice.objects.get_by_id(id=id, business=business)
+        if invoice in Invoice.objects.ERRORS or not invoice.may_send_email():
+            return HttpResponse(status=404)
+
+        old_status = invoice.status
+        invoice.prepare_to_send()
+
+        response = task_send_invoice(invoice, old_status=old_status)
+
+        if response == OK:
+            return JsonResponse(status=200, data=invoice.proposal.serialize(Proposal.default_fields+['invoice']), safe=False)
+        else:
+            return JsonResponse(status=500, data={})

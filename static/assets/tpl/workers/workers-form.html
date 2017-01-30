@@ -1,0 +1,64 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()"><i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+
+            <form class="form-floating caterfull-form" ng-submit="saveItem(item)" novalidate="novalidate">
+                <fieldset>
+                    <legend>
+                        <span ng-bind-html="item.icon"></span> {{ cmd }} {{ settings.singular }}</legend>
+                    <div class="form-group filled col-sm-9 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Nombre <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.name" ng-disabled="!item.editing"
+                               required>
+                    </div>
+                     <div class="form-group filled col-sm-9 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Apellidos <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.last_name" ng-disabled="!item.editing"
+                               required>
+                    </div>
+                     <div class="form-group filled col-sm-9 no-padding-right-responsive">
+<label class="control-label correct-margin-left">Puesto de Trabajo<span class="required-field">*</span></label>
+                          <ui-select ng-model="item.position" theme="select2"
+                                           placeholder="Seleccione un Puesto de Trabajo"
+                                           search-enabled="true" required ng-disabled="!item.editing">
+                                    <ui-select-match placeholder=" ">
+                                        {{$select.selected.description}}
+                                    </ui-select-match>
+                                    <ui-select-choices repeat="elem in positions | filter: $select.search">
+                                        <div ng-bind-html="elem.description | highlight: $select.search"></div>
+                                    </ui-select-choices>
+                                </ui-select>
+
+
+                    <!---    <label class="control-label correct-margin-left">Puesto de Trabajo<span class="required-field">*</span></label>
+                       <select class="form-control" ng-disabled="!item.editing" ng-model="item.position.id"
+                                ng-options="p.id as p.description for p in positions">
+                        </select>-->
+                    </div>
+
+                    <div class="clearfix"></div>
+                </fieldset>
+
+                <fieldset>
+                   <!-- Aqui -->
+                    <div class="clearfix"></div>
+                    <div class="clearfix"></div>
+
+                    <div class="form-group ">
+                        <button type="submit" class="btn btn-lg btn-primary" ng-show="item.creating"
+                                ng-click="saveAndAdd(true)">Save & add other
+                        </button>
+                        <button type="submit" class="btn btn-lg btn-primary" ng-hide="!item.editing"
+                                ng-click="saveAndAdd(false)">Save
+                        </button>
+                    </div>
+                </fieldset>
+            </form>
+
+        </div>
+    </div>
+</div>

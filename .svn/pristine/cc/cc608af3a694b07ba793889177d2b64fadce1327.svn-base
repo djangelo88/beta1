@@ -1,0 +1,36 @@
+<div class="well white m-t-30">
+    <form class="form-floating  ">
+        <fieldset>
+            <legend class="subtitle">General elements</legend>
+            <div class="form-group filled">
+                <label class="control-label">Nombre del negocio</label>
+                <input type="text" class="form-control" ng-model="website.basic_info.name">
+            </div>
+            <div ng-controller="UploadController">
+
+                <div class="form-group">
+                    <label for="inputEmail" class="control-label">Logotipo</label>
+
+                    <div class="btn btn-info" ng-multiple="true" ngf-select ng-model="files">Upload logo</div>
+                </div>
+
+
+            </div>
+            <div class="form-group filled">
+                <label for="textArea" class="control-label">Descripción</label>
+                        <textarea class="form-control vertical " rows="3" id="textArea"
+                                  ng-model="website.basic_info.description"></textarea>
+                <span class="help-block">Help.</span>
+            </div>
+
+
+            <div class="form-group pull-right">
+                <button type="submit" wz-previous class="btn btn-default">Prev</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" wz-next class="btn btn-primary">Save and continue</button>
+
+            </div>
+
+        </fieldset>
+    </form>
+</div>

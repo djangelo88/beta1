@@ -1,0 +1,20 @@
+/**
+ * Created by Hector on 12/01/2017.
+ */
+app.factory('ProfileService', ['$rootScope', '$filter', '$http', 'BASE_URL', function ($rootScope, $filter, $http, BASE_URL) {
+
+    //var _baseURL = 'http://app.caterfull.com:8000/api';
+    var _get = function (model) {
+        return $http.get(BASE_URL + 'business');
+    };
+
+
+
+
+    return {
+        get: _get,
+        baseUrl: BASE_URL
+    };
+
+
+}]);

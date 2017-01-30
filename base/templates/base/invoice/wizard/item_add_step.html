@@ -1,0 +1,80 @@
+{% load staticfiles %}
+<script src="{% static 'js/jquery.js' %}"></script>
+<button id="add_item" class="btn btn-success pull-right add"
+        data-toggle="modal"
+        data-target="#itemModal"
+        data-modal-title="Nuevo item"><i class="fa fa-plus"></i> Agregar Item
+</button>
+<div class="clearfix"></div>
+<div id="items_container" data-url-load="{% url 'proposal_items' proposal.id %}">
+    {% include 'base/invoice/includes/items.html' with items=proposal.get_items %}
+</div>
+<input type="hidden" id="model_name" value="{{ model }}"/>
+<input type="hidden" id="taxes_value" value="{{ TAX }}"/>
+{#<div id="form_container" hidden>#}
+{#    {% include 'base/invoice/includes/item_form.html' %}#}
+{#</div>#}
+
+
+<script>
+    $(document).ready(function () {
+
+        $.CustomDatatableFormObject = {
+
+            model_name: "",
+            model_id: -1,
+            get_url_base: function () {
+                return "/" + this.model_name + "/"
+            },
+            get_url_add: function () {
+                if (this.add == '')
+                    return "/" + this.model_name + "/add"
+                return "/" + this.model_name + "/" + this.add;
+            },
+            get_url_edit: function () {
+                if (this.edit == '')
+                    return "/" + this.model_name + "/edit/" + this.model_id + "/";
+                return "/" + this.model_name + "/" + this.edit + "/" + this.model_id + "/";
+
+            },
+            get_url_delete: function () {
+                return "/" + this.model_name + "/delete/" + this.model_id + "/"
+            },
+            set_url_add: function (url) {
+                this.add = url;
+            },
+            set_url_edit: function (url) {
+                this.edit = url;
+            },
+            datatable_container: "",
+            datatable_id: "",
+            modal_dialog_id: "",
+            form_id: "",
+            add: "",
+            edit: "",
+            fn_callback: "",
+            has_fn_callback: ""
+
+        };
+
+        $.CustomDatatableFormObject.modal_dialog_id = "#itemModal";
+        $.CustomDatatableFormObject.model_name = $("#model_name").val();
+        //$.CustomDatatableFormObject.datatable_container = "#tableContainer";
+        //$.CustomDatatableFormObject.datatable_id = "#customers_table";
+        $.CustomDatatableFormObject.form_id = "#item_form";
+
+
+
+    });
+
+</script>
+<script src="{% static 'base/js/invoice/item_form.js' %}"></script>
+{% include 'base/includes/modalFormItems.html' %}
+
+
+
+
+
+
+
+

@@ -1,0 +1,81 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()">
+            <i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+            <form class="form-floating caterfull-form" ng-submit="saveItem(item)" novalidate="novalidate">
+                <fieldset>
+                    <legend>
+                        <span ng-bind-html="item.icon"></span> {{ cmd }} {{ settings.singular }}</legend>
+                    <div class="form-group filled col-sm-9 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Nombre <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.name" ng-disabled="!item.editing"
+                               required>
+                    </div>
+                    <div class="form-group filled col-sm-9 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Descripcion <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.description" ng-disabled="!item.editing"
+                               required>
+                    </div>
+                    <div class="form-group filled col-sm-9 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Tarifa Horaria <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.tarifa_horaria" ng-disabled="!item.editing"
+                               required>
+                    </div>
+
+                    <div class="clearfix"></div>
+                </fieldset>
+                <fieldset>
+   <div ng-controller="ServicesController" class="form-group">
+    <div class="table-responsive well no-padding white no-margin">
+        <h3 class="table-title">Asigne Trabajadores</h3>
+        <table class="table table-full m-b-60" id="table-area-1" fsm-big-data="data of data take 30">
+            <thead>
+            <tr fsm-sticky-header scroll-body="'#table-area-1'" scroll-stop="64">
+                <th><input type="checkbox" class="relative"  ng-click="checkAll()"/></th>
+                <th fsm-sort="puesto">Nombre</th>
+                <th fsm-sort="puesto">Apellidos</th>
+                <th fsm-sort="puesto">Puesto de Trabajo</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="(key, worker) in data1" ng-click="worker.selected=!worker.selected">
+                <td><input type="checkbox" name="worker" value="{{ worker.id }}" class="relative" ng-model="worker.selected" ng-click="checkWorker(item, worker, $event)"/></td>
+                <td>
+                    {{ worker.name }}
+                </td>
+                <td>
+                    {{ worker.last_name }}
+                </td>
+                <td>
+                    {{ worker.position.description }}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+                </fieldset>
+                <fieldset>
+                   <!-- Aqui -->
+                    <div class="clearfix"></div>
+                    <div class="clearfix"></div>
+
+                    <div class="form-group ">
+                        <button type="submit" class="btn btn-lg btn-primary" ng-show="item.creating"
+                                ng-click="saveAndAdd(true)">Save & add other
+                        </button>
+                        <button type="submit" class="btn btn-lg btn-primary" ng-hide="!item.editing"
+                                ng-click="saveAndAdd(false)">Save
+                        </button>
+                    </div>
+                </fieldset>
+            </form>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,51 @@
+<div class="well white m-t-30">
+    <form class="form-floating  ">
+        <fieldset>
+            <legend class="subtitle">Site Gallery</legend>
+            <div class="form-group filled col-md-7">
+                <label for="textArea" class="control-label  correct-margin-left">Descripción</label>
+                <textarea class="form-control vertical " rows="3" ng-bind="website.gallery.comments"></textarea>
+                <span class="help-block">Help.</span>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend class=" subtitle">Images
+                    <button class="btn btn-sm btn-primary m-l-30" ng-click="createItem()"><i class="md md-add"></i></button>
+            </legend>
+            <div class="clearfix m-t-30 card-container">
+            <div class="col-md-3" ng-repeat="(key,photo) in website.gallery.photo">
+                <div class="card bordered gallery-card">
+                    <div class="card-image ">
+                        <img src="{{ photo.image }}"/>
+                        <span class="card-title">{{ photo.name }}</span>
+                    </div>
+                    <div class="card-content" style="min-height: 65px">
+                        <p>{{ photo.description }}</p>
+                    </div>
+                    <div class="card-action clearfix">
+                        <span href="" class="btn btn-link btn-icon" ng-if="photo.asbackground" >
+                            <i class="md md-image  " ></i>
+                            <div class="ripple-wrapper"></div>
+                        </span>
+                        <div class="pull-right">
+                            <button class="btn btn-link btn-icon btn-sm "><i class="md md-edit"> </i></button>
+                            <button class="btn btn-link btn-icon btn-sm "><i class="md md-delete"></i></button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+
+
+            <div class="clearfix"></div>
+            <div class="form-group text-center">
+                <button type="submit" wz-previous class="btn btn-default">Prev</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" wz-next class="btn btn-primary">Save and continue</button>
+            </div>
+        </fieldset>
+
+    </form>
+</div>

@@ -1,0 +1,216 @@
+import json
+from django.http.response import JsonResponse, HttpResponse
+from django.views.generic.base import View
+from base.models import Business
+from business_site.forms import BasicInfoForm, ContactUsForm, LinksForm, GalleryForm
+from business_site.models import Website, BasicInfo, ContactUs, Links, Gallery, Photo
+
+__author__ = 'maykel'
+
+class AllWebsiteData(View):
+    def get(self, request, *args, **kwargs):
+        w = Website.objects.get_website_by_user(request.user)
+        if w:
+            data = w.serialize()
+        else:
+            return JsonResponse({'error':'No tiene website'}, safe=False, status=200)
+        return JsonResponse(data, safe=False, status=200)
+
+#Select template and create website if not was created
+class TemplateVew(View):
+    def post(self, request, *args, **kwargs):
+        w = Website.objects.get_website_by_user(request.user)
+        id_template_selected = 1
+        if not w:
+            w = Website()
+            w.status = 0
+            w.business = Business.objects.get_business_by_user(request.user)
+        w.template = id_template_selected
+        try:
+            w.save()
+            data_ = {'template': w.template}
+            return JsonResponse(data_, safe=False, status=200)
+        except:
+             return JsonResponse({'errors': 'Error al salvar los datos.'}, safe=False, status=500)
+
+class WebsiteBasics(View):
+    form_class = BasicInfoForm
+    def post(self, request, *args, **kwargs):
+        data = (json.loads(request.body.decode()))
+        form = self.form_class(data)
+        w = Website.objects.get_website_by_user(request.user)
+        bu = Business.objects.filter(owner=request.user).first()
+        if form.is_valid():
+            b = BasicInfo.objects.filter(website=w).first()
+            if not b:
+                b = BasicInfo()
+            else:
+                if not b.logo:
+                    b.logo = bu.logo
+            b.description = data.get('description')
+            try:
+                b.save()
+                data = {'description': b.description, 'logo': b.logo._get_url()}
+                return JsonResponse(data, safe=False, status=200)
+            except:
+                return JsonResponse({'error': 'Error al salvar'}, safe=False, status=500)
+        else:
+            return JsonResponse({'error': form.errors}, safe=False, status=400)
+
+class LogoSave(View):
+    def post(self, request, *args, **kwargs):
+        w = Website.objects.get_website_by_user(request.user)
+        if w:
+            if request.FILES:
+                b = BasicInfo.objects.filter(website=w).first()
+                if not b:
+                    b = BasicInfo()
+                b.logo = request.FILES.get('file')
+                try:
+                    b.save()
+                    data = {'logo':b.logo._get_url()}
+                    return JsonResponse(data, safe=False, status=200)
+                except:
+                    #TODO:Validar extension de las archivos
+                    return JsonResponse({'error': 'Error salvando los datos'}, safe=False, status=500)
+            else:
+                return JsonResponse({'error': 'No imagen'}, safe=False, status=400)
+class PhotoGallerySave(View):
+    def post(self, request, *args, **kwargs):
+        w = Website.objects.get_website_by_user(request.user)
+        data = (json.loads(request.body.decode()))
+        if w:
+            if request.FILES:
+                g = Gallery.objects.filter(website=w).first()
+                if not g:
+                    g = Gallery()
+                    try:
+                        g.save()
+                    except:
+                        return JsonResponse({'errors': 'Error al salvar los datos.'}, safe=False, status=500)
+                p = Photo.objects.filter(id=data.get('id')).first()
+                if not p:
+                    p=Photo()
+                p.image = request.FILES.get('file')
+                p.gallery = g
+                try:
+                    p.save()
+                    data_ = {'id':p.id, 'imagen':p.logo._get_url()}
+                    return JsonResponse(data_, safe=False, status=200)
+                except:
+                    #TODO:Validar extension de las archivos
+                    return JsonResponse({'error': 'Error salvando los datos'}, safe=False, status=500)
+            else:
+                return JsonResponse({'error': 'No imagen'}, safe=False, status=400)
+class DataPhotoGallerySave(View):
+    def post(self, request, *args, **kwargs):
+        w = Website.objects.get_website_by_user(request.user)
+        data = (json.loads(request.body.decode()))
+
+        if w:
+            g = Gallery.objects.filter(website=w).first()
+            if not g:
+                g = Gallery()
+            try:
+                g.save()
+            except:
+                return JsonResponse({'errors': 'Error al salvar los datos.'}, safe=False, status=500)
+
+            p = Photo.objects.filter(id=data.get('id')).first()
+            if not p:
+                p=Photo()
+            p.name = data.get('name')
+            p.description = data.get('description')
+            p.asbackground = data.get('asbackground')
+            p.gallery = g
+            try:
+                p.save()
+                data_ = {'id':p.id,'name':p.name,'description':p.description,
+                         'asbackground':p.asbackground,'imagen':p.logo._get_url()}
+                return JsonResponse(data_, safe=False, status=200)
+            except:
+                #TODO:Validar extension de las archivos
+                return JsonResponse({'error': 'Error salvando los datos'}, safe=False, status=500)
+
+class Gallery(View):
+    def post(self, request, *args, **kwargs):
+        w = Website.objects.get_website_by_user(request.user)
+        data = (json.loads(request.body.decode()))
+        if w:
+            g = Gallery.objects.filter(website=w).first()
+            if not g:
+                g = Gallery()
+                g.website = w
+            g.comments = data.get('comments')
+            try:
+                g.save()
+            except:
+                return JsonResponse({'errors': 'Error al salvar los datos.'}, safe=False, status=500)
+        else:
+            return JsonResponse({'errors': 'Error al salvar los datos.'}, safe=False, status=500)
+
+class ContactUsView(View):
+    form_class = ContactUsForm
+    def post(self, request, *args, **kwargs):
+        w = Website.objects.get_website_by_user(request.user)
+        data = (json.loads(request.body.decode()))
+        if w:
+            form = self.form_class(data)
+            if form.is_valid():
+                cont = ContactUs.objects.filter(website=w).first()
+                if not cont:
+                    cont = ContactUs()
+                    cont.website = w
+                cont.address = data.get('address')
+                cont.email = data.get('email')
+                cont.phone = data.get('phone')
+                try:
+                    cont.save()
+                    data_ = {'address': cont.address, 'email': cont.email, 'phone': cont.phone}
+                    return JsonResponse(data_, safe=False, status=200)
+                except Exception as e:
+                    return JsonResponse({'errors': 'Error salvando los datos'}, safe=False, status=500)
+
+            else:
+                return JsonResponse({'errors': form.errors}, safe=False, status=400)
+class SocialNetworks(View):
+    form_class = LinksForm
+    def post(self, request, *args, **kwargs):
+        w = Website.objects.get_website_by_user(request.user)
+        data = (json.loads(request.body.decode()))
+        if w:
+            form = self.form_class(data)
+            if form.is_valid():
+                link = Links.objects.filter(website=w).first()
+                if not link:
+                    link = Links()
+                    link.website = w
+                link.twitter = data.get('twitter')
+                link.instagram = data.get('instagram')
+                link.facebookpage = data.get('facebookpage')
+                link.yelp = data.get('yelp')
+                link.gplus = data.get('gplus')
+                try:
+                    link.save()
+                    data_={'twitter': link.twitter,'instagram':link.instagram,'facebookpage':link.facebookpage, 'yelp':link.yelp, 'glpus':link.gplus}
+                    return JsonResponse(data_, safe=False, status=200)
+                except:
+                    return JsonResponse({'errors': 'Error al salvar los datos'}, safe=False, status=500)
+                #el estado de creacion de la website
+            else:
+                return JsonResponse({'errors': form.errors}, safe=False, status=400)
+
+class UnpublishPublish(View):
+    def get(self, request):
+        w = Website.objects.get_website_by_user(request.user)
+        data = (json.loads(request.body.decode()))
+        if data.get('status'):
+            w.status = 0
+        else:
+            w.status = 1
+        try:
+            w.save()
+            data_={'status': w.status}
+            return JsonResponse(data_, safe=False, status=200)
+        except:
+            return JsonResponse({'errors':'Error al salvar los datos.'}, safe=False, status=500)

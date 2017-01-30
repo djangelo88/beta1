@@ -1,0 +1,141 @@
+app.controller('CalendarController', ['$scope', '$window', '$aside', 'CalendarService', 'NotificationService', 'AlertConfirmService', function ($scope, $window, $aside, CalendarService, NotificationService, AlertConfirmService) {
+
+
+        $scope.uiConfig = {
+            calendar: {
+                height: 450,
+                editable: true,
+                header: {
+                    left: 'month basicWeek basicDay agendaWeek agendaDay',
+                    center: 'title',
+                    right: 'today prev,next'
+                },
+                dayClick: $scope.alertEventOnClick,
+                eventDrop: $scope.alertOnDrop,
+                eventResize: $scope.alertOnResize
+            }
+        };
+
+        $scope.alertEventOnClick = function(){}
+        $scope.alertOnDrop = function(){}
+        $scope.alertOnResize = function(){}
+
+        console.log($scope.myCalendar);
+
+
+        // settings
+        $scope.settings = {
+            singular: 'Evento',
+            plural: 'Eventos',
+            cmd: 'Nuevo'
+        };
+        //page
+        $scope.page = {
+            title: 'Listado de eventos',
+            description: 'In most applications you need basic table listings and editing capabilities.' +
+            ' With this app you can create simple admin functionality based on a json web service.',
+            icon: 'md md-group'
+        };
+
+        var formTpl = $aside({
+            scope: $scope,
+            templateUrl: 'static/assets/tpl/calendar/event-view.html',
+            show: false,
+            placement: 'left',
+            backdrop: false,
+            animation: 'am-slide-left'
+
+        });
+        //console.debug($hh);
+        $scope.checkAll = function () {
+            angular.forEach($scope.data, function (item) {
+                item.selected = !item.selected;
+            });
+        };
+        // adding customers data
+        var data = [];
+        CalendarService.getAllEvents()
+            .success(function (data, status, headers, config) {
+
+                angular.forEach(data, function (item) {
+                    item.icon = CalendarService.createIcon(item.status);
+                });
+
+                console.log(data);
+                $scope.data = data;
+
+            });
+
+        $scope.print = function () {
+            return $window.print();
+        }
+        $scope.viewItem = function (item) {
+            if (item) {
+                item.editing = false;
+                $scope.item = item;
+                $scope.item.event_time = item.event_date;
+                $scope.settings.cmd = 'View';
+
+                $scope.settings.wizardEditMode = true;
+
+                //resetAsideForm();
+
+                showForm();
+            }
+        };
+
+        showForm = function () {
+            angular.element('.tooltip').remove();
+            formTpl.show();
+        };
+
+        $scope.remove = function (item) {
+
+            var callbackFn = function () {
+            };
+
+            if (item) {
+                var callbackFn = function () {
+
+                    CalendarService.delete(new Array(item))
+                        .success(function () {
+                            NotificationService.success('', 'Se ha canelado el evento seleccionado');
+                            $scope.data.splice($scope.data.indexOf(item), 1);
+                        }).error(function () {
+                            NotificationService.error('Error', 'Ha existido un error al cancelar el evento seleccionado');
+                        });
+                }
+                AlertConfirmService.basicConfirm("Eliminar", "Confirma que desea cancelar el evento seleccionado?", callbackFn);
+
+            } else {
+
+                callbackFn = function () {
+                    var seleccionados = $scope.data.filter(
+                        function (item) {
+                            return item.selected;
+                        }
+                    );
+                    CalendarService.delete(seleccionados).success(function () {
+                        NotificationService.success('', 'Se han cancelado los eventos seleccionados');
+
+                        for (index in seleccionados) {
+                            $scope.data.splice($scope.data.indexOf(seleccionados[index]), 1);
+                        }
+                    }).error(function () {
+                        NotificationService.error('Error', 'Ha existido un error al cancelar los eventos seleccionados');
+                    });
+                }
+                AlertConfirmService.basicConfirm("Eliminar", "Confirma que desea cancelar los eventos seleccionados?", callbackFn);
+            }
+
+
+        };
+
+
+    }
+    ]
+);
+
+
+
+

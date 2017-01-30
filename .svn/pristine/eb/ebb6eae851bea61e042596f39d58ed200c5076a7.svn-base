@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+{% load staticfiles %}
+{% load widget_tweaks %}
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript" src="{% static 'base/js/jquery.js' %}"></script>
+
+
+    <style>
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h>{{ business.name }}</h>
+    <fieldset>
+        <legend>Platos</legend>
+        <ul>
+        {% for plato in products %}
+            <li class="plato" data-id="{{ plato.id }}">
+                <h2>{{ plato.name }}<input type="checkbox"/></h2>
+                <input class="plato_cant" hidden type="number" value="1" min="1" step="1"/>
+                <div>{{ plato.description }}</div>
+            </li>
+        {% endfor %}
+        </ul>
+    </fieldset>
+    <fieldset>
+        <legend>Servicios</legend>
+        <ul>
+        {% for servicio in services %}
+            <li class="servicio" data-id="{{ servicio.id }}">
+                <h2>{{ servicio.name }}<input type="checkbox"/></h2>
+                <input class="servicio_cant" hidden type="number" value="1" min="0.5" step="0.5"/>
+                <div>{{ servicio.description }}</div>
+            </li>
+        {% endfor %}
+        </ul>
+    </fieldset>
+    <form id="booking_form" action="{% url 'booking_widget' wskb64 %}" method="post">
+        <fieldset>
+            <legend>Datos Personales</legend>
+            <div>
+                <div>
+                Nombre {% render_field form.cliente_name %}
+                </div>
+                <div class="error" id="error_cliente_name"></div>
+
+            </div>
+             <div>
+                 <div>
+                    Apellidos {% render_field form.cliente_last_name %}
+                 </div>
+                 <div class="error" id="error_cliente_name"></div>
+            </div>
+             <div>
+                 <div>
+                    Correo {% render_field form.cliente_email %}
+                 </div>
+                 <div class="error" id="error_cliente_email"></div>
+            </div>
+             <div>
+                 <div>
+                    Telefono {% render_field form.cliente_phone %}
+                 </div>
+                 <div class="error" id="error_cliente_phone"></div>
+            </div>
+{#             <div>#}
+{#                 <div>#}
+{#                    Direccion {% render_field form.cliente_address %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_cliente_address"></div>#}
+{#            </div>#}
+             <div>
+                 <div>
+                    Fecha de nacimineto {% render_field form.cliente_birthday %}
+                </div>
+                 <div class="error fecha" id="error_cliente_birthday"></div>
+            </div>
+            <div>
+                 <div>
+                    Line 1 {% render_field form.cliente_first_line %}
+                </div>
+                 <div class="error" id="error_cliente_first_line"></div>
+            </div>
+            <div>
+                 <div>
+                    Line 2 {% render_field form.cliente_second_line %}
+                </div>
+                 <div class="error" id="error_cliente_second_line"></div>
+            </div>
+            <div>
+                 <div>
+                    Codigo Postal {% render_field form.cliente_zip %}
+                </div>
+                 <div class="error" id="error_cliente_zip"></div>
+            </div>
+            <div>
+                 <div>
+                    Ciudad {% render_field form.cliente_city %}
+                </div>
+                 <div class="error" id="error_cliente_city"></div>
+            </div>
+            <div>
+                 <div>
+                    Pais {% render_field form.cliente_country %}
+                </div>
+                 <div class="error" id="error_cliente_country"></div>
+            </div>
+            <div>
+                 <div>
+                    Estado
+                     <select id="id_cliente_state" name="cliente_state">
+                        <option value="" selected="selected">---------</option>
+                    {% for state in states %}
+                        <option value="{{ state.id }}" class="state_option cliente_country_{{ state.country.id }}">{{ state.name }}</option>
+                     {% endfor %}
+                    </select>
+                </div>
+                 <div class="error" id="error_cliente_country"></div>
+            </div>
+{#            Apellidos <input class="cf-widget-cliente" name="cliente_last_name"/>#}
+{#            Correo <input class="cf-widget-cliente" name="cliente_email"/>#}
+{#            Telefono <input class="cf-widget-cliente" name="cliente_phone"/>#}
+{#            Direccion <input class="cf-widget-cliente" name="cliente_address"/>#}
+{#            Fecha de nacimineto <input class="cf-widget-cliente" name="cliente_birthday"/>#}
+        </fieldset>
+         <fieldset>
+            <legend>Datos del evento</legend>
+               <div>
+                 <div>
+                    Nombre {% render_field form.evento_name %}
+                </div>
+                 <div class="error" id="error_evento_name"></div>
+            </div>
+               <div>
+                 <div>
+                    Fecha {% render_field form.evento_date %}
+                </div>
+                 <div class="error" id="error_evento_date"></div>
+            </div>
+           <div>
+                 <div>
+                    Line 1 {% render_field form.evento_first_line %}
+                </div>
+                 <div class="error" id="error_evento_first_line"></div>
+            </div>
+            <div>
+                 <div>
+                    Line 2 {% render_field form.evento_second_line %}
+                </div>
+                 <div class="error" id="error_evento_second_line"></div>
+            </div>
+            <div>
+                 <div>
+                    Codigo Postal {% render_field form.evento_zip %}
+                </div>
+                 <div class="error" id="error_evento_zip"></div>
+            </div>
+            <div>
+                 <div>
+                    Ciudad {% render_field form.evento_city %}
+                </div>
+                 <div class="error" id="error_evento_city"></div>
+            </div>
+            <div>
+                 <div>
+                    Pais {% render_field form.evento_country %}
+                </div>
+                 <div class="error" id="error_evento_country"></div>
+            </div>
+            <div>
+                 <div>
+                    Estado
+                     <select id="id_cliente_state" name="cliente_state">
+                        <option value="" selected="selected">---------</option>
+                    {% for state in states %}
+                        <option value="{{ state.id }}" class="state_option cliente_country_{{ state.country.id }}">{{ state.name }}</option>
+                     {% endfor %}
+                    </select>
+                </div>
+                 <div class="error" id="error_cliente_country"></div>
+            </div>
+{#            Nombre <input class="cf-widget-evento" name="evento_name"/>#}
+{#            Fecha <input class="cf-widget-evento" name="evento_date"/>#}
+{#            Direccion <input class="cf-widget-evento" name="evento_address"/>#}
+        </fieldset>
+        <input type="hidden" name="platos"/>
+        <input type="hidden" name="servicios"/>
+        <input type="submit" value="Reservar"/>
+    </form>
+    
+<script>
+{#    $('.error').each(function (div) {#}
+{#        console.log($(this));#}
+{#        $(this).html('sdasd');#}
+{#    });#}
+
+    $(document).ready(function(){
+
+{#        $('.plato input[type="checkbox"]').change(function(event){#}
+{#            event.preventDefault();#}
+{#            var checked = (this).checked#}
+{#            ;#}
+{#            console.log($(this).parent());#}
+{#        });#}
+
+        $('.plato').click(function(event){
+{#            event.preventDefault();#}
+           console.log(event);
+           var checkbox = $(this).find('input[type="checkbox"]')[0];
+           var amount =  $($(this).find('input[type="number"]')[0]);
+           if(checkbox.checked){
+               amount.show();
+           }else{
+               amount.hide();
+           }
+{#            console.log(amount.val());#}
+        });
+         $('.servicio').click(function(event){
+{#            event.preventDefault();#}
+           console.log(event);
+           var checkbox = $(this).find('input[type="checkbox"]')[0];
+           var amount =  $($(this).find('input[type="number"]')[0]);
+           if(checkbox.checked){
+               amount.show();
+           }else{
+               amount.hide();
+           }
+{#            console.log(amount.val());#}
+        });
+
+            $('#booking_form').submit(function(event){
+            event.preventDefault();
+            var url = $(this).attr('action');
+            var platos_req = [];
+            $('.plato').each(function(){
+                var checkbox = $(this).find('input[type="checkbox"]')[0];
+                var amount =  $($(this).find('input[type="number"]')[0]);
+               if(checkbox.checked){
+                platos_req.push(
+                    {
+                        id:$(this).attr('data-id'),
+                        amount:amount.val()
+                    }
+                );
+               }
+            });
+            var platos_req_json = (JSON.stringify(platos_req));
+            $('input[name="platos"]').val(platos_req_json);
+
+            var servicios_req = []
+            $('.servicio').each(function(){
+                var checkbox = $(this).find('input[type="checkbox"]')[0];
+                var amount =  $($(this).find('input[type="number"]')[0]);
+               if(checkbox.checked){
+                servicios_req.push(
+                    {
+                        id:$(this).attr('data-id'),
+                        amount:amount.val()
+                    }
+                );
+               }
+            });
+
+            var servicios_req_json = (JSON.stringify(servicios_req));
+            $('input[name="servicios"]').val(servicios_req_json);
+
+                    $.ajax(url, {
+                        method:'POST',
+                        data:$('#booking_form').serialize(),
+                        success:function(response){
+                        console.log(response);
+                        $('.error').each(function(){
+                            $(this).empty();
+                        })
+                    },
+                        error:function(error){
+                           var response = (error.responseJSON);
+                           var response_obj = JSON.parse(response);
+                           console.log(response_obj);
+                           for(var input_error in response_obj){
+                               var error_field_name = 'error_' + input_error;
+                               var message = response_obj[input_error][0].message;
+                               $('#'+error_field_name).html(message);
+                           }
+                        }
+                    });
+
+    {#        $.post(url, $('#booking_form').serialize(), function(response){#}
+    {#            cosole.log(response);#}
+    {#        });#}
+        });
+
+        $('#id_cliente_country').change(function(){
+           var class_name = 'cliente_country_' + $(this).val();
+           $('#id_cliente_state .state_option').hide();
+           $('.'+class_name).show();
+{#           alert($(this).val());#}
+        });
+    });
+
+</script>
+</body>
+
+</html>

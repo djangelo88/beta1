@@ -1,0 +1,12 @@
+.chosen-container-single .chosen-single {
+   padding: 4px 0 0 8px;
+    height: 34px;
+   border-radius: 0px;
+    color: #393939;
+     line-height: 24px;
+}
+
+.chosen-container{
+    font-size: 14px !important;
+    font-family: Roboto-Light;
+}

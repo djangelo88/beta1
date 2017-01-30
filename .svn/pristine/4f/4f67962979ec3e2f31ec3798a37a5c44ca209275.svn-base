@@ -1,0 +1,493 @@
+{% load staticfiles %}
+{% load widget_tweaks %}
+{% load i18n admin_static %}
+{% load app_filters %}
+<div id="website-wizard-container" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+    <div>
+        <ul class="steps">
+            <li class="template {{ template_status }}"
+                data-step="1"
+                data-url="{% url 'template' %}">
+                <span class="step">1</span>
+                <span class="title">
+                    {% ifequal template_status 'complete' %}
+                        <a href="{% url 'template' %}"> Seleccionar plantilla</a>
+                    {% else %}
+                        Seleccionar plantilla
+                    {% endifequal %}
+                </span>
+            </li>
+
+            <li class="basic_information {{ basic_info_status }}"
+                data-step="2"
+                data-url="{% url 'basic_info' %}"
+                data-prev-url="{% url 'template' %}">
+                <span class="step">2</span>
+                <span class="title">
+                    {% ifequal basic_info_status 'complete' %}
+                        <a href="{% url 'basic_info' %}"> Informacion básica</a>
+                    {% else %}
+                        Informacion básica
+                    {% endifequal %}
+
+                </span>
+            </li>
+
+            <li class="gallery {{ gallery_status }}"
+                data-step="3"
+                data-url="{% url 'gallery' %}"
+                data-prev-url="{% url 'basic_info' %}">
+                <span class="step">3</span>
+                <span class="title">
+
+                      {% ifequal gallery_status 'complete' %}
+                          <a href="{% url 'gallery' %}"> Galería de imágenes</a>
+                      {% else %}
+                          Galería de imágenes
+                      {% endifequal %}
+                </span>
+            </li>
+            <li class="menu {{ menu_status }}"
+                data-step="4"
+                data-url="{% url 'menu' %}"
+                data-prev-url="{% url 'gallery' %}">
+                <span class="step">4</span>
+                <span class="title">
+                  {% ifequal menu_status 'complete' %}
+                      <a href="{% url 'menu' %}"> Menu</a>
+                  {% else %}
+                      Menu
+                  {% endifequal %}
+                </span>
+            </li>
+            <li class="social_network {{ links_status }}"
+                data-step="5"
+                data-url="{% url 'links' %}"
+                data-prev-url="{% url 'menu' %}">
+                <span class="step">5</span>
+                <span class="title">
+                     {% ifequal links_status 'complete' %}
+                         <a href="{% url 'links' %}"> Redes sociales</a>
+                     {% else %}
+                         Redes sociales
+                     {% endifequal %}
+                </span>
+            </li>
+            <li class="contactus {{ contactus_status }}"
+                data-step="6" data-url="{% url 'contactus' %}"
+                data-prev-url="{% url 'links' %}">
+                <span class="step">6</span>
+                <span class="title">Información de contacto</span>
+            </li>
+            <li class="staff {{ staff_status }}"
+                data-step="7" data-url="{% url 'staffandservice' %}"
+                data-prev-url="{% url 'contactus' %}">
+                <span class="step">7</span>
+                <span class="title">Staff and services</span>
+            </li>
+        </ul>
+    </div>
+
+    <hr/>
+</div>
+<div class="step-content pos-rel">
+    <div class="step-pane hidden" data-step="1">
+        <div class="container">
+            <h3 class="lighter block green">Seleccione una plantilla para su sitio web</h3>
+        </div>
+        <div id="stepContainer1">
+            <div class="wizard-container">
+                <form action="" method="post" class="template-select">
+                    {% csrf_token %}
+                    <img src="{% static 'images/template.png' %} " alt="" class="thumbnail"/>
+                    {% render_field template_form.template %}
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="step-pane hidden" data-step="2">
+        <div class="container">
+            <h3 class="lighter block green">Información básica de su negocio</h3>
+
+            {#        <p>Complete estos campos para que mas personas se interesen por sus ofertas</p>#}
+        </div>
+        <div id="stepContainer2">
+            <div class="wizard-container">
+                <form class="form-horizontal">
+                    <div class="form-group {% if basic_information_form.logo.errors %} has-error {% endif %}">
+                        <label class="control-label col-xs-12 col-sm-1 no-padding-right text-right">Nombre</label>
+
+                        <div class="col-xs-12 col-sm-4">
+                            <div class="clearfix">
+                                <input type="text" value="{{ business_name }}" disabled class="form-control"/>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </form>
+                <hr/>
+                <form action="" method="post" enctype="multipart/form-data" class="form-horizontal">
+                    {% csrf_token %}
+                    <div class="form-group {% if basic_information_form.logo.errors %} has-error {% endif %}">
+                        <label class="control-label col-xs-12 col-sm-1 no-padding-right text-right">Logo</label>
+
+                        <div class="col-xs-12 col-sm-4">
+                            <img src="/media/{{ logo }}" alt="" class="img-thumbnail website"
+                                 width="{% widthratio 100 100 80 %}"/>
+                            <br/>
+
+                            <div class="clearfix">
+                                {% render_field basic_information_form.logo class="form-control" %}
+                            </div>
+                            <div class="help-block">
+                                <small> Si no agrega ningun logo, se mostrará el logo del negocio especificado en el
+                                    perfil.
+                                </small>
+                            </div>
+                            {% for error in  basic_information_form.logo.errors %}
+                                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="form-group {% if basic_information_form.description.errors %} has-error {% endif %}">
+                        <label class="control-label col-xs-12 col-sm-1 no-padding-right text-right">Descripción</label>
+
+                        <div class="col-xs-12 col-sm-6">
+                            <div class="clearfix">
+                                {% render_field basic_information_form.description class="form-control" rows="5" %}
+                            </div>
+                            {% for error in  basic_information_form.description.errors %}
+                                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="step-pane hidden" data-step="3">
+        <div class="container">
+            <h3 class="lighter block green">Galería de imágenes</h3>
+            <br/>
+        </div>
+        <div id="stepContainer3">
+            <div class=" wizard-container">
+                <form action="" method="post" id="gallery_form" class="form-horizontal">
+                    {% csrf_token %}
+
+                    <div class="form-group {% if links_form.twitter.errors %} has-error {% endif %}">
+                        <label for="comments" class="control-label col-xs-12 col-sm-1 no-padding text-right">Gallery
+                            Comments</label>
+
+                        <div class="col-xs-12 col-sm-4">
+                            <div class="clearfix">
+                            <textarea name="comments" id="comments" cols="30" rows="5" class="form-control"
+                                      placeholder="Some comments about the gallery.">{{ comments }}</textarea>
+                                <input type="hidden" id="as_back" name="as_back" value="0"/>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+                <hr/>
+
+
+                <form id="form_image" action="/site/photos/add" method="post" enctype="multipart/form-data"
+                      class="form-inline  " style=" ">
+                    {% csrf_token %}
+                    <h4>Agregar imagen</h4>
+
+                    <div class="form-group {% if gallery_form.image.errors %} has-error {% endif %}  ">
+                        <label for="">Imagen</label>
+
+                        {% render_field gallery_form.image class="form-control" %}
+                        {# <small class="text-muted col-sm-push-3 ">Se recomienda que la imagen para el background tenga al menos#}
+                        {#                    XxY#}
+                        {#                </small>#}
+                        {% for error in  gallery_form.image.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {#                    <div>#}
+                    {#                        <label for="">current image</label>#}
+                    {#                        <img id="current_img" src=""/>#}
+                    {#                    </div>#}
+
+                    <div id="image_name" class="form-group {% if gallery_form.name.errors %} has-error {% endif %}">
+                        <label for="">nombre</label>
+                        {% render_field gallery_form.name class="form-control" %}
+                        {% for error in  gallery_form.name.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div id="image_description"
+                         class="form-group {% if gallery_form.description.errors %} has-error {% endif %}">
+                        <label for="">description</label>
+                        {% render_field gallery_form.description class="form-control" rows="2" %}
+                        {% for error in  gallery_form.description.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <input type="submit" id="plus" name="plus" data-name="plus" value="+"
+                           class="btn btn-success btn-flat add"/>
+                    <button type="reset" id="reset" name="reset"
+                            class="btn btn-default btn-flat ">Cancelar
+                    </button>
+
+                </form>
+                <img id="current_img" src="" class="img-thumbnail" height="70px"/>
+
+                <hr/>
+                <div id="tableContainer" class="clearfix ">
+                    {% include 'business_site/gallery/table.html' %}
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+    <div class="step-pane hidden" data-step="4">
+        <div class="container ">
+            <h3 class="lighter block green">Menu
+
+            </h3>
+        </div>
+        <button class="btn btn-flat btn-success add pull-right wizard-add-btn"
+                data-toggle="modal" data-modal-title="Nuevo menu"
+                data-target="#genericModal" data-url="{% url 'add_menu' %}" data-current-url="{% url 'menu' %}"
+                data-form="menu_form" data-container="stepContainer4">
+            <i class="fa fa-plus"></i> Nuevo menu
+        </button>
+        <div id="stepContainer4" style="display: inline-block;" class="wizard-container">
+
+            {% include 'business_site/menu/menu_items.html' %}
+
+        </div>
+        {% ifequal menu_status 'active' %}
+            {% include 'base/includes/modalFormGeneric.html' %}
+        {% endifequal %}
+        {#    {% include 'base/includes/modalFormMenu.html' %}#}
+        {#    no descomentariar la sig linea#}
+        {#    <script type="text/javascript" src="{% static 'js/components/menu.form.js' %}"></script>#}
+    </div>
+
+
+    <div class="step-pane hidden" data-step="5">
+        <div class="container">
+            <h3 class="lighter block green">Redes sociales</h3>
+        </div>
+        <div id="stepContainer5">
+            <form action="" method="post" enctype="multipart/form-data" class="form-horizontal">
+                {% csrf_token %}
+                <div class="form-group {% if links_form.twitter.errors %} has-error {% endif %}">
+                    <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right">Twitter</label>
+
+                    <div class="col-xs-12 col-sm-3">
+                        <div class="clearfix">
+                            {% render_field links_form.twitter class="form-control" %}
+                        </div>
+                        {% for error in  links_form.twitter.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                    <a href="http://www.twitter.com" target="_blank" class="external-link"><i class="fa fa-twitter"></i></a>
+                </div>
+
+                <div class="form-group {% if links_form.instagram.errors %} has-error {% endif %}">
+                    <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right">Instagram</label>
+
+                    <div class="col-xs-12 col-sm-3">
+                        <div class="clearfix">
+                            {% render_field links_form.instagram class="form-control" %}
+                        </div>
+                        {% for error in  links_form.instagram.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                    <a href="http://www.instagram.com" target="_blank" class="external-link"> <i
+                            class="fa fa-instagram"></i></a>
+                </div>
+
+                <div class="form-group {% if links_form.facebook_page.errors %} has-error {% endif %}">
+                    <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right">Página de
+                        facebook</label>
+
+                    <div class="col-xs-12 col-sm-3">
+                        <div class="clearfix">
+                            {% render_field links_form.facebook_page class="form-control" %}
+                        </div>
+                        {% for error in  links_form.facebook_page.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <a href="http://www.facebook.com" target="_blank" class="external-link"><i
+                            class="fa fa-facebook"></i></a>
+                </div>
+                <div class="form-group {% if links_form.yelp.errors %} has-error {% endif %}">
+                    <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right">Yelp!</label>
+
+                    <div class="col-xs-12 col-sm-3">
+                        <div class="clearfix">
+                            {% render_field links_form.yelp class="form-control" %}
+                        </div>
+                        {% for error in  links_form.yelp.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <a href="http://www.yelp.com" target="_blank" class="external-link"><i class="fa fa-yelp"></i></a>
+                </div>
+
+                <div class="form-group {% if links_form.gplus.errors %} has-error {% endif %}">
+                    <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right">G+</label>
+
+                    <div class="col-xs-12 col-sm-3">
+                        <div class="clearfix">
+                            {% render_field links_form.gplus class="form-control" %}
+                        </div>
+                        {% for error in  links_form.gplus.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <a href="http://www.gplus.com" target="_blank" class="external-link"> <i
+                            class="fa fa-google-plus"></i></a>
+                </div>
+
+
+                {{ links_form_data }}
+                {#                {{ links_form }}#}
+                {#                <a href="{% url 'gallery' %}"><input type="button" value="Back"></a>#}
+                {#                <input type="submit" value="Next">#}
+            </form>
+
+        </div>
+    </div>
+    <div class="step-pane hidden" data-step="6">
+        <div class="container">
+            <h3 class="lighter block green">Información de contacto</h3>
+        </div>
+        <div id="stepContainer6">
+            <form action="" method="post" class="form-horizontal">
+                {% csrf_token %}
+                <div class="form-group {% if contactus_form.phone.errors %} has-error {% endif %}">
+                    <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right">Teléfono</label>
+
+                    <div class="col-xs-12 col-sm-3">
+                        <div class="clearfix">
+                            {% render_field contactus_form.phone class="form-control" %}
+                        </div>
+                        {% for error in  contactus_form.phone.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                </div>
+                <div class="form-group {% if contactus_form.email.errors %} has-error {% endif %}">
+                    <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right">Correo
+                        electrónico</label>
+
+                    <div class="col-xs-12 col-sm-3">
+                        <div class="clearfix">
+                            {% render_field contactus_form.email class="form-control" %}
+                        </div>
+                        {% for error in  contactus_form.email.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                </div>
+                <div class="form-group {% if contactus_form.address.errors %} has-error {% endif %}">
+                    <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right">Dirección</label>
+
+                    <div class="col-xs-12 col-sm-3">
+                        <div class="clearfix">
+                            {% render_field contactus_form.address class="form-control" rows="5" %}
+                        </div>
+                        {% for error in  contactus_form.address.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                            </div>
+                        {% endfor %}
+                        <br/>
+                        <br/>
+                        <br/>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="step-pane hidden" data-step="7">
+        <div class="container">
+            <h3 class="lighter block green">Staff and services </h3>
+        </div>
+        <div class="wizard-container ">
+
+            <button class="btn  btn-success add pull-right wizard-add-btn"
+                    data-toggle="modal" data-modal-title="Nuevo servicio/staff"
+                    data-target="#genericModal" data-url="{% url 'add_staffandservice' %}"
+                    data-current-url="{% url 'staffandservice' %}" data-form="staff_form"
+                    data-container="stepContainer7">
+                <i class="fa fa-plus"></i> Nuevo servicio/staff
+            </button>
+
+        </div>
+        <div id="stepContainer7" class="">
+            {% include 'business_site/staffandservices/staff_items.html' %}
+        </div>
+        {% ifequal staff_status "active" %}
+
+            {% include 'base/includes/modalFormGeneric.html' %}
+        {% endifequal %}
+        {#     {% include 'base/includes/modalFormStaff.html' %}#}
+        <br/>
+    <p style="color:#ffffff;">f </p>
+    </div>
+</div>
+<hr/>
+<div class="wizard-actions clearfix">
+    <div class="pull-right ">
+        <button class="btn btn-prev" disabled="disabled">
+            <i class="ace-icon fa fa-arrow-left"></i>
+            <span>Anterior</span>
+        </button>
+
+        <button class="btn btn-success btn-next" {% if 'gallery' in request.build_absolute_uri %}id='next'{% endif %}>
+            <span>Siguiente</span>
+            <i class="ace-icon fa fa-arrow-right icon-on-right"></i>
+        </button>
+    </div>
+</div>
+{% block js_block_one %}
+    <script type="text/javascript" src="{% static 'base/js/website/wizard.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/ajaxforms.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/itemprice.js' %}"></script>
+{% endblock %}
+

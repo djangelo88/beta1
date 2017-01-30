@@ -1,0 +1,229 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()"><i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+
+            <form class="form-floating caterfull-form" novalidate="novalidate">
+                <fieldset>
+                    <legend>
+                        <span ng-show="!item.icon">
+                        <i class="md md-assignment  grey lighten-1 icon-color"></i></span>
+                        <span ng-bind-html="item.icon">  </span> {{ cmd }} {{ settings.singular }}</legend>
+                </fieldset>
+            </form>
+
+            <wizard edit-mode="true">
+                <wz-step wz-title="Evento">
+                    <form class="form-floating " ng-controller="ProposalsController" ng-submit="saveItem(item)"
+                          novalidate="novalidate" style="clear: both;">
+                        <fieldset class="clearfix">
+                            <legend class="subtitle">Datos del evento</legend>
+                            <div class="form-group filled">
+                                <label class="control-label">Nombre del evento <span
+                                        class="required-field">*</span></label>
+                                <input type="text" class="form-control" ng-model="item.event.name" required="">
+                            </div>
+                            <div class="form-group col-sm-6 no-padding-left ">
+                                <div class="input-group">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" ng-model="item.event.event_date"
+                                                   data-autoclose="1" placeholder="Date"
+                                                   bs-datepicker>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input type="text" class="form-control" ng-model="item.event.event_time"
+                                                   data-autoclose="1" placeholder="Time"
+                                                   bs-timepicker>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group col-sm-6 no-padding-right" id="proposal_client">
+
+                                <ui-select ng-model="item.event.customer" theme="select2" title="Seleccione un cliente"
+                                           search-enabled="true">
+                                    <ui-select-match placeholder="Cliente">
+                                        {{$select.selected.firs_name}}  </ui-select-match>
+                                    <ui-select-choices repeat="elem in clients | filter: $select.search">
+                                        <div ng-bind-html="elem.first_name | highlight: $select.search"></div>
+                                        <small ng-bind-html="elem.email | highlight: $select.search"></small>
+                                    </ui-select-choices>
+                                </ui-select>
+                            </div>
+                            <div class="clearfix"></div>
+                        </fieldset>
+
+                        <address-block address="item.event.address" validation_errors="validation_errors"
+                                       editing="item.editing"></address-block>
+                        <fieldset>
+                            <div class="form-group filled">
+                                <label class="control-label">Comments</label>
+                                <textarea class="form-control vertical" rows="3" ng-model="item.comments"
+                                          ng-disabled="!item.editing"></textarea>
+                            </div>
+
+                            <div class="form-group pull-right">
+                                <button type="submit" class="btn btn-primary">Aceptar y continuar</button>
+                                <!-- <button type="reset" class="btn btn-default">Cancel</button> -->
+                            </div>
+
+                        </fieldset>
+
+                    </form>
+                </wz-step>
+                <wz-step wz-title="Items">
+                    <div class="  well  white" ng-show="settings.showAddItemForm">
+                        <form class="form-floating" novalidate="novalidate"
+                              ng-submit="saveProposalItem(item,proposalItem)">
+                            <fieldset>
+                                <legend class="subtitle" ng-bind="itemsAction"></legend>
+
+                                <div class="col-md-9 no-padding-left">
+                                    <div class="form-group filled col-sm-6 no-padding-left-responsive">
+                                        <label class="control-label">Tipo</label>
+                                        <select class="form-control input-sm" ng-disabled="!item.editing"
+                                                ng-model="proposalItem.type"
+                                                ng-options="itemType.id as itemType.name for itemType in itemTypes">
+                                        </select>
+                                    </div>
+                                    <div class="form-group filled col-sm-6 no-padding-right-responsive">
+                                        <label class="control-label correct-margin-left">Producto/Servicio</label>
+                                        <select class="form-control input-sm" ng-disabled="!item.editing"
+                                                ng-model="proposalItem.selectedValue"
+                                                ng-options="value.id as value.name for value in values">
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group  filled col-sm-3 no-padding-left-responsive">
+                                        <label class="control-label ">Cantidad/Horas <span
+                                                class="required-field">*</span></label>
+                                        <input type="number" class="form-control input-sm" ng-model="proposalItem.cant"
+                                               ng-disabled="!item.editing"
+                                               required>
+                                    </div>
+
+                                    <div class="form-group filled  col-sm-3 no-padding-left-responsive">
+                                        <label class="control-label ">Costo <span
+                                                class="required-field ">*</span></label>
+                                        <input type="number" class="form-control input-sm" ng-model="proposalItem.price"
+                                               ng-disabled="!item.editing">
+                                    </div>
+
+                                    <div class="form-group  filled col-sm-3 no-padding-left-responsive">
+                                        <label class="control-label  ">Tax <span
+                                                class="required-field">*</span></label>
+                                        <input type="number" class="form-control input-sm" ng-model="proposalItem.tax"
+                                               ng-disabled="!item.editing">
+                                    </div>
+                                    <div class="form-group  filled col-sm-3 no-padding-right-responsive">
+                                        <label class="control-label correct-margin-left">Descuento <span
+                                                class="required-field">*</span></label>
+                                        <input type="number" class="form-control input-sm"
+                                               ng-model="proposalItem.discount"
+                                               ng-disabled="!item.editing">
+                                    </div>
+                                    <div class="clearfix"></div>
+                                    <div class="form-group filled">
+                                        <label class="control-label">Description</label>
+                               <textarea class="form-control vertical input-sm" rows="3"
+                                         ng-model="proposalItem.description"
+                                         ng-disabled="!item.editing"></textarea>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-2 item-preview">
+                                    <h4>Subtotal</h4>
+
+                                    <p id="subtotalValue">$ 0.00</p>
+
+                                    <h4>Taxes</h4>
+
+                                    <p id="taxValue">$ 0.00</p>
+
+                                    <h4>Total</h4>
+
+                                    <p id="totalValue">$ 0.00</p>
+
+                                    <h4>Descuento</h4>
+
+                                    <p id="descValue">$ 0.00</p>
+
+                                    <h4>Grand total</h4>
+
+                                    <p id="grandTotalValue">$ 0.00</p>
+
+                                </div>
+                                <div class="form-group items-acction-buttons">
+                                    <button type="submit" class="btn btn-primary btn-sm"
+                                            ng-click="saveAndAddProposalItem(true)">Guardar y adicionar otro
+                                    </button>
+                                    <button type="submit" class="btn btn-primary btn-sm"
+                                            ng-click="saveAndAddProposalItem(false)">Guardar
+                                    </button>
+                                    <button type="reset" class="btn btn-default btn-sm">Cancelar</button>
+                                </div>
+
+
+                            </fieldset>
+
+                        </form>
+                    </div>
+
+                    <div class="row">
+
+                        <form class=" form-floating" ng-show="!settings.showAddItemForm">
+                            <div class="col-sm-6">
+                                <div class="card no-margin">
+
+
+                                    <table class="table table-full table-full-small">
+<colgroup>
+
+    <col class="auto-cell-size">
+</colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th>Cant</th>
+                                            <th>Price</th>
+                                            <th>Tax</th>
+                                            <th>Discount</th>
+                                            <th>Description</th>
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                        <tr ng-repeat="current in item.items">
+
+                                            <td>{{ current.cant }}</td>
+                                            <td>{{ current.price }}</td>
+                                            <td>{{ current.tax }}</td>
+                                            <td>{{ current.discount }}</td>
+                                            <td>{{ current.description }}</td>
+                                        </tr>
+                                        </tbody>
+
+                                    </table>
+
+
+                                </div>
+                            </div>
+
+                            <!--
+                                                    <p>You have continued here!</p>
+                                                    <input type="submit" wz-Previous value="Prev"/>
+                                                    <input type="submit" wz-next value="Go on"/> -->
+                        </form>
+                </wz-step>
+
+            </wizard>
+
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,14 @@
+{% extends 'base/password_reset.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title %} Password reset {% endblock %}
+{% block pass_reset_description %}
+
+    <p>{% trans "We've emailed you instructions for setting your password, if an account exists with the email you entered. You should receive them shortly." %}</p>
+
+    <p>{% trans "If you don't receive an email, please make sure you've entered the address you registered with, and check your spam folder." %}</p>
+    <a href="/accounts/password_reset">Password recovery</a>
+{% endblock %}

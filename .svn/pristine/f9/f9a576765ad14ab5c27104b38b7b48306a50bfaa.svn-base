@@ -1,0 +1,285 @@
+/**
+ * Created by Hector on 10/01/2017.
+ */
+app.controller('CustomersController', ['$scope', '$window', '$aside', 'PlaceholderTextService', '$alert', '$http', 'NomenclatorService', 'CustomerService', function ($scope, $window, $aside, PlaceholderTextService, $alert, $http, NomenclatorService, CustomerService) {
+
+    // settings
+    $scope.settings = {
+        singular: 'Cliente',
+        plural: 'Clientes',
+        cmd: 'Nuevo'
+    };
+    //page
+    $scope.page = {
+        title: 'Clientes',
+        description: 'In most applications you need basic table listings and editing capabilities.' +
+        ' With this app you can create simple admin functionality based on a json web service.',
+        icon: 'md md-group'
+    };
+
+
+    //console.debug($hh);
+
+    // adding customers data
+    var data = [];
+    CustomerService.getAll()
+        .success(function (data, status, headers, config) {
+            //
+            //var activos =  data.filter(
+            //        function (item) {
+            //            return item.activo;
+            //        }
+            //    );
+            //console.log(data);
+
+            $scope.data = data;
+            console.log($scope.data);
+        });
+
+    //adding others stuffs
+    // adding customers data
+    var preffixs = []
+    NomenclatorService.getAll('prefix')
+        .success(function (data, status, headers, config) {
+            $scope.preffixs = data;
+        });
+
+
+    var suffixs = [];
+    NomenclatorService.getAll('suffix')
+        .success(function (data, status, headers, config) {
+            $scope.suffixs = data;
+        });
+
+    NomenclatorService.getAll('country')
+        .success(function (data, status, headers, config) {
+            $scope.countries = data;
+        });
+
+
+    // defining template
+    var formTpl = $aside({
+        scope: $scope,
+        templateUrl: '/static/assets/tpl/customers/customers-form.html',
+        show: false,
+        placement: 'left',
+        backdrop: false,
+        animation: 'am-slide-left'
+    });
+
+    // methods
+    $scope.checkAll = function () {
+        //angular.forEach($scope.data, function (item) {
+        //    item.selected = !item.selected;
+        //});
+    };
+    $scope.selectedPreffix;
+    $scope.selectedSuffix;
+    $scope.editItem = function (item) {
+        if (item) {
+            item.editing = true;
+            $scope.item = item;
+            $scope.settings.cmd = 'Edit';
+
+            //console.log($scope.item);
+
+            $scope.selectedPreffix = $scope.preffixs.filter(
+                function (act) {
+                    return act.text == $scope.item.prefix;
+                }
+            )[0];
+            $scope.selectedSuffix = $scope.suffixs.filter(
+                function (act) {
+                    //console.log(act);
+                    return act.text == $scope.item.suffix;
+                }
+            )[0];
+
+            //if($scope.item.company){
+            //    NomenclatorService.getById('company',$scope.item.company).success(function(data){
+            //        $scope.item.company = data.text;
+            //    }).error(function(data){alert(data)})
+            //}
+
+            if ($scope.item.address.country.id) {
+                NomenclatorService.getById('country', $scope.item.address.country.id).success(function (data) {
+                    $scope.countryStates = data.states;
+                })
+            }
+
+            showForm();
+        }
+    };
+
+    $scope.viewItem = function (item) {
+        if (item) {
+            item.editing = false;
+            $scope.item = item;
+            $scope.settings.cmd = 'View';
+            showForm();
+        }
+    };
+
+    $scope.createItem = function () {
+        //GET
+        //$tt = $http.get('http://app.caterfull.com:8000/api/test')
+        //    .success(function(data,status,headers,config){
+        //        console.log( status);
+        //        console.log( data);
+        //    });
+        //var obj = {
+        //    asignatura: "HTML",
+        //    nota: 45
+        //};
+        //
+        //$http.post('http://app.caterfull.com:8000/api/test', obj)
+        //    .success(function (data, status, headers, config) {
+        //        console.log(status);
+        //        console.log(data);
+        //    })
+        //    .error(function (data, status, headers, config) {
+        //        console.log(status);
+        //        console.log(data);
+        //    });
+
+        //console.log( analysis1.getList().$object);
+
+        var item = {
+            //icon: PlaceholderTextService.createIcon(true),
+            editing: true,
+            creating: true,
+            company: '',
+            phone_home: '',
+            cellphone: ''
+        };
+        $scope.item = item;
+        $scope.settings.cmd = 'New';
+
+
+        showForm();
+    };
+    $scope.reloadStates = function () {
+        if ($scope.item.address.country.id) {
+            NomenclatorService.getById('country', $scope.item.address.country.id).success(function (data) {
+                $scope.countryStates = data.states;
+            })
+        }
+    };
+
+    $scope.saveItem = function () {
+
+        //if ($scope.settings.cmd == 'New') {
+        //    $scope.data.push($scope.item);
+        //}
+
+        $scope.item.prefix = $scope.selectedPreffix;
+        $scope.item.sufix = $scope.selectedSuffix;
+
+        $scope.item.first_line = $scope.item.address.first_line;
+        $scope.item.second_line = $scope.item.address.second_line;
+        $scope.item.city = $scope.item.address.city;
+        $scope.item.zip = $scope.item.address.zip;
+        $scope.item.state = $scope.item.address.state.id;
+        $scope.item.country = $scope.item.address.country.id;
+
+        console.debug($scope);
+        console.debug($scope.selectedSuffix);
+        CustomerService.post($scope.item).success(function (data) {
+
+        }).error(function (data) {
+
+        });
+        console.debug($scope.item);
+        hideForm();
+    };
+
+    $scope.remove = function (item) {
+        console.log(item);
+
+        swal({
+                title: "Confirma que desea eliminar?",
+                text: "Si acepta ya no podrá deshacer los cambios!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Aceptar",
+                cancelButtonText: "Cancelar",
+                closeOnConfirm: false,
+                closeOnCancel: false
+            },
+            function (isConfirm) {
+                if (isConfirm) {
+
+                    //Llamar al servicio  para eliminar
+                    if (code == 200) {
+                        swal("Eliminado!", "Se ha eliminado correctamente el elemento seleccionado.", "success");
+                        //actualizar tabla
+                    } else if (code == 400) {
+                        swal("Error!", "Ha existido un error al eliminar el elemento seleccionado", "error");
+                    }
+
+
+                } else {
+                    swal("Cancelado", "No se ha realizado ninguna acción", "error");
+                }
+            });
+        //if (confirm('Are you sure?')) {
+        //
+        //
+        //    if (item) {
+        //        $scope.data.splice($scope.data.indexOf(item), 1);
+        //    } else {
+        //        var seleccionados = $scope.data.filter(
+        //            function (item) {
+        //                return item.selected;
+        //            }
+        //        );
+        //        //eliminar estos objetos
+        //        console.log(seleccionados);
+        //        $scope.selectAll = false;
+        //    }
+        //}
+    };
+
+    showForm = function () {
+        angular.element('.tooltip').remove();
+        formTpl.show();
+    };
+
+    hideForm = function () {
+        formTpl.hide();
+    };
+
+    $scope.$on('$destroy', function () {
+        hideForm();
+    });
+
+    $scope.search = function () {
+        $.getJSON('/static/assets/js/data/customers_data.json', function (data) {
+            $scope.data = data;
+        })
+    }
+
+    $scope.print = function () {
+        return $window.print();
+    }
+
+    //$scope.alert = function () {
+    //    var refererNotThemeforest = $alert({
+    //        title: 'Hi there!',
+    //        content: 'You like what you see and interested in using our theme? You can find it at <a href="http://themeforest.net/item/materialism-angular-bootstrap-admin-template/11322821" target="_blank"><img style="height:20px;" src="/static/assets/img/icons/themeforest-icon.png" /> Themeforest</a>.',
+    //        placement: 'top-right',
+    //        type: 'theme',
+    //        container: '.alert-container-top-right',
+    //        show: false,
+    //        animation: 'mat-grow-top-right'
+    //    });
+    //
+    //    if (document.referrer === '' || document.referrer.indexOf('themeforest.net') !== 0) {
+    //        $timeout(function () {
+    //            refererNotThemeforest.show();
+    //        }, 1750);
+    //    }
+    //}
+
+}]);

@@ -1,0 +1,164 @@
+{% extends 'base_angular_static.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+{% block title %}Pago de factura{% endblock %}
+{% block body %}
+     <input hidden id="publishable_key" value="{{ account.stripe_publishable_key }}">
+    <script type="text/javascript">
+        var publishable_key = document.getElementById('publishable_key');
+        Stripe.setPublishableKey(publishable_key.value);
+    </script>
+
+<body class="page-login theme-template-light theme-light-green" init-ripples ng-app="materialism">
+    <div class="center">
+        <div class="card bordered z-depth-2" style="margin:0% auto; max-width:400px;">
+            <div class="card-header">
+                <div class="brand-logo">
+                    <div id="logo">
+                        <div class="foot1"></div>
+                        <div class="foot2"></div>
+                        <div class="foot3"></div>
+                        <div class="foot4"></div>
+                    </div>
+                    Caterfull
+                </div>
+            </div>
+            <form action="" method="post" id="payment-form" class="form-floating">{% csrf_token %}
+
+
+                <div class="card-content">
+                <span class="payment-errors"></span>
+
+                    <div class="m-b-30">
+                        <div class="card-title strong light-green-text">Cargo por factura</div>
+                        <p class="card-title-desc">
+                            Pagar suscripcion con Stripe
+                        </p>
+
+                    </div>
+{#                     <div class="form-group ">#}
+{#                        <label class="control-label col-xs-12 col-sm-3 no-padding-right">Card number</label>#}
+{##}
+{#                        <div class="col-xs-12 col-sm-3">#}
+{#                            <div class="clearfix">#}
+{#                                <input type="text" size="20" data-stripe="number" class="form-control">#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+
+                    <div class="form-group filled">
+
+                        <input type="text" size="20" data-stripe="number" class="form-control" placeholder="Card Number">
+
+
+
+                    </div>
+                    <div class="form-group filled">
+
+                       <input type="text" size="2" data-stripe="exp_month" class="form-control-stripe" placeholder="MM">
+                       <input type="text" size="2" data-stripe="exp_year" class="form-control-stripe" placeholder="YY">
+
+
+                    </div>
+                    <div class="form-group filled">
+
+                        <input type="text" size="20" data-stripe="cvc" class="form-control" placeholder="CVC">
+
+
+
+                    </div>
+                    <div class="form-group filled">
+
+                        <input type="text" size="20" data-stripe="address_zip" class="form-control" placeholder="Billing Zip">
+
+
+
+                    </div>
+                    <div class="form-group filled">
+
+                        <input type="text" size="20" data-stripe="amount" class="form-control" placeholder="Amount">
+
+
+
+                    </div>
+
+
+                <input hidden name="idempotency" value="{{ idempotency }}">
+                </div>
+                <div class="card-action clearfix">
+                    <div class="pull-right">
+{#                        <a href="{% url 'password_reset' %}" class="btn btn-default light-green-text">Forgot password</a>#}
+{#                        <input type="submit" class="submit btn btn-primary" value="Submit Payment">#}
+                        <button type="submit" class="submit btn btn-primary ">Submit Payment</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {#    <script charset="utf-8" src="//code.jquery.com/jquery-1.11.3.min.js"></script>#}
+
+
+    </body>
+
+
+{% endblock %}
+{% block js_bottom %}
+    <script charset="utf-8" src="{% static  'assets/js/login.js' %}"></script>
+{% endblock %}
+
+
+
+
+{% block js_block_one %}
+    <!-- iCheck -->
+
+    <script>
+         $(function () {
+
+            var $form = $('#payment-form');
+            $form.submit(function (event) {
+                event.preventDefault();
+
+                // Disable the submit button to prevent repeated clicks:
+                $form.find('.submit').prop('disabled', true);
+
+                // Request a token from Stripe:
+                Stripe.card.createToken($form, stripeResponseHandler);
+                {#        $form.get(0).submit();#}
+                // Prevent the form from being submitted:
+                return false;
+            });
+            function stripeResponseHandler(status, response) {
+                // Grab the form:
+                var $form = $('#payment-form');
+
+                if (response.error) { // Problem!
+
+                    // Show the errors on the form:
+                    $form.find('.payment-errors').text(response.error.message);
+                    $form.find('.submit').prop('disabled', false); // Re-enable submission
+
+                } else { // Token was created!
+
+                    // Get the token ID:
+                    var token = response.id;
+
+                    // Insert the token ID into the form so it gets submitted to the server:
+                    $form.append($('<input type="hidden" name="stripeToken">').val(token));
+
+                    // Submit the form:
+                    $form.get(0).submit();
+                }
+            };
+        });
+    </script>
+
+
+
+{% endblock %}
+
+{% block js_head %}
+     <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+{% endblock %}

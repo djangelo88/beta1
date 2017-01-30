@@ -1,0 +1,54 @@
+"""caterfull URL Configuration
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/1.9/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
+Including another URLconf
+    1. Add an import:  from blog import urls as blog_urls
+    2. Import the include() function: from django.conf.urls import url, include
+    3. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
+"""
+from django.conf import settings
+from django.conf.urls import url, include
+from django.conf.urls import static
+from django.contrib import admin
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import login, logout_then_login, password_reset_done, password_reset_complete
+from django.views.decorators.csrf import csrf_exempt
+from base.api.views.business import BusinessView
+from base.api.views.customer_view import CustomerView, CustomerDeleteView
+from base.api.views.proposal import ProposalView, ProposalDeleteView
+
+from base.views.account import password_change_done, ConfirmEmailView, password_change, password_reset, \
+    password_reset_confirm
+from base.views.customer_view import TestRest
+from base.views.dashboard_view import Dashboard
+from base.views.nomenclator import Nomenclator
+from base.api.views.prodserv_views import ProductList, ServicesList, PositionList, PositionEdit, PositionAdd, \
+    PositionRemove
+
+urlpatterns = [
+    url(r'^test$', csrf_exempt(TestRest.as_view()), name='test_rest'),
+
+    url(r'^nomenclator$', csrf_exempt(Nomenclator.as_view()), name='api_nomenclator'),
+    url(r'^customers', login_required(CustomerView.as_view()), name="api_customers"),
+    url(r'^customers/delete$', login_required(CustomerDeleteView.as_view()), name="api_customers_delete"),
+    url(r'^customers/(?P<id>\d+)$', login_required(CustomerView.as_view()), name="api_customer"),
+    url(r'^proposals/(?P<id>\d+)$', login_required(ProposalView.as_view()), name="api_proposal"),
+    url(r'^proposals', login_required(ProposalView.as_view()), name="api_proposals"),
+    url(r'^proposals/delete$', login_required(ProposalDeleteView.as_view()), name="api_proposals_delete"),
+    url(r'^products', login_required(ProductList.as_view()), name="products"),
+    url(r'^services', login_required(ServicesList.as_view()), name="services"),
+    url(r'^positions$', login_required(PositionList.as_view()), name='positions'),
+    url(r'^positions/add$', csrf_exempt(login_required(PositionAdd.as_view())), name='position_add'),
+    url(r'^positions/edit/(?P<id>\d+)$', csrf_exempt(login_required(PositionEdit.as_view())), name='position_edit'),
+    url(r'^positions/remove$', login_required(PositionRemove.as_view()), name='position_remove'),
+    url(r'^business', login_required(BusinessView.as_view()),name="api_profile")
+
+  ]

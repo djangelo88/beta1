@@ -1,0 +1,19 @@
+<html>
+<head>
+
+</head>
+<body>
+    <fieldset>
+        <legend>Datos del presupuesto</legend>
+        <div>Numero del Presupuesto: {{ proposal.number }}</div>
+{#        <div>Fecha limite para el pago: {{ proposal.event.due_date }}</div>#}
+        <div>Evento: {{ proposal.event.name }}</div>
+    </fieldset>
+    <div>
+        <p>
+            <a href="{{ domain }}{% url 'accept_proposal' pidb64 token %}">Aceptar</a>
+            <a href="{{ domain }}{% url 'deny_proposal' pidb64 token %}">Denegar</a>
+        </p>
+    </div>
+</body>
+</html>

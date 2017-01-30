@@ -1,0 +1,84 @@
+{% load staticfiles %}
+
+<table class="table table-striped projects table-responsive no-print" id="proposal_table">
+    <thead>
+    <tr>
+        <th class="text-uppercase">Nombre</th>
+        <th class="text-uppercase">Cliente</th>
+        <th class="text-uppercase">Fecha</th>
+
+        <th class="text-uppercase">Estado</th>
+        <th class="text-uppercase">Acciones</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for proposal in proposals %}
+        <tr>
+            <td><a href="/proposal/{{ proposal.id }}">{{ proposal.event.name }}</a></td>
+            <td>{{ proposal.event.customer }}</td>
+            <td>{{ proposal.event.event_date |date:"D M d Y h:i a " }}</td>
+
+            <td>
+                <span class="label
+                    {% ifequal proposal.status.name 'ACEPTADO' %} label-success {% endifequal %}
+                    {% ifequal proposal.status.name 'CANCELADO' %} label-default {% endifequal %}
+                    {% ifequal proposal.status.name 'DENEGADO' %} label-danger {% endifequal %}
+                    {% ifequal proposal.status.name 'PENDIENTE' %} label-waring {% endifequal %}
+                    {% ifequal proposal.status.name 'EDICION' %} label-info {% endifequal %}
+                ">
+
+ {{ proposal.status }}
+
+                    </span>
+            </td>
+
+            <td>
+
+                {#                                <button type="button" class="btn btn-warning btn-xs edit" data-toggle="modal"#}
+                {#                                        data-target="#newCustomerModal" data-elem-id="{{ customer.id }}"#}
+                {#                                        data-modal-title="Editar contacto">#}
+                {#                                    <i class="fa fa-pencil"></i> </span>#}
+                {#                                </button>#}
+                {% if proposal.may_be_editted %}
+                    <a href="{% url 'proposal_event_edit' proposal.id %}" class="edit"> <i class="fa fa-pencil"></i> </a>
+                {% else %}
+                    <span class="text-muted"> <i class="fa fa-pencil"></i> </span>
+                {% endif %}
+
+                {% csrf_token %}
+                <button type="button" class="btn btn-danger btn-xs remove" data-elem-id="{{ proposal.id }}">
+                    <i class="fa fa-trash-o"></i>    </span>
+                </button>
+                {##}
+                {#                 <a href="" class="remove"  data-elem-id="{{ customer.id }}"#}
+                {#                        > <i class="fa fa-trash-o"></i> </a>#}
+
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{#<script type="text/javascript" src="{% static 'js/components/custom.datatablesmodalform.js' %}"></script>#}
+<script>
+
+</script>
+<script type="text/javascript" src="{% static 'base/js/invoice/item.js' %}"></script>
+
+<script>
+
+    $(document).ready(function () {
+
+        $("#proposal_table").dataTable({"language": {"url": "/static/i18n/Spanish.json"}});
+
+        {#        $.CustomDatatableFormObject.model_name = "proposal";#}
+        {#        $.CustomDatatableFormObject.datatable_container = "#tableContainer";#}
+        {#        $.CustomDatatableFormObject.datatable_id = "#proposal_table";#}
+        {#        $.CustomDatatableFormObject.modal_dialog_id = "#newCustomerModal";#}
+        {#        $.CustomDatatableFormObject.form_id = "#eventForm";#}
+        {#        $.CustomDatatableFormObject.set_url_add("event");#}
+        {#        $.CustomDatatableFormObject.set_url_edit("event");#}
+
+    });
+</script>
+
+

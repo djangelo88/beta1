@@ -1,0 +1,63 @@
+import json
+from django.http.response import JsonResponse, HttpResponse
+from django.views.generic.base import View
+from base.models import Business
+from business_site.forms import BasicInfoForm
+from business_site.models import Website, BasicInfo
+
+__author__ = 'maykel'
+
+class AllWebsiteData(View):
+    def get(self, request, *args, **kwargs):
+        w = Website.objects.get_website_by_user(request.user)
+        if w:
+            data = w.serialize()
+        else:
+            return JsonResponse({'error':'No tiene website'}, safe=False, status=200)
+        return JsonResponse(data, safe=False, status=200)
+
+class WebsiteBasics(View):
+    form_class = BasicInfoForm
+    def post(self, request, *args, **kwargs):
+        data = (json.loads(request.body.decode()))
+        form = self.form_class(data)
+        w = Website.objects.get_website_by_user(request.user)
+        bu = Business.objects.filter(owner=request.user).first()
+        if form.is_valid():
+            b = BasicInfo.objects.filter(website=w).first()
+            if not b:
+                b = BasicInfo()
+            else:
+                if not b.logo:
+                    b.logo = bu.logo
+            b.description = data.get('description')
+            try:
+                b.save()
+                data = {'description': b.description, 'logo': b.logo._get_url()}
+                return JsonResponse(data, safe=False, status=200)
+            except:
+                return JsonResponse({'error': 'Error al salvar'}, safe=False, status=500)
+        else:
+            return JsonResponse({'error': form.errors}, safe=False, status=400)
+
+class LogoSave(View):
+    def post(self, request, *args, **kwargs):
+        w = Website.objects.get_website_by_user(request.user)
+        if w:
+            if request.FILES:
+                b = BasicInfo.objects.filter(website=w).first()
+                if not b:
+                    b = BasicInfo()
+                b.logo = request.FILES.get('file')
+                try:
+                    b.save()
+                    data = {'logo':b.logo._get_url()}
+                    return JsonResponse(data, safe=False, status=200)
+                except:
+                    #TODO:Validar extension de las archivos
+                    return JsonResponse({'error': 'Error salvando los datos'}, safe=False, status=500)
+            else:
+                return JsonResponse({'error': 'No imagen'}, safe=False, status=400)
+class PhotoGallerySave(View):
+
+

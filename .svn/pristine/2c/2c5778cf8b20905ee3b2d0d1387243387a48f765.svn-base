@@ -1,0 +1,14 @@
+from beta.views.views import DashboardBeta, ErrorPage404
+
+__author__ = 'hector'
+from django.conf.urls import patterns, include, url
+from django.contrib.auth.decorators import login_required
+
+
+urlpatterns = patterns('',
+    # Examples:
+    # url(r'^$', BusinessSiteWizard.as_view([HeadInfo, BusinessInfo, ContactInfo]), name='wizard'),
+    url(r'^', login_required(DashboardBeta.as_view()), name='beta_home'),
+    # url(r'^404e', ErrorPage404.as_view(), name='error_404'),
+
+)

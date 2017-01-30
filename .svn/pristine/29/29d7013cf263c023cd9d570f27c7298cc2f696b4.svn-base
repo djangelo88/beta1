@@ -1,0 +1,72 @@
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+        {% if not "preview" in request.build_absolute_uri %}
+
+              <div class="form-group {% if form.name.errors %} has-error {% endif %}">
+                <label for="name" class="col-sm-2 control-label">{{ form.name.label }}</label>
+                <div class="col-sm-10">
+                    {% render_field form.name class="form-control" placeholder="Your full name" %}
+                </div>
+                 {% for error in  form.name.errors %}
+                     <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                {% endfor %}
+            </div>
+             <div class="form-group {% if form.email.errors %} has-error {% endif %}">
+                <label for="name" class="col-sm-2 control-label">{{ form.email.label }}</label>
+                <div class="col-sm-10">
+                    {% render_field form.email class="form-control" placeholder="jhon@caterfull.com" %}
+                </div>
+             {% for error in  form.name.errors %}
+                     <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                {% endfor %}
+            </div>
+             <div class="form-group {% if form.message.errors %} has-error {% endif %}">
+                <label for="name" class="col-sm-2 control-label">{{ form.message.label }}</label>
+                <div class="col-sm-10">
+                    {% render_field form.message class="form-control" placeholder="Your message" rows="5" %}
+                </div>
+             {% for error in  form.name.errors %}
+                     <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                {% endfor %}
+            </div>
+
+{#{{ form }}#}
+{#            <div class="form-group">#}
+{#                <div class="col-sm-9">#}
+{#                    <input id="send_customer_email" name="submit" type="submit" value="Send us a message"#}
+{#                           class="btn btn-success" style="margin-left: 15px">#}
+{#                </div>#}
+{#            </div>#}
+
+
+        {% else %}
+            <div class="form-group">
+                <label for="name" class="col-sm-2 control-label">Name</label>
+
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" readonly="readonly" id="id_name" name="name"
+                           placeholder="Your full name"
+                           value="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email" class="col-sm-2 control-label">Email</label>
+
+                <div class="col-sm-10">
+                    <input type="email" class="form-control" readonly="readonly" id="id_email" name="email"
+                           placeholder="user@example.com" value="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="message" class="col-sm-2 control-label">Message</label>
+                <div class="col-sm-10">
+                            <textarea class="form-control" rows="3" readonly="readonly" id="id_message" name="message"
+                                      placeholder="Your message here..."></textarea>
+                </div>
+            </div>
+
+   {% endif %}
+

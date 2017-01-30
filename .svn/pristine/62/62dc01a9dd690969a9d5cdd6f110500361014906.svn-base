@@ -1,0 +1,48 @@
+from django.contrib import admin
+
+# Register your models here.
+from base.model_invoice import N_Proposal_Status, N_Invoice_Status, Event, Proposal, Item, Invoice, N_Event_Status, \
+    Request, N_Request_Type
+
+from base.models import Business, Customer, N_Company, N_Suffix, \
+    N_Prefix, ConfirmEmailOrder, N_NotificationType, Notification, Oferta, N_Country, N_City, N_State
+from base.prodserv_models import Measure, Magnitude, Conversion, Product, ProductPrice, Recipe, Ingredients, RecipeIngredients, \
+    Service
+
+admin.site.register(Business)
+admin.site.register(Customer)
+
+
+
+admin.site.register(N_Company)
+admin.site.register(N_Suffix)
+admin.site.register(N_Prefix)
+
+admin.site.register(ConfirmEmailOrder)
+
+admin.site.register(N_NotificationType)
+admin.site.register(Notification)
+admin.site.register(N_Proposal_Status)
+admin.site.register(N_Invoice_Status)
+admin.site.register(Event)
+admin.site.register(Proposal)
+admin.site.register(Oferta)
+admin.site.register(Item)
+admin.site.register(Invoice)
+admin.site.register(N_Event_Status)
+admin.site.register(Service)
+admin.site.register(Request)
+admin.site.register(N_Request_Type)
+
+admin.site.register(Product)
+admin.site.register(Recipe)
+admin.site.register(Ingredients)
+admin.site.register(RecipeIngredients)
+admin.site.register(ProductPrice)
+admin.site.register(Magnitude)
+admin.site.register(Measure)
+admin.site.register(Conversion)
+
+admin.site.register(N_Country)
+admin.site.register(N_City)
+admin.site.register(N_State)

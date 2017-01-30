@@ -1,0 +1,338 @@
+/**
+ * Created by Hector on 12/01/2017.
+ */
+app.controller('ProposalsController', ['$scope', '$window', '$aside', 'PlaceholderTextService', '$alert', '$http', 'NomenclatorService', '$location', 'ProposalService', 'WizardHandler', 'CustomerService', 'ProductService', 'ServiceService', 'NotificationService', 'AlertConfirmService', function ($scope, $window, $aside, PlaceholderTextService, $alert, $http, NomenclatorService, $location, ProposalService, WizardHandler, CustomerService, ProductService, ServiceService, NotificationService, AlertConfirmService) {
+
+    // settings
+    $scope.settings = {
+        singular: 'Presupuesto',
+        plural: 'Presupuestos',
+        cmd: 'Nuevo',
+        showAddItemForm: true
+
+    };
+    //page
+    $scope.page = {
+        title: 'Presupuestos',
+        description: 'In most applications you need basic table listings and editing capabilities.' +
+        ' With this app you can create simple admin functionality based on a json web service.',
+        icon: 'md md-group'
+    };
+
+    // adding proposals data
+    var data = [];
+    ProposalService.getAll()
+        .success(function (data, status, headers, config) {
+
+            angular.forEach(data, function (item) {
+                item.icon = ProposalService.createIcon(item.status);
+            });
+            $scope.data = data;
+            console.log($scope.data);
+        });
+    //console.log($scope.data);
+
+    //adding others stuffs
+    //adding clients
+    CustomerService.getAll()
+        .success(function (data, status, headers, config) {
+            angular.forEach(data, function (item) {
+                item.icon = CustomerService.createIcon(item.new);
+            });
+
+            $scope.clients = data;
+        });
+
+
+    // defining template
+    var formTpl = $aside({
+        scope: $scope,
+        templateUrl: '/static/assets/tpl/proposals/proposals-form.html',
+        show: false,
+        placement: 'left',
+        backdrop: false,
+        animation: 'am-slide-left'
+    });
+
+    // methods
+    $scope.checkAll = function () {
+        angular.forEach($scope.data, function (item) {
+            item.selected = !item.selected;
+        });
+    };
+
+    $scope.editItem = function (item) {
+        if (item) {
+            item.editing = true;
+            $scope.item = item;
+            //console.debug(item);
+            $scope.item.event.event_time = item.event.event_date;
+            $scope.item.address = item.event.address;
+            $scope.settings.cmd = 'Edit';
+            showForm();
+        }
+    };
+
+    $scope.viewItem = function (item) {
+        if (item) {
+            item.editing = false;
+            $scope.item = item;
+            $scope.item.event.event_time = item.event.event_date;
+            $scope.settings.cmd = 'View';
+            $scope.item.address = item.event.address;
+            showForm();
+        }
+    };
+
+    $scope.createItem = function () {
+        var item = {
+            editing: true,
+            items: []
+        }
+        $scope.settings.cmd = 'New';
+        $scope.item = item;
+        $scope.showAddItemForm = true;
+
+
+        showForm();
+    };
+
+    $scope.saveItem = function (item) {
+        //$scope.item.address = item.event.address;
+        //console.log($scope.settings.cmd);
+        //if ($scope.settings.cmd == 'Nuevo') {
+        //$scope.data.push($scope.item);
+
+        //   $scope.showAddItemForm = true;
+        // }
+        //console.debug(item);
+        //hideForm();
+        console.log(item);
+        WizardHandler.wizard().next();
+        //$scope.newProposalItem(item);
+
+    };
+
+    $scope.remove = function (item) {
+
+        var callbackFn = function () {  };
+
+        if (item) {
+            var callbackFn = function () {
+
+                ProposalService.delete(new Array(item))
+                    .success(function () {
+                        NotificationService.success('', 'Se ha eliminado el presupuesto seleccionado');
+                        $scope.data.splice($scope.data.indexOf(item), 1);
+                    }).error(function () {
+                        NotificationService.error('Error', 'Ha existido un error al eliminar el presupuesto seleccionado');
+                    });
+            }
+            AlertConfirmService.basicConfirm("Eliminar", "Confirma que desea eliminar el presupuesto seleccionado?", callbackFn);
+
+        } else {
+
+            callbackFn = function () {
+                var seleccionados = $scope.data.filter(
+                    function (item) {
+                        return item.selected;
+                    }
+                );
+                ProposalService.delete(seleccionados).success(function () {
+                    NotificationService.success('', 'Se han eliminado los presupuestos seleccionados');
+
+                    for (index in seleccionados) {
+                        $scope.data.splice($scope.data.indexOf(seleccionados[index]), 1);
+                    }
+                }).error(function () {
+                    NotificationService.error('Error', 'Ha existido un error al eliminar los presupuestos seleccionados');
+                });
+            }
+            AlertConfirmService.basicConfirm("Eliminar", "Confirma que desea los presupuestos seleccionados?", callbackFn);
+        }
+
+
+    };
+
+    showForm = function () {
+        angular.element('.tooltip').remove();
+        formTpl.show();
+    };
+
+    hideForm = function () {
+        formTpl.hide();
+    };
+
+    $scope.$on('$destroy', function () {
+        hideForm();
+    });
+
+
+    $scope.print = function () {
+        return $window.print();
+    }
+    /*Items*/
+
+    $scope.proposalItemsSettings = {
+        showProposalItemForm: false,
+        showAlertMessage: true
+    }
+
+    NomenclatorService.getAll('request').success(function (data) {
+        $scope.itemTypes = data;
+    });
+    $scope.requestsByType = [];
+
+    $scope.reloadRequests = function (proposalItem) {
+        //console.log(proposalItem.type);
+
+        if (proposalItem.type !== undefined) {
+            switch (proposalItem.type) {
+                case 1:
+                    ProductService.getAll().success(function (datos) {
+                        $scope.requestsByType = datos;
+
+                    })
+                    break;
+                case 2:
+                    ServiceService.getAll().success(function (data) {
+                        $scope.requestsByType = data;
+
+                    })
+                    break;
+            }
+            //alert("dff");
+
+        }
+    };
+
+
+    $scope.newProposalItem = function () {
+
+        proposalItem = {
+            editing: true,
+            quantity: 0,
+            unit_cost: 0,
+            tax: 7,
+            discount: 0,
+            cmd: 'New'
+
+        };
+        //console.log(proposalItem);
+        $scope.proposalItem = proposalItem;
+
+        $scope.proposalItemsSettings.showAlertMessage = false;
+        $scope.proposalItemsSettings.showProposalItemForm = true;
+        //console.log("item")
+        //console.log($scope.proposalItem)
+        //console.log("item")
+
+    }
+
+    $scope.saveProposalItem = function (item, proposalItem) {
+
+        var elems = $scope.requestsByType.filter(function (elem) {
+            return (elem.id == proposalItem.request);
+        })
+        proposalItem.requestName = elems[0].name
+
+        //console.log(proposalItem.requestName);
+
+        if (proposalItem.cmd == 'New') {
+            item.items.push(proposalItem);
+            NotificationService.success("Se ha adicionado el item satisfactoriamente");
+
+            if ($scope.onlyAdd) {
+                $scope.proposalItemsSettings.showProposalItemForm = false;
+            } else {
+                proposalItem = {};
+                $scope.newProposalItem(item);
+                $scope.proposalItemsSettings.showProposalItemForm = true;
+            }
+        } else if (proposalItem.cmd == 'Edit') {
+            NotificationService.success("Se ha actualizado el item satisfactoriamente");
+            $scope.proposalItemsSettings.showProposalItemForm = false;
+        }
+
+        $($("#proposalItemForm").ajaxForm()).resetForm();
+
+    }
+    $scope.onlyAdd = true
+
+    $scope.saveAndAddProposalItem = function () {
+        $scope.onlyAdd = false;
+
+    }
+    $scope.onlySave = function () {
+        $scope.onlyAdd = true;
+    }
+
+    $scope.cancelProposalItem = function () {
+        $scope.proposalItemsSettings.showProposalItemForm = false;
+        if ($scope.item.items.length == 0) {
+            $scope.proposalItemsSettings.showAlertMessage = true;
+        }
+    }
+    $scope.viewProposalItem = function (proposalItem) {
+        proposalItem.cmd = 'View';
+        proposalItem.editing = false;
+        $scope.proposalItem = proposalItem;
+        //console.log( proposalItem );
+        //console.log($scope.proposalItem );
+        $scope.proposalItemsSettings.showProposalItemForm = true;
+
+    }
+    $scope.editProposalItem = function (proposalItem) {
+
+        proposalItem.editing = true;
+        proposalItem.cmd = 'Edit';
+
+
+        $scope.proposalItem = proposalItem;
+
+        $scope.proposalItemsSettings.showProposalItemForm = true;
+
+    }
+    $scope.removeProposalItem = function (proposalItem) {
+
+
+        var callbackFn = function () {
+
+            $scope.item.items.splice($scope.item.items.indexOf(proposalItem), 1);
+            $scope.cancelProposalItem();
+
+            NotificationService.success('', 'Se ha eliminado el elemento seleccionado');
+
+        };
+
+        AlertConfirmService.basicConfirm("Eliminar", "Confirma que desea eliminar el elemento seleccionado?", callbackFn);
+
+    }
+
+
+    $scope.finish = function (item) {
+        item.finish = true;
+
+
+        ProposalService.add(item).success(function (data) {
+            NotificationService.success("Se ha adicionado el proposal");
+        }).error(function () {
+            NotificationService.error("Ha existido un error al adicionar el proposal");
+        });
+    }
+
+    $scope.safeApply = function (func) {
+        var currentPhase = this.$root.$$phase;
+
+        if (currentPhase === '$apply' || currentPhase === '$digest') {
+            if (typeof func === "function") {
+                func();
+            }
+        } else {
+            this.$apply(func)
+        }
+
+
+    }
+
+}]);

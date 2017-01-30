@@ -1,0 +1,46 @@
+<section class="forms-basic" ng-controller="ProfileController">
+<div class="page-header">
+    <h1>
+      <i class="md md-input"></i>
+      Perfil
+    </h1>
+    <p class="lead">
+      Cambiar Contraseña
+    </p>
+</div>
+   <div class="row m-b-40">
+    <div class="col-md-3 col-md-push-9" id="general-elements-intro">
+      <h5>General form elements used in basic forms</h5>
+      <p>All the elements are just default bootstrap markup in execption of the selection box which is a <a target="_blank" href="https://github.com/angular-ui/ui-select">Angular ui-select directive</a>.</p>
+    </div>
+
+    <div class="col-md-8 col-md-pull-3">
+      <div class="well white">
+           <form class="form-floating placeholder-form" novalidate name="passwordForm">
+          <fieldset>
+
+            <div class="form-group">
+              <label for="input" class="control-label">Contraseña Vieja <span class="required-field">*</span></label>
+              <input type="password" name="old_password" class="form-control" ng-model="profile.old_password" required>
+            </div>
+              <div class="form-group">
+              <label for="input" class="control-label">Contraseña Nueva <span class="required-field">*</span></label>
+              <input type="password" name="new_password1" class="form-control" ng-model="profile.new_password1" required>
+            </div>
+              <div class="form-group">
+              <label for="input" class="control-label">Confirmar Contraseña Nueva<span class="required-field">*</span></label>
+              <input type="password" name="new_password2" class="form-control" ng-model="profile.new_password2" required>
+            </div>
+
+        <div class="form-group">
+              <button type="submit" ng-disabled="passwordForm.$invalid || !check_password()" ng-click="update_password(profile)" class="btn btn-primary">Cambiar mi contraseña</button>
+
+               <a class="btn btn-default" href="#business/profile">Cancelar</a>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</section>

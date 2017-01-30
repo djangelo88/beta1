@@ -1,0 +1,573 @@
+from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.http.response import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.shortcuts import render_to_response
+from django.template.context import RequestContext
+from django.template.loader import get_template
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
+from django.views.generic.base import View
+# from xhtml2pdf import pisa
+from base.forms import ProposalEventForm, ItemForm, InvoiceEventForm
+from base.model_invoice import Event, Proposal, Item, Invoice
+from base.models import Business
+from base.tasks import task_send_proposal, OK, task_send_invoice, link_callback
+from base.util import check_permission
+from django.contrib import messages
+
+
+class ProposalEvent(View):
+
+    def get(self, request, *args, **kwargs):
+        if not check_permission(request=request, permission='create_update_proposal'):
+                return HttpResponseRedirect(redirect_to=reverse('login'))
+        user = request.user
+        business = Business.objects.filter(owner=user).first()
+        id = kwargs.get('id')
+        editting = False
+        if id:
+            editting = True
+            print(id)
+            try:
+                print("try")
+                proposal = Proposal.objects.get_by_id(id=id, business=business)
+                event = proposal.event
+            except:
+                print("except")
+                return HttpResponse(status=404)
+
+            form = ProposalEventForm(instance=event, initial={'business':business,'comment':proposal.client_message})
+        else:
+            print("else")
+            form = ProposalEventForm(initial={'business':business})
+        if request.is_ajax():
+         
+            return render_to_response('base/invoice/wizard/event_step.html', RequestContext(request, {'form':form,'model':'proposal','editting':editting}))
+
+        return render_to_response('base/invoice/wizard/wizard.html', RequestContext(request, { 'id':id,'model':'proposal','editting':editting }))
+
+
+    def post(self, request, *args, **kwargs):
+        if not check_permission(request=request, permission='create_update_proposal'):
+                return HttpResponseRedirect(redirect_to=reverse('login'))
+        user = request.user
+        business = Business.objects.filter(owner=user).first()
+        form = ProposalEventForm(request.POST, initial={'business':business})
+        errors = {}
+        id = kwargs.get('id')
+
+
+
+        proposal = None
+        if id:
+
+            proposal = Proposal.objects.get_by_id(id=id, business=business)
+            if not proposal:
+                return HttpResponse(status=404)
+
+        if form.is_valid():
+
+            response = Event.objects.create_or_update_proposal_from_event(form.cleaned_data, proposal=proposal)
+
+
+            if response in Event.objects.ERRORS:
+
+               errors['server'] = 'Intente de nuevo'
+               return render_to_response('base/invoice/wizard/event_step.html', RequestContext(request, {'form':form,'errors':errors}),status=400)
+            else:
+                return JsonResponse(status=200, data={'proposal_id':response.id}, safe=False)
+        else:
+            print(form.errors.as_json())
+            return render_to_response('base/invoice/wizard/event_step.html', RequestContext(request, {'form':form,'errors':errors}),status=400)
+
+
+class ProposalItemsView(View):
+
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('id')
+        id_invoice = kwargs.get('id_invoice')
+        print(id)
+        flag_proposal = id != None
+
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+
+        model = ''
+        tax_base = business.tax
+        if flag_proposal:
+            if not check_permission(request=request, permission='create_update_proposal'):
+                return HttpResponseRedirect(redirect_to=reverse('login'))
+            response = Proposal.objects.get_by_id(id, business=business)
+            model = 'proposal'
+            if response in Proposal.objects.ERRORS:
+                return HttpResponse(status=404)
+
+        else:
+            if not check_permission(request=request, permission='create_update_invoice'):
+                return HttpResponseRedirect(redirect_to=reverse('login'))
+            response = Invoice.objects.get_by_id(id_invoice, business=business)
+            model = 'invoice'
+            if response in Invoice.objects.ERRORS:
+                return HttpResponse(status=404)
+            response = response.proposal
+
+
+        form = ItemForm(initial={'tax':tax_base})
+        # if request.is_ajax():
+        #     return render_to_response("base/invoice/includes/items.html", RequestContext(request, {'items':response.get_items()}))
+
+        return render_to_response("base/invoice/wizard/item_add_step.html", RequestContext(request, {'proposal':response,'form':form, 'model':model}))
+
+    def post(self, request, *args, **kwargs):
+        id = kwargs.get('id')
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+        proposal = Proposal.objects.get_by_id(id, business=business)
+        if proposal in Proposal.objects.ERRORS:
+            return HttpResponse(status=404)
+
+        form = ItemForm(request.POST)
+
+        if form.is_valid():
+            item = proposal.add_item(form.cleaned_data, business)
+            if item in Proposal.ERRORS:
+                return JsonResponse(data={},status=500)
+            return JsonResponse(data={'id_item':item.id})
+        else:
+            return render_to_response("base/invoice/includes/item_form.html", RequestContext(request,{'proposal':proposal, 'form':form}),status=400)
+
+
+class ItemView(View):
+
+     def set_initial(self, item):
+         return {'oferta':item.oferta.name,
+                 'discount':item.discount,
+                 'description':item.description,
+                 'quantity':item.quantity,
+                 'unit_cost':item.unit_cost,
+                 'tax':item.tax}
+
+     def get(self, request, *args, **kwargs):
+        id_proposal = kwargs.get('id')
+        id_item = kwargs.get('id_item')
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+        response = Proposal.objects.get_by_id(id_proposal, business=business)
+        if response in Proposal.objects.ERRORS:
+            return HttpResponse(status=404)
+
+        if id_item:
+            item = response.get_item_by_id(id_item)
+
+            if item in Proposal.ERRORS:
+                return HttpResponse(status=404)
+
+            form = ItemForm(initial=self.set_initial(item))
+
+            return render_to_response("base/invoice/includes/item_form.html", RequestContext(request, {'proposal':response,'form':form,'item':item}))
+
+        else:
+             return render_to_response("base/invoice/includes/items.html", RequestContext(request, {'proposal':response,'items':response.get_items()}))
+
+
+     def post(self, request, *args, **kwargs):
+         id = kwargs.get('id')
+         id_item = kwargs.get('id_item')
+         user = request.user
+         business = Business.objects.get_business_by_user(user=user)
+         response = Proposal.objects.get_by_id(id, business=business)
+         if response in Proposal.objects.ERRORS:
+             return HttpResponse(status=404)
+
+         item = response.get_item_by_id(id_item)
+
+         if item in Proposal.ERRORS:
+             return HttpResponse(status=404)
+
+         form  = ItemForm(request.POST)
+         if form.is_valid():
+             item = Item.objects.update_item(form.cleaned_data, item)
+             if item in Item.objects.ERRORS:
+                 return JsonResponse(status=500, data={})
+             else:
+                 return JsonResponse(data={'id_item':item.id})
+         else:
+             return render_to_response("base/invoice/includes/item_form.html", RequestContext(request, {'proposal':response,'form':form,'item':item}), status=404)
+
+class ItemDelete(View):
+
+    def post(self, request, *args, **kwargs):
+        #Aqui tambien viene el id del proposal para comer un poco de ... y verificar si pertenece al business y bla bla bla...
+
+        id = kwargs.get('id_item')
+        print(id)
+        Item.objects.delete_item(id)
+        return HttpResponse()
+
+class ProposalView(View):
+
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('id')
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+
+        if id:
+            if not check_permission(request=request, permission='view_proposal'):
+                return HttpResponseRedirect(redirect_to=reverse('login'))
+            proposal = Proposal.objects.get_by_id(id=id, business=business)
+            if proposal in Proposal.objects.ERRORS:
+                return HttpResponse(status=404)
+
+            if request.is_ajax():
+                return render_to_response("base/invoice/proposal/proposal_detalles.html", RequestContext(request,{'proposal':proposal}))
+
+            return render_to_response("base/invoice/proposal/proposal_detalles_html.html", RequestContext(request,{'proposal':proposal}))
+        else:
+            if not check_permission(request=request, permission='list_proposal'):
+                return HttpResponseRedirect(redirect_to=reverse('login'))
+            proposals = Proposal.objects.get_by_business(business=business)
+
+            if request.is_ajax():
+                return render_to_response("base/invoice/table.html",RequestContext(request, {'proposals':proposals}))
+
+            return render_to_response("base/invoice/proposal_list.html", RequestContext(request,{'proposals':proposals,'model':"Proposals", 'description':"Listado de propuestas"}))
+
+
+class ProposalEmailSend(View):
+
+    def post(self, request, *arg, **kwargs):
+        if not check_permission(request=request, permission='mail_proposal'):
+                return HttpResponseRedirect(redirect_to=reverse('login'))
+        id = kwargs.get('id')
+
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+
+        proposal = Proposal.objects.get_by_id(id=id, business=business)
+        proposal.event.schedule()
+        if proposal in Proposal.objects.ERRORS or not proposal.may_send_email():
+            return HttpResponse(status=404)
+
+        response = task_send_proposal(proposal)
+
+        if response == OK:
+            return JsonResponse(status=200, data={})
+        else:
+            return JsonResponse(status=500, data={})
+
+class ProposalDeny(View):
+
+    def get(self, request, *args, **kwargs):
+        pidb64 = kwargs.get('pidb64')
+        tokenb64 = kwargs.get('token')
+        id = kwargs.get('id')
+        if id:
+            if not check_permission(request=request, permission='deny_proposal'):
+                return HttpResponseRedirect(redirect_to=reverse('login'))
+            user = request.user
+            business = Business.objects.get_business_by_user(user=user)
+
+            proposal = Proposal.objects.get_by_id(id=id, business=business)
+
+            if proposal in Proposal.objects.ERRORS:
+                return HttpResponse(status=404)
+            response = proposal.deny_by_business();
+
+            if response in Proposal.ERRORS:
+                return JsonResponse(data={'error':response},status=400)
+            return JsonResponse(data={'id':response.id})
+        try:
+            id = force_text(urlsafe_base64_decode(pidb64))
+            token = force_text(urlsafe_base64_decode(tokenb64))
+
+            response = Proposal.objects.deny_proposal(id=id, token=token)
+            print(response)
+            if response == Proposal.objects.ERROR_TOKEN:
+                return render_to_response("base/invoice/proposal/failed.html")
+            elif response == Proposal.objects.ERROR_EXPIRED:
+                return render_to_response("base/invoice/proposal/failed.html")
+            else:
+                return render_to_response("base/invoice/proposal/denied_success.html")
+        except Exception as e:
+            print(e)
+            return HttpResponse(status=400)
+
+
+
+class ProposalAccept(View):
+
+    def get(self, request, *args, **kwargs):
+        pidb64 = kwargs.get('pidb64')
+        tokenb64 = kwargs.get('token')
+
+        # id = kwargs.get('id')
+        # if id:
+        #     if not check_permission(request=request, permission='accept_proposal'):
+        #         return HttpResponseRedirect(redirect_to=reverse('login'))
+        #     user = request.user
+        #     business = Business.objects.get_business_by_user(user=user)
+        #
+        #     proposal = Proposal.objects.get_by_id(id=id, business=business)
+        #
+        #     if proposal in Proposal.objects.ERRORS:
+        #         return HttpResponse(status=404)
+        #     response = proposal.accept_by_business();
+        #
+        #     if response in Proposal.ERRORS:
+        #         return JsonResponse(data={'error':response},status=400)
+        #     return JsonResponse(data={'id':response.id})
+        #
+        # else:
+        try:
+            id = force_text(urlsafe_base64_decode(pidb64))
+            token = force_text(urlsafe_base64_decode(tokenb64))
+
+            response = Proposal.objects.accpet_proposal(id=id, token=token)
+            print(response)
+            if response in Proposal.objects.ERRORS:
+                return render_to_response("base/invoice/proposal/failed.html",
+                                          RequestContext(request,{'proposal':response}))
+            else:
+                return render_to_response("base/invoice/proposal/accepted_success.html",
+                                          RequestContext(request,{'proposal':response}))
+        except Exception as e:
+            print(e)
+            return HttpResponse(status=400)
+
+class ProposalDeleteView(View):
+
+    def post(self, request, *args, **kwargs):
+        if not check_permission(request=request, permission='delete_proposal'):
+           return HttpResponseRedirect(redirect_to=reverse('login'))
+        id = kwargs.get('id')
+        if id:
+            user = request.user
+            business = Business.objects.get_business_by_user(user=user)
+
+            proposal = Proposal.objects.get_by_id(id=id, business=business)
+            response = Proposal.objects.cancell_proposal(proposal)
+
+            if response in Proposal.objects.ERRORS:
+                return HttpResponse(status=400)
+            return HttpResponse()
+
+        return HttpResponse()
+
+class InvoiceView(View):
+
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('id')
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+
+        if id:
+            if not check_permission(request=request, permission='view_invoice'):
+                return HttpResponseRedirect(redirect_to=reverse('login'))
+            invoice = Invoice.objects.get_by_id(id=id, business=business)
+            if invoice in Invoice.objects.ERRORS:
+                return HttpResponse(status=404)
+            else:
+                if request.is_ajax():
+                    return render_to_response("base/invoice/invoice_detalles.html", RequestContext(request,{'invoice':invoice}))
+                return render_to_response("base/invoice/invoice_detalles_html.html", RequestContext(request,{'invoice':invoice}))
+        else:
+            print(check_permission(request=request, permission='list_invoice'))
+            if not check_permission(request=request, permission='list_invoice'):
+                return HttpResponseRedirect(redirect_to=reverse('login'))
+            invoices = Invoice.objects.get_by_business(business=business)
+
+            if request.is_ajax():
+                return render_to_response("base/invoice/table_invoice.html",RequestContext(request, {'invoices':invoices}))
+
+            return render_to_response("base/invoice/invoice_list.html",RequestContext(request, {'invoices':invoices}))
+
+
+class InvoiceEvent(View):
+
+    def get(self, request, *args, **kwargs):
+        if not check_permission(request=request, permission='create_update_invoice'):
+           return HttpResponseRedirect(redirect_to=reverse('login'))
+        user = request.user
+        business = Business.objects.filter(owner=user).first()
+
+        id = kwargs.get('id')
+        if id:
+            try:
+                invoice = Invoice.objects.get_by_id(id=id, business=business)
+                event = invoice.proposal.event
+            except:
+                return HttpResponse(status=404)
+            form = InvoiceEventForm(instance=event, initial={'due_date':invoice.due_date,'business':business,'comment':invoice.proposal.client_message})
+
+            if request.is_ajax():
+                 return render_to_response('base/invoice/wizard/event_step.html', RequestContext(request, {'form':form,'model':'invoice','id':id, 'edit':True}))
+
+        else:
+            form = InvoiceEventForm(initial={'business':business})
+
+            if request.is_ajax():
+                return render_to_response('base/invoice/wizard/event_step.html', RequestContext(request, {'form':form,'model':'invoice','id':id}))
+
+        return render_to_response('base/invoice/wizard/wizard.html', RequestContext(request, {'form':form,  'model':'invoice', 'id':id }))
+
+
+    def post(self, request, *args, **kwargs):
+        if not check_permission(request=request, permission='create_update_invoice'):
+           return HttpResponseRedirect(redirect_to=reverse('login'))
+        user = request.user
+        business = Business.objects.filter(owner=user).first()
+        form = InvoiceEventForm(request.POST, initial={'business':business})
+        errors = {}
+        id = kwargs.get('id')
+
+
+
+        invoice = None
+        if id:
+            invoice = Invoice.objects.get_by_id(id=id, business=business)
+
+            if not invoice:
+                return HttpResponse(status=404)
+
+        if form.is_valid():
+
+            response = Event.objects.create_or_update_invoice_from_event(data=form.cleaned_data, invoice=invoice, handly=True)
+
+
+            if response in Event.objects.ERRORS:
+
+               errors['server'] = 'Intente de nuevo'
+               return render_to_response('base/invoice/wizard/event_step.html', RequestContext(request, {'form':form,'errors':errors}))
+            else:
+                return JsonResponse(status=200, data={'invoice_id':response.id}, safe=False)
+        else:
+            return render_to_response('base/invoice/wizard/event_step.html', RequestContext(request, {'form':form,'errors':errors}),status=400)
+
+class InvoiceEmailSend(View):
+
+    def post(self, request, *arg, **kwargs):
+        if not check_permission(request=request, permission='mail_invoice'):
+           return HttpResponseRedirect(redirect_to=reverse('login'))
+        id = kwargs.get('id')
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+
+        invoice = Invoice.objects.get_by_id(id=id, business=business)
+        if invoice in Invoice.objects.ERRORS or not invoice.may_send_email():
+            return HttpResponse(status=404)
+
+        response = task_send_invoice(invoice)
+
+        if response == OK:
+            return JsonResponse(status=200, data={})
+        else:
+            return JsonResponse(status=500, data={})
+
+
+
+class InvoiceDeleteView(View):
+
+    def post(self, request, *args, **kwargs):
+        if not check_permission(request=request, permission='delete_invoice'):
+           return HttpResponseRedirect(redirect_to=reverse('login'))
+        id = kwargs.get('id')
+        if id:
+            user = request.user
+            business = Business.objects.get_business_by_user(user=user)
+
+            invoice = Invoice.objects.get_by_id(id=id, business=business)
+            response = Invoice.objects.delete_invoice(invoice)
+
+            if response in Invoice.objects.ERRORS:
+                return HttpResponse(status=400)
+            return HttpResponse()
+
+        return HttpResponse()
+
+# class PrintPDF(PDFTemplateView):
+#     template_name = "base/invoice/proposal_list_print_view.html"
+
+#class HelloPDFView(PDFTemplateView):
+#       template_name = "base/invoice/proposal_list_print_view.html"
+#
+#
+def invoice_downloadpdf(request, *args, **kwargs):
+
+
+   user = request.user
+   business = Business.objects.get_business_by_user(user=user)
+
+   invoice = Invoice.objects.get_by_id(id=kwargs.get('id_invoice'), business=business)
+   # response = HttpResponse(content_type='application/pdf')
+   tmplate = get_template('base/invoice/invoice_detalles_pdf_view.html')
+   html = tmplate.render(RequestContext(request, {'invoice':invoice}))
+   BASE = settings.MEDIA_ROOT + '/pdf/invoice/download/'
+   file = open(BASE + 'invoice'+str(invoice.number)+'.pdf','w+b')
+   # pisaStatus = pisa.CreatePDF(
+   #     html.encode('utf-8'),
+   #     dest=file,
+   #     encoding='utf-8',
+   #     link_callback=link_callback)
+
+   file.seek(0)
+   pdf = file.read()
+   file.close()
+   response = HttpResponse(content=pdf, content_type='application/pdf')
+   response['Content-Disposition'] = 'attachment; filename='+file.name
+   return response
+
+def proposal_downloadpdf(request, *args, **kwargs):
+
+
+   user = request.user
+   business = Business.objects.get_business_by_user(user=user)
+
+   proposal = Proposal.objects.get_by_id(id=kwargs.get('id_proposal'), business=business)
+   # response = HttpResponse(content_type='application/pdf')
+   tmplate = get_template('base/invoice/proposal/proposal_detalles_pdf_view.html')
+   html = tmplate.render(RequestContext(request,{'proposal':proposal}))
+   BASE = settings.MEDIA_ROOT + '/pdf/proposal/download/'
+   file = open(BASE + 'proposal'+str(proposal.number)+'.pdf','w+b')
+   # pisaStatus = pisa.CreatePDF(
+   #     html.encode('utf-8'),
+   #     dest=file,
+   #     encoding='utf-8',
+   #     link_callback=link_callback)
+
+   file.seek(0)
+   pdf = file.read()
+   file.close()
+   response = HttpResponse(content=pdf, content_type='application/pdf')
+   response['Content-Disposition'] = 'attachment; filename='+file.name
+   return response
+
+def finish_send_proposal(request, *args, **kwargs):
+   user = request.user
+   business = Business.objects.get_business_by_user(user=user)
+
+   proposal = Proposal.objects.get_by_id(id=kwargs.get('id_proposal'), business=business)
+
+   response = task_send_proposal(proposal)
+
+   if response == OK:
+       messages.success(request, "El correo ha sido enviado satisfactoriamente")
+   else:
+       messages.error(request, "Lo sentimos, ocurrio un error al enviar su correo. Intente de nuevo")
+
+   return HttpResponseRedirect(redirect_to=reverse('proposal_list'))
+
+def finish_send_invoice(request, *args, **kwargs):
+   user = request.user
+   business = Business.objects.get_business_by_user(user=user)
+
+   invoice = Invoice.objects.get_by_id(id=kwargs.get('id_invoice'), business=business)
+
+   response = task_send_invoice(invoice=invoice)
+
+   if response == OK:
+       messages.success(request, "El correo ha sido enviado satisfactoriamente")
+   else:
+       messages.error(request, "Lo sentimos, ocurrio un error al enviar su correo. Intente de nuevo")
+
+   return HttpResponseRedirect(redirect_to=reverse('invoice_list'))
+

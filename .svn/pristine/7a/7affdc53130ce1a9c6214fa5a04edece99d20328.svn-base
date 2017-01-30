@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+Estimado {{ business }}
+
+{{ event.customer }} ha reservado para {{ event.event_date }}
+<fieldset>
+    <legend>Datos del cliente</legend>
+    Nombre {{ event.customer.first_name }}
+    Apellidos {{ event.customer.last_name }}
+    Telefono {{ event.customer.cellphone }}
+    Address {{ event.customer.address }}
+</fieldset>
+
+Para mas detalles siga el siguiente enlace <a href="#"> Ver mas</a>
+
+</body>
+</html>

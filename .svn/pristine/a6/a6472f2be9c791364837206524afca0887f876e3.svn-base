@@ -1,0 +1,118 @@
+/**
+ * Created by Hector on 22/01/2017.
+ */
+
+app.controller('WebsiteController', ['$scope', 'NotificationService', 'AlertConfirmService', 'WizardHandler', '$aside', 'WebsiteService', '$stateParams','Upload', function ($scope, NotificationService, AlertConfirmService, WizardHandler, $aside, WebsiteService, $stateParams,Upload) {
+
+    console.log($stateParams.step);
+    $scope.page = {
+        title: 'Website',
+        description: 'In most applications you need basic table listings and editing capabilities.' +
+        ' With this app you can create simple admin functionality based on a json web service.',
+        icon: 'md md-cloud'
+    };
+
+      // settings
+    $scope.gallery = {
+        singular: 'Image',
+        plural: 'Images',
+        cmd: 'New'
+    };
+
+    /*Get Website by Business*/
+    WebsiteService.getAll().success(function (data) {
+        $scope.website = data;
+        console.debug(data);
+    }).error(function (data) {
+
+    });
+    //$scope.website = WebsiteService.getWebsite();
+    //console.log($scope.website);
+
+    /*Basic info*/
+    $scope.basicInfoOnlyAdd = false;
+    $scope.saveBasicInfo = function (basicinfo) {
+
+        console.log(basicinfo);
+
+        WebsiteService.edit("basic_info", $scope.website.id, basicinfo)
+            .success(function (data) {
+                if ($scope.basicInfoOnlyAdd) {
+                    console.log("save");
+                    NotificationService.success("", "Se ha actualizado");
+                } else {
+                    console.log("save & add");
+                    WizardHandler.wizard().next();
+                }
+            }).error(function (data) {
+                NotificationService.error("", "Error al actualizar");
+            });
+    }
+
+    $scope.onlySaveBasicInfo = function () {
+        $scope.basicInfoOnlyAdd = true;
+    }
+
+    $scope.saveAndContinueBasicInfo = function () {
+        $scope.basicInfoOnlyAdd = false;
+    }
+
+    /*Website Gallery*/
+    var formTplGallery = $aside({
+        scope: $scope,
+        templateUrl: '/static/assets/tpl/website/form-gallery.html',
+        show: false,
+        placement: 'left',
+        backdrop: false,
+        animation: 'am-slide-left'
+
+    });
+
+    showGalleryForm = function () {
+        angular.element('.tooltip').remove();
+        formTplGallery.show();
+    };
+
+    hideGalleryForm = function () {
+        formTplGallery.hide();
+    };
+
+    $scope.$on('$destroy', function () {
+        hideForm();
+    });
+
+    $scope.createItem = function () {
+        var item = {editing: true}
+        $scope.item = item;
+        showGalleryForm();
+    };
+
+    // File Upload
+    $scope.fileReaderSupported = window.FileReader !== undefined && (window.FileAPI === undefined || FileAPI.html5 !== false);
+    $scope.upload = function (file) {
+        //alert("dddd")
+
+        if (file !== null && file !== undefined) {
+            Upload.upload({
+                url: '/api/logosave',
+                file: file
+            })
+                //.progress(progressHandler)
+                .success(successHandler);
+
+        }
+    };
+    $scope.$watch('logofile', function () {
+        console.log($scope.logofile);
+        $scope.upload($scope.logofile);
+
+    });
+
+    successHandler = function (data, status, headers, config) {
+        console.log(data);
+        //$scope.basicinfo.logofile = data.logo;
+        //console.log('file ' + config.file.name + 'uploaded. Response: ' + JSON.stringify(data));
+    };
+
+
+}]);

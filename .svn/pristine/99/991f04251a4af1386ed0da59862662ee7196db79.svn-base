@@ -1,0 +1,22 @@
+from base.models import Address, N_City, Customer
+
+__author__ = 'amado'
+
+def serialize_query(query_set):
+    lista = []
+    for ent in query_set:
+        data_sl = ent.serialize()
+        lista.append(data_sl)
+    return data_sl
+
+def test_set_address():
+    city = N_City.objects.first()
+
+    lista = Customer.objects.all()
+
+    for cust in lista:
+        ad = Address(first_line="Calle del medio", zip=10400, city=city)
+        ad.customer = cust
+        ad.save()
+        print(cust)
+

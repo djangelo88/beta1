@@ -1,0 +1,38 @@
+{% extends 'base_print.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+{% block print_content %}
+
+    {% include 'base/invoice/includes/event.html' with event=proposal.event %}
+
+    {#    <table class="table table-bordered">#}
+    {#        <thead>#}
+    {#        <tr>#}
+    {#            <th   class="text-uppercase">Customer Name</th>#}
+    {#            <th class="text-uppercase">Email</th>#}
+    {#            <th class="text-uppercase">Company</th>#}
+    {##}
+    {#        </tr>#}
+    {#        </thead>#}
+    {#        <tbody>#}
+    {#        {% for customer in customers %}#}
+    {#            <tr>#}
+    {#                <td>#}
+    {#                    {{ customer.full_name }}#}
+    {##}
+    {#                </td>#}
+    {#                <td>#}
+    {#                    {{ customer.email }}#}
+    {#                </td>#}
+    {##}
+    {#                <td>#}
+    {#                    {{ customer.company }}#}
+    {#                </td>#}
+    {#            </tr>#}
+    {#        {% endfor %}#}
+    {#        </tbody>#}
+    {#    </table>#}
+
+
+{% endblock %}

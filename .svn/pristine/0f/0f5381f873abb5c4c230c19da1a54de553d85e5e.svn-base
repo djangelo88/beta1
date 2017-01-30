@@ -1,0 +1,5 @@
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="business_id" value="{{ business_id }}">
+    <input type="submit" value="Connect"/>
+</form>

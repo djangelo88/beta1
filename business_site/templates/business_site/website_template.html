@@ -1,0 +1,10 @@
+{% extends 'base2.html' %}
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+{% block title %} Website - Template {% endblock %}
+{% block main_content %}
+    {% include 'business_site/website_wizard.html' with template_form=form template_status="active" %}
+{% endblock %}

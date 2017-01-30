@@ -1,0 +1,91 @@
+{% load widget_tweaks %}
+{#<form action="" method="post" id="form_category">#}
+{#    {% csrf_token %}#}
+{##}
+{#    {{ form }}#}
+{#    <input type="submit"/>#}
+{#</form>#}
+
+<form action="category/add" method="post" id="form_category" class="form-horizontal">
+    {% csrf_token %}
+
+    <div class="form-group {% if form_category.description.errors %} has-error {% endif %}">
+        <label for="description" class=" col-xs-12"> Nueva categoría <span class="required-field">*</span></label>
+
+        <div class="col-xs-12 col-sm-9">
+            {% render_field form_category.description class="form-control" %}
+        </div>
+         {% for error in  form_category.description.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {{ error }} </div>
+        {% endfor %}
+        <div class="display-inline pull-right" style="margin-right: 15px">
+            <button type="button" class="btn btn-success btn-flat" id="submit_category"><i class="fa fa-check"></i>
+            </button>
+            <button type="button" class="btn btn-default btn-flat" id="reset_category"><i class="fa fa-close"></i>
+            </button>
+        </div>
+
+    </div>
+
+</form>
+<script>
+    $(document).ready(function () {
+        $("#reset_category").click(function () {
+            $("#category_container").empty();
+            $("#category_container").addClass('collapse');
+        });
+
+        $("#submit_category").click(function () {
+            var form_data = $("#form_category").serialize();
+            set_csrf_token();
+
+            return $.ajax({
+                type: "POST",
+                url: 'category/add',
+                data: form_data,
+                success: function (data, status_code) {
+{#                    console.debug(status_code);#}
+{#                    console.debug(data);#}
+                    toastr.success("Se ha agregado correctamente la categoría");
+
+                    var url = 'category/list/'+data.id;
+
+                    $.get(url,{id:data.id}, function (data) {
+                        $('#field_container').empty().append(data);
+                        $('#category_container').addClass('collapse');
+                        $('#category_container #id_description').val('');
+                    });
+                },
+                error: function (response) {
+{#                    console.debug(response);#}
+
+                     $("#form_category .form-group").addClass('has-error');
+{#                     $("#form_category .form-group").addClass('has-error');#}
+
+                }
+            });
+        });
+
+
+    });
+
+    function set_csrf_token() {
+        var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    //alert(csrftoken);
+                }
+            }
+        });
+    }
+
+</script>
+

@@ -1,0 +1,100 @@
+{% extends 'base2.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+{% block title %} {{ model }} {% endblock %}
+{% block item_proposals %} active {% endblock %}
+
+{% block content_header %}
+    <h1>
+        <i class="fa fa-inbox"></i> Presupuestos
+        <small class="hidden-xs">{{ description }}</small>
+    </h1>
+    <ol class="breadcrumb no-print">
+        <li><a href="#"><i class="fa fa-inbox"></i> Home</a></li>
+        <li class="active">Presupuestos</li>
+    </ol>
+
+{% endblock %}
+
+<!-- Main content -->
+
+{% block main_content %}
+
+    <div class="clearfix">
+        <div class="pull-right crud-actions">
+
+            <a href="{% url 'proposal_event_create' %}" class="btn btn-github add no-print"><i class="fa fa-plus"></i>
+                <span class="hidden-xs">Nuevo presupuesto</span>
+                </a>
+            {#            <button type="button" class="btn btn-github add no-print" data-toggle="modal"#}
+            {#                    data-target="#newCustomerModal"#}
+            {#                    data-modal-title="Nuevo proposal">#}
+            {#                <i class="fa fa-plus"></i> <span class="hidden-xs">Nuevo proposal</span>#}
+            {#            </button>#}
+            <a href="#" class="btn btn-github btn-print no-print"> <i class="fa fa-print"></i> <span class="hidden-xs"> Imprimir</span></a>
+
+{#            <a href="#" class="btn btn-github no-print "> <i class="fa fa-file-text"></i> <span#}
+{#                    class="hidden-xs"> Exportar a PDF</span></a>#}
+        </div>
+    </div>
+    <div id="tableContainer" class="clearfix">
+        {% include 'base/invoice/table.html' %}
+    </div>
+
+
+    <div class="modal fade" id="newCustomerModal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="gridSystemModalLabel"></h4>
+                </div>
+                <div class="modal-body" style="display: flex">
+
+                </div>
+                <div class="modal-footer">
+                    <button id="saveAdd" type="button" class="btn btn-success add-btn">Guardar y adicionar otro</button>
+                    <button id="save" type="button" class="btn btn-success add-btn">Guardar</button>
+                    <button id="saveEdit" type="button" class="btn btn-warning edit-btn">Guardar</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <script type="text/javascript" src="{% static 'js/components/custom.form.js' %}"></script>
+    <script>
+
+    </script>
+{% endblock %}
+
+{% block js_block_one %}
+    <script>
+        $(document).ready(function () {
+            $.CustomDatatableFormObject.model_name = "proposal";
+            $.CustomDatatableFormObject.datatable_container = "#tableContainer";
+            $.CustomDatatableFormObject.datatable_id = "#proposal_table";
+
+            $(".btn-print").click(function () {
+                return window.print();
+            });
+
+            localStorage.setItem('activeStep', -1);
+            $model_name = 'proposal';
+        });
+    </script>
+
+{% endblock %}
+{% block css_block %}
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/datatables/dataTables.bootstrap.css' %}"/>
+{% endblock %}
+
+{% block print_block %}
+    {% include 'base/invoice/proposal_list_print_view.html' %}
+{% endblock %}CANCELADA
+
+

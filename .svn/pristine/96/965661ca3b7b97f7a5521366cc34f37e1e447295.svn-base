@@ -1,0 +1,42 @@
+[
+  {
+    "prefix": 1,
+    "first_name": "Hector Luis",
+    "last_name": "Rodríguez Sánchez",
+    "suffix": "",
+    "email": "hector@caterfull.com",
+    "company": "Caterfull",
+    "mobile_phone": "+53535353",
+    "home_phone": "45454545",
+    "birthdate": "12.06.2013",
+    "address": {
+      "line1": "",
+      "line2": "",
+      "city": "",
+      "country": "",
+      "state": "",
+      "zip_code": ""
+    },
+    "comments": "Duis varius nisl eget lectus imperdiet egestas congue, lacus est tempus non nulla."
+  },
+  {
+    "prefix": 2,
+    "first_name": "Maria",
+    "last_name": "López",
+    "suffix": 1,
+    "email": "maria@caterfull.com",
+    "company": "Caterfull",
+    "mobile_phone": "+53535353",
+    "home_phone": "45454545",
+    "birthdate": "12.06.2013",
+    "address": {
+      "line1": "",
+      "line2": "",
+      "city": "",
+      "country": "",
+      "state": "",
+      "zip_code": ""
+    },
+    "comments": "Duis varius nisl eget lectus imperdiet egestas congue, lacus est tempus non nulla."
+  }
+]

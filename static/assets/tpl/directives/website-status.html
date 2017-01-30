@@ -1,0 +1,78 @@
+
+    <div class="col-xs-12">
+        <div class=" ">
+            <div class="card small">
+              <div class="green light-green p-10">
+                <div class="pull-right">
+
+           <!--          <button type="button" class="btn btn-round-sm btn-link"
+                      bs-dropdown="dropdown"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                      data-template-url="/static/assets/tpl/partials/website-actions.html"
+                      data-animation="mat-grow-top-right"
+                      bs-tooltip
+                      title="More stats">
+                         <i class="md md-more-vert" style="color: #ffffff"></i>
+                    </button>-->
+                    <a href="#" class="btn btn-round-sm btn-link  "
+                     bs-dropdown="dropdown"
+                     data-template-url="/static/assets/tpl/partials/website-actions.html"
+                     data-animation="mat-grow-top-right">
+                    <i class="md md-more-vert" style="color: #ffffff"></i>
+                  </a>
+
+                </div>
+
+                <h4 class="no-margin white-text w600">Website status</h4>
+                <div class="f11" style="opacity:0.8">
+                  <i class="md md-play-arrow"></i> published
+                </div>
+
+                <div class="p-10   f60 text-center" style="line-height: 1">
+                    <i class="md md-cloud"></i>
+                </div>
+                  <div class="row">
+                   <div class="pull-right m-r-15"  >
+                    <i class="md md-trending-up   "></i>
+                    9%
+                  </div>
+                  </div>
+
+              </div>
+
+              <div class="card-content p-10">
+                <div class="row">
+                  <div class="col-md-6 text-center" style="border-right: 1px #F0F0F0 solid;">
+                    <h3 class="no-margin w300">1597</h3>
+                    <p class="grey-text w600">Monthly total</p>
+                  </div>
+                  <div class="col-md-6 text-center">
+                    <h3 class="no-margin w300">34 </h3>
+                    <p class="grey-text w600">Today total</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <div class=" ">
+
+            <div class="panel panel-default left">
+              <div class="panel-heading">
+
+                <h2 class="panel-title grey-text">Progress</h2>
+                <h1 class="m-t-10 m-b-5 f30" ng-bind="serverLoad">82%</h1>
+                <div class="row">
+                  <div class="col-xs-12">
+                    <div class="progress m-b-5">
+                      <div class="progress-bar progress-bar-info" style="width: 90%;"></div>
+                    </div>
+                  </div>
+                </div>
+                <p class="small grey-text no-margin">4 of 8 steps completed</p>
+              </div>
+              <div id="server-load-chart"> </div>
+            </div>
+
+          </div>
+    </div>

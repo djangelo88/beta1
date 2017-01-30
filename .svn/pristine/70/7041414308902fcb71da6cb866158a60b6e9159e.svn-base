@@ -1,0 +1,32 @@
+import json
+from django.http.response import JsonResponse, HttpResponse
+from django.views.generic.base import View
+from base.models import Business
+from business_site.models import Website
+
+__author__ = 'maykel'
+
+
+class AllWebsiteData(View):
+    def get(self, request, *args, **kwargs):
+        b = Business.objects.get_business_by_user(request.user)
+        w = Website.objects.get_website_by_business(business=b).first()
+        if w:
+            data = w.serialize()
+        else:
+            return JsonResponse({}, safe=False, status=200)
+        return JsonResponse(data, safe=False, status=200)
+
+class WebsiteBasics(View):
+    def post(self, request, *args, **kwargs):
+        data = (json.loads(request.body.decode()))
+        print(request.FILES)
+        print(data)
+        return
+        # return HttpResponse(status=200)
+
+class LogoSave(View):
+    def post(self, request, *args, **kwargs):
+        print('logo')
+        return
+

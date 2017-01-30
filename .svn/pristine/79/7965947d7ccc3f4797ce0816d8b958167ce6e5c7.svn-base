@@ -1,0 +1,83 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()"><i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+
+            <form class="form-floating caterfull-form" ng-submit="saveItem(item)" novalidate="novalidate">
+                <fieldset>
+                    <legend>
+                        <span ng-bind-html="item.icon"></span> {{ cmd }} {{ settings.singular }}</legend>
+                    <div class="form-group filled col-sm-9 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Nombre <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.name" ng-disabled="!item.editing"
+                               required>
+                    </div>
+                     <div class="form-group filled col-sm-9 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Descripcion <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.description" ng-disabled="!item.editing"
+                               required>
+                    </div>
+                     <div class="form-group filled col-sm-9 no-padding-right-responsive">
+                    <label class="control-label correct-margin-left">Seleccione los Ingredientes
+                        <span class="required-field">*</span></label>
+                        <div class="clearfix"></div>
+                         <div class="clearfix"></div>
+                        <div >
+                            <div class="table-responsive well no-padding white no-margin">
+                                <table class="table table-full m-b-60" id="table-area-1" fsm-big-data="data of data take 30">
+                                    <thead>
+                                    <tr fsm-sticky-header scroll-body="'#table-area-1'" scroll-stop="64">
+                                        <th><input type="checkbox" class="relative" ng-model="selectAll" ng-click="checkAll()"/></th>
+                                        <th fsm-sort="puesto">Nombre</th>
+                                        <th fsm-sort="puesto">Cantidad</th>
+
+                                        <th fsm-sort="puesto">Unidad de Medida</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-repeat="(key, ing) in ingredients" ng-click="item.selected=!item.selected" >
+                                        <td><input type="checkbox" class="relative" ng-model="ing.selected" ng-click="checkIngredient(item, ing, $event)"/></td>
+                                        <td>
+                                            {{ ing.name }}
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+
+                                                <input ng-disabled="!ing.selected" type="number" class="form-control" ng-model="ing.cant"/>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {{ ing.measure.siglas }}
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="clearfix"></div>
+                </fieldset>
+
+                <fieldset>
+                   <!-- Aqui -->
+                    <div class="clearfix"></div>
+                    <div class="clearfix"></div>
+
+                    <div class="form-group ">
+                        <button type="submit" class="btn btn-lg btn-primary" ng-show="item.creating"
+                                ng-click="saveAndAdd(true)">Save & add other
+                        </button>
+                        <button type="submit" class="btn btn-lg btn-primary" ng-hide="!item.editing"
+                                ng-click="saveAndAdd(false)">Save
+                        </button>
+                    </div>
+                </fieldset>
+            </form>
+
+        </div>
+    </div>
+</div>

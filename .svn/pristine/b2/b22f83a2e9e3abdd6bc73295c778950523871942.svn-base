@@ -1,0 +1,262 @@
+<section class="cards">
+    <div class="page-header">
+        <h1>
+            <i class="md md-cloud"></i>
+            Website | Template
+        </h1>
+
+        <p class="lead">
+            Material design defines cards as floating containers.
+            There are several types of cards.
+        </p>
+    </div>
+
+
+</section>
+
+
+<div class="col-md-9" ng-controller="WebsiteController">
+
+    <div>
+        <h1>Template Selection</h1>
+
+        <div class="col-md-4">
+            <div class="card bordered">
+                <div class="card-image">
+                    <img src="/static/assets/img/photos/4.jpg"/>
+
+                    <div class="card-title" ng-bind="website.template.name">Card profile icon</div>
+                </div>
+                <div class="card-content">
+                    <p ng-bind="website.template.description"></p>
+                </div>
+                <div class="card-action clearfix">
+                    <a href="" class="btn btn-link btn-icon" ng-model="website.template.id"><i
+                            class="md md-favorite red-text"></i>
+
+                        <div class="ripple-wrapper"></div>
+                    </a>
+
+                    <div class="pull-right">
+                        <a href="" class="btn btn-link black-text">preview</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <div class="clearfix"></div>
+    <div>
+        <h1 class="clearfix">Basic info</h1>
+
+        <div class="well white">
+            <form class="form-floating  ">
+                <fieldset>
+                    <legend class="subtitle">General elements</legend>
+                    <div class="form-group filled">
+                        <label class="control-label">Nombre del negocio</label>
+                        <input type="text" class="form-control" ng-model="website.basic_info.name">
+                    </div>
+                    <div ng-controller="UploadController">
+
+                        <div class="form-group">
+                            <label for="inputEmail" class="control-label">Logotipo</label>
+
+                            <div class="btn btn-info" ng-multiple="true" ngf-select ng-model="files">Upload logo</div>
+                        </div>
+
+
+                    </div>
+                    <div class="form-group filled">
+                        <label for="textArea" class="control-label">Descripción</label>
+                        <textarea class="form-control vertical " rows="3" id="textArea"
+                                  ng-model="website.basic_info.description"></textarea>
+                        <span class="help-block">Help.</span>
+                    </div>
+
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="reset" class="btn btn-default">Cancel</button>
+                    </div>
+
+                </fieldset>
+            </form>
+        </div>
+
+
+    </div>
+    <div>
+        <h1 class="clearfix">Gallery</h1>
+
+        <div class="well white">
+            <form class="form-floating  ">
+                <fieldset>
+                    <legend class="subtitle">Site Gallery</legend>
+                    <div class="form-group">
+                        <label for="textArea" class="control-label">Descripción</label>
+                        <textarea class="form-control vertical " rows="3" ng-bind="website.gallery.comments"></textarea>
+                        <span class="help-block">Help.</span>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend class="subtitle">Add image</legend>
+                    <div class="form-inline">
+                        <div ng-controller="UploadController" style="display: inline-block">
+                            <div class="form-group">
+                                <label for="inputEmail" class="control-label">Logotipo</label>
+
+                                <div class="btn btn-info" ng-multiple="true" ngf-select ng-model="files">Upload logo
+                                </div>
+                                <div class="text-center f15" style="width: 75px; display: inline-block">
+                                    <i class="md md-image"></i>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="inputEmail" class="control-label">Nombre para mostrar</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputEmail" class="control-label">Descripción</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="form-group  ">
+                            <button type="submit" class="btn btn-primary"><i class="md md-add"></i></button>
+                            <button type="submit" class="btn btn-default"><i class="md md-clear"></i></button>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group hidden">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="reset" class="btn btn-default">Cancel</button>
+                    </div>
+
+                </fieldset>
+                <fieldset>
+                    <legend class="m-b-30">Images</legend>
+                    <div class="col-md-4">
+                        <div class="card bordered">
+                            <div class="card-image">
+                                <img src="/static/assets/img/photos/2.jpg"/>
+                                <span class="card-title">Card click image</span>
+                            </div>
+                            <div class="card-content">
+                                <p>I am a very simple card. I am good at containing small bits of information. I am
+                                    convenient because I require little markup to use effectively.</p>
+                            </div>
+                            <div class="card-action clearfix">
+
+                                <a href="" class="btn btn-link btn-icon" ng-model="website.template.id">
+                                    <i class="md md-image red-text"></i>
+
+                                    <div class="ripple-wrapper"></div>
+                                </a>
+
+                                <div class="pull-right">
+                                    <button class="btn btn-link btn-icon "><i class="md md-edit"> </i></button>
+                                    <button class="btn btn-link btn-icon"><i class="md md-delete"></i></button>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+
+                </fieldset>
+            </form>
+        </div>
+
+
+    </div>
+    <div>
+        <h1 class="clearfix">Social network</h1>
+
+        <div class="well white">
+            <form class="form-floating  ">
+                <fieldset>
+                    <legend class="subtitle">Social network</legend>
+
+                </fieldset>
+
+                <div class="form-group filled">
+                    <label class="control-label">Facebook</label>
+
+                    <div class="input-group  ">
+                        <input type="text" class="form-control" placeholder=""
+                               ng-model="website.social_networks.facebook">
+
+                        <div class="input-group-addon">
+                            <a href="http://www.facebook.com/" target="_blank"><i class="fa fa-facebook"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group filled">
+                    <label class="control-label">Twitter</label>
+
+                    <div class="input-group ">
+
+                        <input type="text" class="form-control" placeholder=""
+                               ng-model="website.social_networks.twitter">
+
+                        <div class="input-group-addon">
+                            <a href="http://www.twitter.com/" target="_blank"><i class="fa fa-twitter"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group filled">
+                    <label class="control-label">Instagram</label>
+
+                    <div class="input-group filled clearfix">
+
+                        <input type="text" class="form-control" placeholder=""
+                               ng-model="website.social_networks.instagram">
+
+                        <div class="input-group-addon">
+                            <a href="http://www.instagram.com/" target="_blank"><i class="fa fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group filled">
+                    <label class="control-label">Yelp</label>
+
+                    <div class="input-group filled clearfix">
+
+                        <input type="text" class="form-control" placeholder="" ng-model="website.social_networks.yelp">
+
+                        <div class="input-group-addon">
+                            <a href="http://www.yelp.com/" target="_blank"><i class="fa fa-yelp"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group filled">
+                    <label class="control-label">G+</label>
+
+                    <div class="input-group filled clearfix">
+
+                        <input type="text" class="form-control" placeholder="" ng-model="website.social_networks.gplus">
+
+                        <div class="input-group-addon">
+                            <a href="http://www.gplus.com/" target="_blank"><i class="fa fa-google-plus-official"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+
+    </div>
+
+
+</div>
+
+<div class="col-md-3 no-padding">
+    <website-status>
+
+    </website-status>
+</div>

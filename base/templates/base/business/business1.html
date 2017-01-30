@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+
+
+{% block title %} Sign up {% endblock %}
+{% block content %}
+
+
+
+    <div class="register-page">
+        <div class="register-box">
+            <div class="login-logo-img">
+                <a href="#"><img src="{% static 'images/logo-large.png' %}" alt=""/></a>
+            </div>
+            <!-- /.login-logo -->
+            <div class="register-box-body">
+                <p class="register-box-msg "><strong class="text-caterfull">Sign up </strong> is for free ... </p>
+
+                <form method="post">{% csrf_token %}
+
+                    <div class="form-group has-feedback {% if form.name.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Username' %}</label>#}
+                        {% render_field form.name class="form-control " %}
+                        <span class="fa fa-user form-control-feedback "></span>
+                        {% for error in  form.name.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group {% if form.first_name.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Name' %}</label>#}
+                        {% render_field form.first_name class="form-control " %}
+                        {% for error in  form.first_name.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group {% if form.last_name.errors %} has-error {% endif %} ">
+                        {#                    <label class="roboto">{% trans 'Last name' %}</label>#}
+                        {% render_field form.last_name class="form-control " %}
+                        {% for error in  form.last_name.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group has-feedback {% if form.email.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Email' %}</label>#}
+                        {% render_field form.email class="form-control " %}
+                        <span class="fa fa-envelope form-control-feedback" id="ënvelope-feed"></span>
+                        {% for error in  form.email.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group has-feedback {% if form.password.errors %} has-error {% endif %}">
+                        {#                    <label>{% trans 'Password' %}</label>#}
+                        {#   <input type="password" class="form-control" placeholder="Password"/>#}
+                        {% render_field form.password class="form-control " %}
+
+                        <span class="fa fa-lock form-control-feedback "></span>
+                        {% for error in  form.password.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+
+                    </div>
+                    <div class="form-group has-feedback {% if form.password_confirm.errors %} has-error {% endif %}">
+                        {#                    <label>{% trans 'Password' %}</label>#}
+                        {#   <input type="password" class="form-control" placeholder="Password"/>#}
+                        {% render_field form.password_confirm class="form-control " %}
+
+                        <span class="fa fa-check form-control-feedback"></span>
+                        {% for error in  form.password_confirm.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+
+                    </div>
+                    <div class="form-group has-feedback {% if form.phone.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Phone' %}</label>#}
+                        {% render_field form.phone class="form-control " %}
+                        <span class="fa fa-phone form-control-feedback" id="ënvelope-feed"></span>
+                        {% for error in  form.phone.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group has-feedback {% if form.address.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Address' %}</label>#}
+                        {% render_field form.address class="form-control " %}
+                        <span class="fa fa-map-marker form-control-feedback" id="ënvelope-feed"></span>
+                        {% for error in  form.address.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group has-feedback {% if form.tax.errors %} has-error {% endif %}">
+                        {#                    <label class="roboto">{% trans 'Username' %}</label>#}
+                        {% render_field form.tax class="form-control " %}
+                        <span class="fa fa-user form-control-feedback "></span>
+                        {% for error in  form.tax.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                    {#                    <div class="form-group no-list">#}
+                    {#                        <label class="roboto">{% trans 'Subscriptions' %}   </label>#}
+                    {#                        {% render_field form.subscriptions class="" %}#}
+                    {#                        {% for error in  form.subscriptions.errors %}#}
+                    {#                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>#}
+                    {#                        {% endfor %}#}
+                    {#                    </div>#}
+
+                    <div class="row">
+                        <div class="col-xs-8">
+                            <div class="checkbox icheck">
+                                <label>
+                                    <input type="checkbox" id="terms_agree" required> I agree to the terms
+                                </label>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-xs-4">
+                            <button id="registerAction" type="submit"
+                                    class="btn btn-success btn-block btn-flat">{% trans 'Sign Up' %}</button>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                </form>
+                {##}
+                {#                        <div class="social-auth-links text-center">#}
+                {#                            <p>- OR -</p>#}
+                {#                            <a href="#" class="btn btn-block btn-social btn-facebook btn-flat"><i class="fa fa-facebook"></i> Sign#}
+                {#                                in using Facebook</a>#}
+                {#                            <a href="#" class="btn btn-block btn-social btn-google-plus btn-flat"><i class="fa fa-google-plus"></i>#}
+                {#                                Sign in using Google+</a>#}
+                {#                        </div>#}
+                <!-- /.social-auth-links -->
+                <hr/>
+
+                {#                {% url 'password_reset' as password_reset_url %}#}
+                {#                {% if password_reset_url %}#}
+                {#                    <div class="password-reset-link">#}
+                {#                        <a href="{{ password_reset_url }}">{% trans 'I already have a membership' %}</a>#}
+                {#                    </div>#}
+                {#                {% endif %}#}
+
+                <a href="{% url 'login' %}" class="text-center roboto">I already have a membership</a>
+
+            </div>
+            <!-- /.register-box-body -->
+        </div>
+        <!-- /.register-box -->
+    </div><!-- /.register-page -->
+
+
+
+    {#<form method="post">#}
+    {#    {% csrf_token %}#}
+    {#    <div>#}
+    {#        Nombre: {% render_field form.name %}#}
+    {#        <div>#}
+    {#            {{ form.name.errors }}#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div>#}
+    {#        Nombre del Propietario: {% render_field form.first_name %}#}
+    {#         <div>#}
+    {#            {{ form.first_name.errors }}#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div>#}
+    {#        Apellidos: {% render_field form.last_name %}#}
+    {#         <div>#}
+    {#            {{ form.last_name.errors }}#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div>#}
+    {#        Email: {% render_field form.email %}#}
+    {#         <div>#}
+    {#            {{ form.email.errors }}#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div>#}
+    {#        Contrasena: {% render_field form.password %}#}
+    {#         <div>#}
+    {#            {{ form.password.errors }}#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div>#}
+    {#        Confirmar Contrasena: {% render_field form.password_confirm %}#}
+    {#         <div>#}
+    {#            {{ form.password_confirm.errors }}#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div>#}
+    {#        Telefono: {% render_field form.phone %}#}
+    {#         <div>#}
+    {#            {{ form.phone.errors }}#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div>#}
+    {#        Direccion: {% render_field form.address %}#}
+    {#         <div>#}
+    {#            {{ form.address.errors }}#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div>#}
+    {#        Suscripciones: {% render_field form.subscriptions %}#}
+    {#         <div>#}
+    {#            {{ form.subscriptions.errors }}#}
+    {#        </div>#}
+    {#    </div>#}
+    {##}
+    {#    <input type="submit" value="Save"/>#}
+    {#</form>#}
+{% endblock %}
+
+
+
+
+
+{% block js_block_one %}
+    <!-- iCheck -->
+    <script type="text/javascript" src="{% static 'plugins/iCheck/icheck.min.js' %}"></script>
+    <script>
+        $(function () {
+            $('input').iCheck({
+                checkboxClass: 'icheckbox_minimal-grey',
+                radioClass: 'iradio_minimal-grey',
+                increaseArea: '20%' // optional
+            });
+        });
+    </script>
+    <script>
+        {#        $(document).ready(function () {#}
+        {#            $("#registerAction").submit(function(e){#}
+        {#                  e.preventDefault();#}
+        {#                  alert("dd");#}
+        {#              })#}
+        {#            if($("#terms_agree").checked()){#}
+        {#                $("#registerAction").enable();#}
+        {#            }else{#}
+        {#                $("#registerAction").disable();#}
+        {#            }#}
+        {#        })#}
+    </script>
+
+
+{% endblock %}

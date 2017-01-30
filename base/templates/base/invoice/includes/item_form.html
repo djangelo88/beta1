@@ -1,0 +1,182 @@
+{% load widget_tweaks %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+
+<form method="POST" action="
+
+
+        {% if item %}
+
+           {% url 'proposal_item_edit' proposal.id item.id %}
+
+        {% else %}{% url 'proposal_items_step' proposal.id %}{% endif %}"
+      id="item_form" data-item-id="{% if item %}{{ item.id }}{% endif %}">
+
+    {% csrf_token %}
+    <div class="col-sm-9">
+        <div class="form-group col-xs-12 {% if form.oferta.errors %} has-error {% endif %}">
+            <label> {{ form.oferta.label }} <span class="required-field">*</span></label>
+            {% render_field form.oferta class="form-control" %}
+
+            {% for error in  form.oferta.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+
+        </div>
+        <div class="form-group col-xs-12 {% if form.description.errors %} has-error {% endif %}">
+            <label> {{ form.description.label }}  </label>
+            {% render_field form.description class="form-control" rows="3" %}
+
+            {% for error in  form.description.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+        </div>
+
+        {#Sustituir esto#}
+        <div class="form-group col-xs-12 col-sm-3 {% if form.unit_cost.errors %} has-error {% endif %} ">
+            <label> {{ form.quantity.label }} <span class="required-field">*</span></label>
+            {% render_field form.quantity class="form-control calc" %}
+
+            {% for error in  form.quantity.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-group col-xs-12 col-sm-3 {% if form.unit_cost.errors %} has-error {% endif %}">
+            <label> {{ form.unit_cost.label }} <span class="required-field">*</span></label>
+            {% render_field form.unit_cost class="form-control calc" %}
+
+            {% for error in  form.unit_cost.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+        </div>
+        <div class="form-group col-xs-12 col-sm-3 {% if form.tax.errors %} has-error {% endif %}">
+            <label> {{ form.tax.label }} <span class="required-field">*</span></label>
+
+            <div class="input-group">
+                {% render_field form.tax class="form-control calc" %}
+                <div class="input-group-addon">%</div>
+            </div>
+
+
+            {% for error in  form.tax.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+        </div>
+        <div class="form-group col-xs-12 col-sm-3 {% if form.discount.errors %} has-error {% endif %}">
+            <label> {{ form.discount.label }}</label>
+
+            <div class="input-group">
+                {% render_field form.discount class="form-control calc" %}
+                <div class="input-group-addon">%</div>
+            </div>
+
+            {% for error in  form.discount.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+        </div>
+
+
+    </div>
+
+    <div class="col-sm-3 item-preview">
+
+        <h4>Subtotal</h4>
+
+        <p id="subtotalValue">$ 0.00</p>
+
+        <h4>Taxes</h4>
+
+        <p id="taxValue">$ 0.00</p>
+
+        <h4>Total</h4>
+
+        <p id="totalValue">$ 0.00</p>
+
+        <h4>Descuento</h4>
+
+        <p id="descValue">$ 0.00</p>
+
+        <h4>Grand total</h4>
+
+        <p id="grandTotalValue">$ 0.00</p>
+
+    </div>
+
+
+    {#    #}
+    {#    <div>#}
+    {#        Descripcion: {% render_field form.description %}#}
+    {#        <div>{{ form.description.errors }}</div>#}
+    {#    </div>#}
+
+    {#    <button id="button_save_item">Guardar</button>#}
+    {#    <input type="reset" value="Cancelar"/>#}
+</form>
+
+<script>
+    $(document).ready(function () {
+
+        calcular();
+
+        $(".calc").keyup(function () {
+            calcular();
+        });
+
+        function add_zero(variable){
+            var variableParse = parseFloat(variable.toFixed(2)) + "";
+
+            if(variableParse.lastIndexOf('.') == -1){
+               variableParse += ".00";
+
+            }else{
+                switch (variableParse.length - variableParse.lastIndexOf('.')){
+                    case 1:
+                        break;
+                    case 2:variableParse +=  "0";
+                        break;
+                }
+
+            }
+
+            return "$ " + variableParse;
+        }
+
+        function calcular(){
+
+            $cantidad = $("#id_quantity").val();
+            $costo = $("#id_unit_cost").val();
+            $tax = $("#id_tax").val();
+            $discount = $("#id_discount").val();
+
+
+            $subtotal_value = $cantidad * $costo;
+            $taxes_value = $subtotal_value * ($tax / 100);
+            $total_value = $subtotal_value + $taxes_value;
+
+            $descuento_value = $subtotal_value * ($discount / 100);
+
+            $grandTotal_value = $total_value - $descuento_value;
+
+            $("#subtotalValue").text(add_zero($subtotal_value));
+            $("#taxValue").text(add_zero($taxes_value));
+            $("#totalValue").text(add_zero($total_value));
+            $("#descValue").text(add_zero($descuento_value));
+            $("#grandTotalValue").text(add_zero($grandTotal_value));
+
+        }
+
+
+    });
+
+</script>
+
+{##}
+{#<div> Tax: {{ TAX }}</div>#}
+{#{% if item %}#}
+{#    <button id="item_delete" data-url="{% url 'proposal_item_delete' proposal.id item.id %}">Eliminar</button>#}
+{#{% endif %}#}
+
+
+{#<script type="text/javascript" src="{% static 'base/js/invoice/item_form.js' %}"></script>#}

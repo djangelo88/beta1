@@ -1,0 +1,26 @@
+from django.http.response import HttpResponse, JsonResponse
+from django.views.generic.base import View
+from base.forms import BillingEmailForm
+from base.models import Business
+from stripe_cater.services import update_billing_email
+from stripe_cater.services import ERRORS
+import json
+
+class UpdateBillingEmail(View):
+
+    
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        business = Business.objects.get_business_by_user(user=user)
+        localcustomer = business.stripecustomer
+        data = json.loads(request.body.decode())
+
+        form = BillingEmailForm(data)
+        if form.is_valid():
+            response = update_billing_email(localcustomer=localcustomer, new_email=form.cleaned_data['email'])
+            print(response)
+            if response in ERRORS:
+                return JsonResponse(status=500, data=json.JSONEncoder().encode({}), safe=False)
+            return HttpResponse()
+        else:
+            return JsonResponse(status=400, safe=False, data=form.errors.as_json())

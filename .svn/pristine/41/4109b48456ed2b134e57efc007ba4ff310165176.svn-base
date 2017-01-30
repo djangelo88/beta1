@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<h1>Datos de la Subscripcion</h1>
+
+<fieldset>
+    <legend>Tarjeta de credito actual</legend>
+    <div>Nombre {{ business.owner }}</div>
+    <div>Direccion {{ card.get_billing_address }}</div>
+    <div>Numero de tarjeta: {{ card.stripe_last4 }}</div>
+    <div>Valida hasta: {{ card.stripe_exp_month }}/{{ card.stripe_exp_year }}</div>
+    <div><a href="{% url 'change_card' %}">Actualizar tarjeta de credito</a></div>
+</fieldset>
+
+<fieldset>
+    <legend>Recivos de pagos</legend>
+    <table>
+        <thead>
+            <th>Fecha</th>
+            <th>Transaction No.</th>
+        </thead>
+        <tbody>
+            {% for invoice in subscription.get_billing_receipts %}
+                <tr>
+                    <td>{{ invoice.created_at|date }}</td>
+                    <td>{{ invoice.receipt_number }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</fieldset>
+
+<fieldset>
+    <legend>Paquete actual</legend>
+    <div>Costo: $19.99 al mes</div>
+    <div>El proximo cobro de $19.99 sera el {{ subscription.current_period_end|date }}</div>
+    <div><a href="{% url 'cancel_subcription' %}">Cancelar subscripcion</a></div>
+</fieldset>
+
+<fieldset>
+    <legend>Correo para la subscripcion</legend>
+    <div>Correo: {{ business.stripecustomer.billing_email  }}</div>
+    <div><a href="{% url 'change_billing_email' %}">Actualizar Correo</a></div>
+</fieldset>
+</body>
+</html>

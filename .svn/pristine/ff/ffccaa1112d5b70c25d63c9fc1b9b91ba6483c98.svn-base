@@ -1,0 +1,61 @@
+{% load widget_tweaks %}
+{% load i18n admin_static %}
+{% load staticfiles %}
+{% load static %}
+
+<form action="{% url 'customers_import' %}" method="post" enctype="multipart/form-data" class="form-horizontal" id="importform">
+    {% csrf_token %}
+
+
+    <div class="form-group {% if form.excel.errors %} has-error {% endif %}">
+        <div class="col-xs-12 ">
+            <div class="clearfix">
+
+                {% render_field form.excel %}
+                <button type="submit" class="btn btn-success"> <i class="fa fa-upload"></i> Importar</button>
+                <a
+                    href="{% get_media_prefix %}excel/customers.xls" class="btn btn-warning no-print " style="margin-left: 2px"> <i
+                    class="fa fa-file-excel-o"></i> <span class="hidden-xs" > Plantilla Excel</span></a>
+            </div>
+
+            {% for error in form.excel.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %}
+                </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+
+    {#    {% render_field form.excel accept="csv" class="form-control" %}#}
+
+</form>
+
+<script>
+
+    $('#importform').ajaxForm({
+        success:function(data){
+{#            console.log(data);#}
+            UpdateDataTable();
+            toastr.success(data);
+
+        }, error: function(data){
+            toastr.error(data.responseText);
+{#            console.log(data.responseText);#}
+        }
+    });
+
+
+    function UpdateDataTable() {
+        $.ajax({
+            type: 'GET',
+            url: $.CustomDatatableFormObject.get_url_base(),
+            success: function (data) {
+                $($.CustomDatatableFormObject.datatable_container).empty().append(data);
+                //$("#tableContainer").empty().append(data);
+                $($.CustomDatatableFormObject.datatable_id).dataTable();
+                //$('#customers_table').dataTable();
+            }
+        });
+    }
+</script>

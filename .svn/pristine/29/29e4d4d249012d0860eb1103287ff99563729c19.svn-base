@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="application/javascript" src="{% static 'base/js/jquery.js' %}"></script>
+</head>
+<body>
+<script>
+    $(document).ready(function(){
+        $.get('http://app.caterfull.com:8000/measure/','',
+        function(data){
+            var l = data;
+            console.log(data);
+            var lista = JSON.parse(data);
+{#            console.log(obj);#}
+            for (var i = 0; i < lista.length; i++ )
+            {
+              console.log(lista[i]);
+            }
+        });
+    });
+</script>
+</body>
+</html>

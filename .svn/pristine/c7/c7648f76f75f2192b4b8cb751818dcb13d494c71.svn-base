@@ -1,0 +1,503 @@
+{% load staticfiles %}
+{% load i18n admin_static %}
+<!DOCTYPE html>
+<html>
+<meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+<head lang="es">
+    <meta charset="UTF-8">
+    <title> {% block title %} {% endblock %} | Caterfull </title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/AdminLTE.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/skin/skin-grey.css' %}"/>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/iCheck/square/green.css' %}">
+
+
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/sweetalert/sweet-alert.css' %}"/>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/toastr/build/toastr.min.css' %}"/>
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/chosen/chosen.min.css' %}"/>
+{#    <link rel="stylesheet" type="text/css" href="{% static 'plugins/chosen/chosen.css' %}"/>#}
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css' %}"/>
+   <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/print.css' %}" media="print">
+    <link href="{% static 'images/logo.png' %}" rel="shortcut icon" type="image/png">
+    {% block js_head %} {% endblock %}
+    {% block css_block %} {% endblock %}
+    {#    <link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome-ie7.min.css' %}">#}
+
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+
+            $.CustomDatatableFormObject = {
+
+                model_name: "",
+                model_id: -1,
+                get_url_base: function () {
+                    return "/" + this.model_name + "/"
+                },
+                get_url_add: function () {
+                    if (this.add == '')
+                        return "/" + this.model_name + "/add"
+                    return "/" + this.model_name + "/" + this.add;
+                },
+                get_url_edit: function () {
+                    if (this.edit == '')
+                        return "/" + this.model_name + "/edit/" + this.model_id + "/";
+                    return "/" + this.model_name + "/" + this.edit + "/" + this.model_id + "/";
+
+                },
+                get_url_delete: function () {
+                    return "/" + this.model_name + "/delete/" + this.model_id + "/"
+                },
+                set_url_add: function (url) {
+                    this.add = url;
+                },
+                set_url_edit: function (url) {
+                    this.edit = url;
+                },
+                datatable_container: "",
+                datatable_id: "",
+                modal_dialog_id: "",
+                form_id: "",
+                add: "",
+                edit: "",
+                fn_callback: "",
+                has_fn_callback: ""
+
+            };
+
+        })
+
+    </script>
+</head>
+<body class="skin-grey  sidebar-mini ">
+<div class="wrapper no-print">
+<header class="main-header">
+<!-- Logo -->
+<a href="#" class="logo">
+    <!-- mini logo for sidebar mini 50x50 pixels -->
+    <span class="logo-mini"> <img src="{% static 'images/logo.png' %}" alt=""/> </span>
+    <!-- logo for regular state and mobile devices -->
+    <span class="logo-lg"> <img src="{% static 'images/logo-large.png' %}" alt=""/>  </span>
+</a>
+<!-- Header Navbar: style can be found in header.less -->
+<nav class="navbar navbar-static-top" role="navigation">
+<!-- Sidebar toggle button-->
+<a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+    <span class="sr-only">Toggle navigation</span>
+</a>
+
+<div class="navbar-custom-menu">
+<ul class="nav navbar-nav">
+<!-- Messages: style can be found in dropdown.less-->
+{#<li class="dropdown messages-menu">#}
+{#    <a href="#" class="dropdown-toggle" data-toggle="dropdown">#}
+{#        <i class="fa fa-envelope-o"></i>#}
+{#        <span class="label label-success">2</span>#}
+{#    </a>#}
+{#    <ul class="dropdown-menu">#}
+{#        <li class="header">You have 2 messages</li>#}
+{#        <li>#}
+{#            <!-- inner menu: contains the actual data -->#}
+{#            <ul class="menu">#}
+{#                <li><!-- start message -->#}
+{#                    <a href="#">#}
+{#                        <div class="pull-left">#}
+{#                            <img src="{% static 'images/user2-160x160.jpg' %}" class="img-circle"#}
+{#                                 alt="User Image"/>#}
+{#                        </div>#}
+{#                        <h4>#}
+{#                            Support Team#}
+{#                            <small><i class="fa fa-clock-o"></i> 5 mins</small>#}
+{#                        </h4>#}
+{#                        <p>Why not buy a new awesome theme?</p>#}
+{#                    </a>#}
+{#                </li>#}
+{#                <!-- end message -->#}
+{#                <li>#}
+{#                    <a href="#">#}
+{#                        <div class="pull-left">#}
+{#                            <img src="{% static 'images/user3-128x128.jpg' %}" class="img-circle"#}
+{#                                 alt="user image"/>#}
+{#                        </div>#}
+{#                        <h4>#}
+{#                            AdminLTE Design Team#}
+{#                            <small><i class="fa fa-clock-o"></i> 2 hours</small>#}
+{#                        </h4>#}
+{#                        <p>Why not buy a new awesome theme?</p>#}
+{#                    </a>#}
+{#                </li>#}
+{##}
+{##}
+{#            </ul>#}
+{#        </li>#}
+{#        <li class="footer"><a href="#">See All Messages</a></li>#}
+{#    </ul>#}
+{#</li>#}
+<!-- Notifications: style can be found in dropdown.less -->
+{#<li class="dropdown notifications-menu">#}
+{#    <a href="#" class="dropdown-toggle" data-toggle="dropdown">#}
+{#        <i class="fa fa-bell-o"></i>#}
+{#        <span class="label label-warning">10</span>#}
+{#    </a>#}
+{#    <ul class="dropdown-menu">#}
+{#        <li class="header">You have 10 notifications</li>#}
+{#        <li>#}
+{#            <!-- inner menu: contains the actual data -->#}
+{#            <ul class="menu">#}
+{#                <li>#}
+{#                    <a href="#">#}
+{#                        <i class="fa fa-users text-aqua"></i> 5 new members joined today#}
+{#                    </a>#}
+{#                </li>#}
+{#                <li>#}
+{#                    <a href="#">#}
+{#                        <i class="fa fa-warning text-yellow"></i> Very long description here that#}
+{#                        may not fit into the page and may cause design problems#}
+{#                    </a>#}
+{#                </li>#}
+{#                <li>#}
+{#                    <a href="#">#}
+{#                        <i class="fa fa-users text-red"></i> 5 new members joined#}
+{#                    </a>#}
+{#                </li>#}
+{##}
+{#                <li>#}
+{#                    <a href="#">#}
+{#                        <i class="fa fa-shopping-cart text-green"></i> 25 sales made#}
+{#                    </a>#}
+{#                </li>#}
+{#                <li>#}
+{#                    <a href="#">#}
+{#                        <i class="fa fa-user text-red"></i> You changed your username#}
+{#                    </a>#}
+{#                </li>#}
+{#            </ul>#}
+{#        </li>#}
+{#        <li class="footer"><a href="#">View all</a></li>#}
+{#    </ul>#}
+{#</li>#}
+<!-- Tasks: style can be found in dropdown.less -->
+{#<li class="dropdown tasks-menu">#}
+{#    <a href="#" class="dropdown-toggle" data-toggle="dropdown">#}
+{#        <i class="fa fa-flag-o"></i>#}
+{#        <span class="label label-danger">9</span>#}
+{#    </a>#}
+{#    <ul class="dropdown-menu">#}
+{#        <li class="header">You have 9 tasks</li>#}
+{#        <li>#}
+{#            <!-- inner menu: contains the actual data -->#}
+{#            <ul class="menu">#}
+{#                <li><!-- Task item -->#}
+{#                    <a href="#">#}
+{#                        <h3>#}
+{#                            Design some buttons#}
+{#                            <small class="pull-right">20%</small>#}
+{#                        </h3>#}
+{#                        <div class="progress xs">#}
+{#                            <div class="progress-bar progress-bar-aqua" style="width: 20%"#}
+{#                                 role="progressbar" aria-valuenow="20" aria-valuemin="0"#}
+{#                                 aria-valuemax="100">#}
+{#                                <span class="sr-only">20% Complete</span>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </a>#}
+{#                </li>#}
+{#                <!-- end task item -->#}
+{#                <li><!-- Task item -->#}
+{#                    <a href="#">#}
+{#                        <h3>#}
+{#                            Create a nice theme#}
+{#                            <small class="pull-right">40%</small>#}
+{#                        </h3>#}
+{#                        <div class="progress xs">#}
+{#                            <div class="progress-bar progress-bar-green" style="width: 40%"#}
+{#                                 role="progressbar" aria-valuenow="20" aria-valuemin="0"#}
+{#                                 aria-valuemax="100">#}
+{#                                <span class="sr-only">40% Complete</span>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </a>#}
+{#                </li>#}
+{#                <!-- end task item -->#}
+{#                <li><!-- Task item -->#}
+{#                    <a href="#">#}
+{#                        <h3>#}
+{#                            Some task I need to do#}
+{#                            <small class="pull-right">60%</small>#}
+{#                        </h3>#}
+{#                        <div class="progress xs">#}
+{#                            <div class="progress-bar progress-bar-red" style="width: 60%"#}
+{#                                 role="progressbar" aria-valuenow="20" aria-valuemin="0"#}
+{#                                 aria-valuemax="100">#}
+{#                                <span class="sr-only">60% Complete</span>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </a>#}
+{#                </li>#}
+{#                <!-- end task item -->#}
+{#                <li><!-- Task item -->#}
+{#                    <a href="#">#}
+{#                        <h3>#}
+{#                            Make beautiful transitions#}
+{#                            <small class="pull-right">80%</small>#}
+{#                        </h3>#}
+{#                        <div class="progress xs">#}
+{#                            <div class="progress-bar progress-bar-yellow" style="width: 80%"#}
+{#                                 role="progressbar" aria-valuenow="20" aria-valuemin="0"#}
+{#                                 aria-valuemax="100">#}
+{#                                <span class="sr-only">80% Complete</span>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </a>#}
+{#                </li>#}
+{#                <!-- end task item -->#}
+{#            </ul>#}
+{#        </li>#}
+{#        <li class="footer">#}
+{#            <a href="#">View all tasks</a>#}
+{#        </li>#}
+{#    </ul>#}
+{#</li>#}
+<!-- User Account: style can be found in dropdown.less -->
+<li class="dropdown user user-menu">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+{#        <img src="{% static 'images/user2-160x160.jpg' %}" class="user-image" alt="User Image"/>#}
+
+        <i class="glyphicon glyphicon-user "></i>
+                            <span class="hidden-xs"> {{ user.first_name }} <strong
+                                    class="text-uppercase"> {{ user.last_name }} </strong></span>
+    </a>
+    <ul class="dropdown-menu">
+        <!-- User image -->
+        <li class="user-header">
+{#            <img src="/media/{{ BUSINESS_DATA.logo }}" class="img-circle" alt="User Image"/>#}
+
+
+            <p>
+{#                {{ user.get_full_name }} - #}
+                {{ BUSINESS_DATA.name }}
+                <small>Miembro desde {{ user.date_joined | date:"M/d Y" }}</small>
+            </p>
+        </li>
+        <!-- Menu Body -->
+        <li class="user-body">
+            <div class="col-xs-4 text-center">
+
+            </div>
+            {#                                            <div class="col-xs-4 text-center">#}
+            {#                                                <a href="#">Sales</a>#}
+            {#                                            </div>#}
+            {% if not BUSINESS_DATA.has_an_account %}
+                <div class="col-xs-12 text-center">
+                    <form action="{% url 'connect_stripe' BUSINESS_DATA.id %}" method="post">
+                        {% csrf_token %}
+                        <input type="submit" value="Conéctate a Stripe" class="btn btn-info btn-flat"/>
+                    </form>
+                </div>
+            {% endif %}
+        </li>
+        <!-- Menu Footer-->
+        <li class="user-footer">
+            <div class="pull-left">
+                <a href="{% url 'business_profile' %}" class="btn btn-default btn-flat"> <i class="fa fa-user"></i> Perfil</a>
+            </div>
+            <div class="pull-right">
+                <a href="{% url 'logout' %}" class="btn btn-danger btn-flat"> <i class="fa fa-power-off"></i>  Salir</a>
+            </div>
+        </li>
+    </ul>
+</li>
+
+</ul>
+</div>
+</nav>
+</header>
+
+<aside class="main-sidebar no-print">
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+        <!-- sidebar menu: : style can be found in sidebar.less -->
+        <ul class="sidebar-menu">
+            <li class="header">MAIN NAVIGATION</li>
+            <li class="{% block item_dashboard %} {% endblock %}">
+                <a href="{#% url 'dashboard' %#}">
+                    <i class="fa fa-dashboard"></i> <span>Dashboard</span>
+                    {#                        <small class="label pull-right bg-yellow">12</small>#}
+                </a>
+            </li>
+            <li class="{% block item_customers %} {% endblock %}">
+                <a href="{% url 'customers' %}">
+                    <i class="fa fa-users"></i> <span>Clientes</span>
+                </a>
+            </li>
+            <li class="{% block item_proposals %} {% endblock %}{% if model == 'proposal' %} active{% endif %}">
+                <a href="{% url 'proposal_list' %}">
+                    <i class="fa fa-inbox"></i> <span>Presupuestos</span>
+                    {#                        <small class="label pull-right bg-yellow">12</small>#}
+                </a>
+            </li>
+
+
+            <li class=" {% block item_invoices %} {% endblock %}{% if model == 'invoice' %} active{% endif %}">
+                <a href=" {% url 'invoice_list' %}">
+                    <i class="fa fa-book"></i> <span>Facturas</span>
+                    {#                        <small class="label pull-right bg-yellow">12</small>#}
+                </a>
+            </li>
+
+            <li class="treeview {% if WEBSITE_STATUS >= 7%} activo{% endif %}  {% if 'site' in request.build_absolute_uri %} active{% endif %}
+">
+
+                <a href="{% if WEBSITE_STATUS != 6 %}{% url 'websiteinit' %} {% endif %}">
+                    <i class="fa fa-cloud"></i> <span>Sitio web </span> {% if WEBSITE_STATUS == 7 %} <span class="label label-info pull-right"> CREADO</span>{% endif %}
+                    {% if WEBSITE_STATUS == 8 %} <span class="label label-success pull-right"> PUBLICADO </span>{% endif %}
+
+                    <small class="label pull-right bg-yellow"></small>
+                </a>
+
+                <ul class="{% if WEBSITE_STATUS %}treeview-menu  {% else %} hidden{% endif %} ">
+                    <li><a href="{% url 'template' %}" class="{% if 'template' in request.build_absolute_uri and WEBSITE_STATUS %} text-success {% endif %}">Seleccionar plantilla</a></li>
+                    <li><a href="{% url 'basic_info' %}" class="{% if 'basic_info' in request.build_absolute_uri and WEBSITE_STATUS  %} text-success {% endif %}" >Informacion básica</a></li>
+                    <li><a href="{% url 'gallery' %}" class="{% if 'gallery' in request.build_absolute_uri and WEBSITE_STATUS  %} text-success {% endif %}">Galería de imágenes</a></li>
+                    <li><a href="{% url 'menu' %}" class="{% if 'menu' in request.build_absolute_uri and WEBSITE_STATUS  %} text-success {% endif %}">Menu</a></li>
+                    <li><a href="{% url 'links' %}" class="{% if 'links' in request.build_absolute_uri and WEBSITE_STATUS  %} text-success {% endif %}">Redes sociales</a></li>
+                    <li><a href="{% url 'contactus' %}" class="{% if 'contactus' in request.build_absolute_uri and WEBSITE_STATUS  %} text-success {% endif %}">ContactUs</a></li>
+                    <li><a href="{% url 'staffandservice' %}" class="{% if 'staffandservice' in request.build_absolute_uri and WEBSITE_STATUS  %} text-success {% endif %}">Staff and services</a></li>
+                    <li><a href="{% url 'congrats' %}" class="{% if 'congrats' in request.build_absolute_uri and WEBSITE_STATUS  %} text-success {% endif %}">Vista previa</a></li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+    <!-- /.sidebar -->
+</aside>
+
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+
+    {% if EXPIRED %}
+
+        <div class="messages">
+            <div class="alert alert-danger ">
+                {#                    alert-dismissable#}
+                {#                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>#}
+                <h4>No se ha suscrito o la suscripción ha expirado</h4>
+
+                <p> Algunas funciones se han deshabilitado, click <a
+                        href="{% url 'stripe_subscribe' %}">aquí</a> para restablecerlas. </p>
+            </div>
+
+        </div>
+    {% endif %}
+    <!-- Content Header (Page header) -->
+    <div {% block style %}  {% endblock %} >
+        <section class="content-header">
+            {% block content_header %}{% endblock %}
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            {% if messages %}
+                <div class="django-messages collapse">
+                    {% for message in messages %}
+
+                        <div class="alert {% if message.tags %}{{ message.tags }} {% endif %} alert-dismissable">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            {% if message.tags %} <h4> {{ message.tags |capfirst }}    </h4>{% endif %}
+                            <p class="alert-message">{{ message }}</p>
+                        </div>
+
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+
+            {% get_language_info_list for available_languages as langs %}
+
+            {% for lang in langs %} {{ lang.code }} {% endfor %}
+            {% block main_content %}{% endblock %}
+        </section>
+    </div>
+
+
+</div>
+<!-- /.content-wrapper -->
+<footer class="main-footer">
+    <div class="pull-right hidden-xs">
+        <b>MVP</b> Version
+    </div>
+    <strong>Copyright &copy; 2016 <a href="http://www.caterfull.com">Caterfull</a>.</strong> All rights reserved.
+</footer>
+
+
+</div>
+
+
+{#{% block content %}{% endblock %}#}
+
+
+{#{% block footer %}{% endblock %}#}
+
+
+{% block main_js_block %}
+    <!-- Bootstrap 3.3.7 JS -->
+    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/app.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/demo.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/datatables/dataTables.bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/sweetalert/sweet-alert.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.form.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/components/message.inspector.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'plugins/toastr/build/toastr.min.js' %}"></script>
+    <script type="text/javascript"
+            src="{% static 'plugins/bootstrap-datepicker/bootstrap-datepicker.min.js' %}"></script>
+     <script type="text/javascript"
+            src="{% static 'plugins/datepicker/locales/bootstrap-datepicker.es.js' %}"></script>
+     <script type="text/javascript"
+            src="{% static 'plugins/timepicker/bootstrap-timepicker.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/chosen/chosen.jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/moment/moment.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js' %}"></script>
+
+    <script>
+        /*Alerts & Notifications*/
+        toastr.options = {
+            "debug": false,
+            "newestOnTop": false,
+            "positionClass": "toast-top-center",
+            "closeButton": true,
+            "debug": false,
+            "toastClass": "animated fadeInDown"
+        };
+
+
+    </script>
+
+
+
+{% endblock %}
+
+{% block js_block_one %}
+
+
+
+{% endblock %}
+{% block js_block_two %}{% endblock %}
+{% block print_block %}{% endblock %}
+
+</body>
+</html>

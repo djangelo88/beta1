@@ -1,0 +1,6 @@
+<fieldset>
+    <legend>Escrito por el Sr/a: {{ customer_name }} con email: {{ customer_email }} </legend>
+</fieldset>
+<div>
+    <p>{{ customer_message }}</p>
+</div>

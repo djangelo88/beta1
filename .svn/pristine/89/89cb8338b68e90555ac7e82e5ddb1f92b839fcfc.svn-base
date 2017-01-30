@@ -1,0 +1,160 @@
+
+{% load staticfiles %}
+{% load app_filters %}
+
+{% for item in menus %}
+    <div class="proposal-item col-xs-12 ">
+        <div class="col-sm-4">
+            <a href="/media/{{ menu.image }}" target="_blank">   <img src="/media/{{ menu.image }}" alt=""/></a>
+        </div>
+        <div class="col-xs-4 col-sm-4">
+            <h5>{{ item.name }}</h5>
+            <p class="description">{{ item.description }}</p>
+        </div>
+        <div class="col-xs-2 col-sm-2">
+            <h5>{{ item.quantity }}</h5>
+
+            <p>Cant</p>
+        </div>
+        <div class="col-xs-2 col-sm-2">
+            <h5>{{ item.unit_cost }}</h5>
+
+            <p>COSTO UNITARIO</p>
+        </div>
+        <div class="col-xs-2 col-sm-2">
+            <h5>{{ item.discount }}</h5>
+
+            <p>DESCUENTO</p>
+        </div>
+        <div class="col-xs-2 col-sm-2 pull-right item-actions">
+            <a href="" class="edit" data-toggle="modal" data-target="#itemModal"
+               data-elem-id="{{ proposal.id }}" data-url="{% url 'proposal_item_edit' proposal.id item.id %}"
+               data-modal-title="Editar proposal"> <i class="fa fa-pencil"></i> </a>
+            {% csrf_token %}
+            <button type="button" class="btn btn-danger btn-xs remove"
+                    data-url="{% url 'proposal_item_delete' proposal.id item.id %}">
+                <i class="fa fa-trash-o"></i>    </span>
+            </button>
+        </div>
+
+    </div>
+{% empty %}
+    <p class="col-xs-12 col-sm-push-1">El evento no contiene items.</p>
+
+{% endfor %}
+
+
+
+<table class="table table-striped projects table-responsive" id="menus_table">
+    <thead>
+    <th>Name</th>
+    <th>Description</th>
+    <th>Image</th>
+    <th>Price</th>
+    <th>Comments</th>
+    <th>Category</th>
+    <th>Actions</th>
+    </thead>
+    <tbody>
+    {% for menu in menus %}
+        <tr>
+            <td>{{ menu.name }}</td>
+            <td>{{ menu.description }}</td>
+            <td><a href="/media/{{ menu.image }}" target="_blank">{{ menu.image|get_last }}</a></td>
+            <td>{{ menu.price }}</td>
+            <td>{{ menu.comments }}</td>
+            <td>{{ menu.category }}</td>
+            <td>
+                {% csrf_token %}
+                <button type="button" class="btn btn-danger btn-xs remove" data-elem-id="{{ menu.id }}">
+                    <i class="fa fa-trash-o"></i></span>
+                </button>
+            </td>
+             <td>
+                {% csrf_token %}
+                <button type="button" class="btn btn-danger btn-xs edit" data-elem-id="{{ menu.id }}">
+                    <i class="fa fa-trash-o"></i></span>
+                </button>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<script>
+    $(document).ready(function () {
+
+
+
+        {#            Eliminar#}
+        $('.remove').click(function (e) {
+            {#            e.preventDefault();#}
+            var $button = $(e.currentTarget) // Button that triggered the modal
+            var elem_id = $button.data('elem-id');
+
+            swal({
+                        title: "Confirma que desea eliminar?",
+                        text: "Si lo elimina ya no podrá deshacer los cambios!",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "Aceptar",
+                        cancelButtonText: "Cancelar",
+                        closeOnConfirm: false,
+                        closeOnCancel: false
+                    },
+                    function (isConfirm) {
+                        if (isConfirm) {
+
+                            var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+
+                            function csrfSafeMethod(method) {
+                                // these HTTP methods do not require CSRF protection
+                                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+                            }
+
+                            $.ajaxSetup({
+                                beforeSend: function (xhr, settings) {
+                                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                                        //alert(csrftoken);
+                                    }
+                                }
+                            });
+
+
+                            $.ajax({
+                                        url: "/site/menu/remove/" + elem_id,
+                                        type: "POST",
+                                        statusCode: {
+                                            200: function () {
+                                                swal("Eliminado!", "Se ha eliminado correctamente el elemento seleccionado.", "success");
+                                                $.ajax({url: "/site/menu/"});
+                                                UpdateDataTable();
+                                            },
+                                            405: function () {
+
+                                            },
+                                            500: function (response) {
+                                                swal("Error!", "Ha existido un error al eliminar el elemento seleccionado", "error");
+                                                console.log(response.responseText);
+
+                                            }
+                                        }}
+                            )
+                        } else {
+                            swal("Cancelado", "No se ha realizado ninguna acción", "error");
+                        }
+                    });
+        });
+        function UpdateDataTable() {
+            $.ajax({
+                type: 'GET',
+                url: '/site/menu/',
+                success: function (data) {
+                    $("#tableContainer").empty().append(data);
+                    $('#menus_table').dataTable({"language": {"url": "/static/i18n/Spanish.json"}});
+                }
+            });
+        }
+    });
+</script>

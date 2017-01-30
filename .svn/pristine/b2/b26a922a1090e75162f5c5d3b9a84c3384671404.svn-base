@@ -1,0 +1,349 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()"><i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+
+            <form class="form-floating caterfull-form" novalidate="novalidate">
+                <fieldset>
+                    <legend>
+                        <span ng-show="!item.icon">
+                        <i class="md md-assignment  grey lighten-1 icon-color"></i></span>
+                        <span ng-bind-html="item.icon">  </span> {{ cmd }} {{ settings.singular }}
+
+                        <div class="pull-right">
+                            <button type="button" ng-show="item.status==2" class="btn btn-default btn-round-sm"
+                                    data-placement="bottom" data-title="Denegar" bs-tooltip="" ng-click="">
+                                <span class="md md-block text-danger"></span>
+                            </button>
+
+                            <button type="button" ng-click="sendMail(item)" ng-hide="!item.can_send && !item.can_resend"
+                                    ng-class="{resend:item.can_resend}" class="btn btn-default btn-round-sm"
+                                    data-placement="bottom" data-title="Enviar" bs-tooltip="">
+                                <span class="md md-send"></span>
+                            </button>
+
+                            <button type="button" ng-click=" " class="btn btn-default btn-round-sm"
+                                    data-placement="bottom" data-title="Exportar a PDF" bs-tooltip="">
+                                <span class="md md-file-download"></span>
+                            </button>
+
+                        </div>
+
+                    </legend>
+                </fieldset>
+            </form>
+
+            <wizard edit-mode="settings.wizardEditMode">
+                <wz-step wz-title="Evento">
+                    <form class="form-floating " ng-submit="saveItem(item)"
+                          novalidate="novalidate" style="clear: both;">
+                        <fieldset class="clearfix">
+                            <legend class="subtitle">Datos del evento</legend>
+                            <div class="form-group filled">
+                                <label class="control-label">Nombre del evento <span
+                                        class="required-field">*</span></label>
+                                <input type="text" class="form-control" ng-model="item.event.name" required=""
+                                       ng-disabled="!item.editing">
+                            </div>
+                            <div class="form-group col-sm-6 no-padding-left ">
+                                <div class="input-group">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" ng-model="item.event.event_date"
+                                                   data-autoclose="1" placeholder="Date"
+                                                   bs-datepicker required ng-disabled="!item.editing">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input type="text" class="form-control" ng-model="item.event.event_time"
+                                                   data-autoclose="1" placeholder="Time"
+                                                   bs-timepicker required ng-disabled="!item.editing">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group col-sm-6 no-padding-right" ng-class="{disabled:!item.editing}"
+                                 id="proposal_client">
+
+                                <ui-select ng-model="item.event.customer" theme="select2"
+                                           placeholder="Seleccione un cliente"
+                                           search-enabled="true" required ng-disabled="!item.editing">
+                                    <ui-select-match placeholder="Cliente">
+                                        {{$select.selected.first_name}}  </ui-select-match>
+                                    <ui-select-choices repeat="elem in clients | filter: $select.search">
+                                        <div ng-bind-html="elem.first_name | highlight: $select.search"></div>
+                                        <small ng-bind-html="elem.email | highlight: $select.search"></small>
+                                    </ui-select-choices>
+                                </ui-select>
+                                <button id="add_client_btn" class="btn btn-primary" ng-click="showClientFormTemplate()" type="button"> <i class="md md-person-add"></i> </button>
+                            </div>
+                            <div class="clearfix"></div>
+                        </fieldset>
+
+                        <address-block address="item.event.address" validation_errors="validation_errors"
+                                       editing="item.editing" new="settings.cmd == 'New'"></address-block>
+                        <fieldset>
+                            <div class="form-group filled">
+                                <label class="control-label">Comments</label>
+                                <textarea class="form-control vertical" rows="3" ng-model="item.comments"
+                                          ng-disabled="!item.editing"></textarea>
+                            </div>
+
+                            <div class="form-group pull-right">
+                                <button type="submit" class="btn btn-primary">Aceptar y continuar</button>
+                                <!-- <button type="reset" class="btn btn-default">Cancel</button> -->
+                            </div>
+
+                        </fieldset>
+
+                    </form>
+                </wz-step>
+                <wz-step wz-title="Items">
+                    <button class="btn btn-primary pull-right m-t-15" ng-click="newProposalItem()"
+                            ng-show="!proposalItemsSettings.showProposalItemForm">Nuevo item
+                    </button>
+                    <div class="col-sm-12 no-padding" ng-show="proposalItemsSettings.showAlertMessage">
+                        <div class="card red m-t-25">
+                            <div class="card-content">
+                                <div class="card-title">
+                                    El evento no contiene items
+                                </div>
+                                <p>Debe especificar al menos un item para este evento</p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="  well  white" ng-show="proposalItemsSettings.showProposalItemForm">
+                        <form name="proposalItemForm" id="proposalItemForm" class="form-floating"
+                              novalidate="novalidate"
+                              ng-submit="saveProposalItem(item,proposalItem)">
+                            <fieldset>
+                                <legend class="subtitle" ng-bind="itemsAction"></legend>
+
+                                <div class="col-md-9 no-padding-left">
+                                    <div class="form-group filled col-sm-6 no-padding-left-responsive">
+                                        <label class="control-label">Tipo <span class="required-field">*</span> </label>
+                                        <select class="form-control input-sm" ng-disabled='proposalItem.cmd != "New"'
+                                                ng-model="proposalItem.type.id"
+                                                ng-options="itemType.id as itemType.name for itemType in itemTypes"
+                                                ng-change="reloadRequests(proposalItem)" required
+                                                >
+                                        </select>
+
+                                    </div>
+                                    <div class="form-group filled col-sm-6 no-padding-right-responsive">
+                                        <label class="control-label correct-margin-left">Producto/Servicio <span
+                                                class="required-field">*</span></label>
+                                        <select class="form-control input-sm" ng-disabled='proposalItem.cmd != "New"'
+                                                required
+                                                ng-model="proposalItem.request.id"
+                                                ng-options="value.id as value.name for value in requestsByType">
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group  filled col-sm-3 no-padding-left-responsive">
+                                        <label class="control-label ">Cantidad/Horas <span
+                                                class="required-field">*</span></label>
+                                        <input type="number" class="form-control input-sm"
+                                               ng-model="proposalItem.quantity" ng-disabled="!proposalItem.editing"
+                                               ng-disabled="!item.editing"
+                                               required min="1" ng-change="calculateValues(proposalItem)">
+                                    </div>
+
+                                    <div class="form-group filled  col-sm-3 no-padding-left-responsive">
+                                        <label class="control-label ">Costo <span
+                                                class="required-field ">*</span></label>
+                                        <input type="number" class="form-control input-sm"
+                                               ng-model="proposalItem.unit_cost" ng-disabled="!proposalItem.editing"
+                                               ng-disabled="!item.editing" required
+                                               ng-change="calculateValues(proposalItem)" min="1">
+                                    </div>
+
+                                    <div class="form-group  filled col-sm-3 no-padding-left-responsive">
+                                        <label class="control-label  ">Tax (%) <span
+                                                class="required-field">*</span></label>
+                                        <input type="number" class="form-control input-sm" ng-model="proposalItem.tax"
+                                               ng-disabled="!proposalItem.editing"
+                                               ng-disabled="!item.editing" required min="0" max="100"
+                                               ng-change="calculateValues(proposalItem)">
+                                    </div>
+                                    <div class="form-group  filled col-sm-3 no-padding-right-responsive">
+                                        <label class="control-label correct-margin-left">Descuento (%)</label>
+                                        <input type="number" class="form-control input-sm"
+                                               ng-disabled="!proposalItem.editing"
+                                               ng-model="proposalItem.discount" min="0" max="100"
+                                               ng-disabled="!item.editing" ng-change="calculateValues(proposalItem)">
+                                    </div>
+                                    <div class="clearfix"></div>
+                                    <div class="form-group filled">
+                                        <label class="control-label">Description</label>
+                                               <textarea class="form-control vertical input-sm" rows="3"
+                                                         ng-disabled="!proposalItem.editing"
+                                                         ng-model="proposalItem.description"
+                                                         ng-disabled="!item.editing"></textarea>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-2 item-preview">
+
+                                    <h4>Subtotal</h4>
+                                    <p>{{ proposalItem.itemValues.subtotal | currency:"$" }}</p>
+
+                                    <h4>Taxes</h4>
+                                    <p class="text-warning">+{{ proposalItem.itemValues.taxes | currency:"$" }}</p>
+
+                                    <h4>Total</h4>
+                                    <p>{{ proposalItem.itemValues.total | currency:"$" }}</p>
+
+                                    <h4>Descuento</h4>
+                                    <p class="text-danger">-{{ proposalItem.itemValues.discount | currency:"$" }}</p>
+
+                                    <h4>Grand total</h4>
+                                    <p>{{ proposalItem.itemValues.grandTotal | currency:"$" }}</p>
+
+                                </div>
+                                <div class="form-group items-acction-buttons">
+                                    <button type="submit" class="btn btn-primary btn-sm"
+                                            ng-click="saveAndAddProposalItem()"
+                                            ng-show="proposalItem.editing && proposalItem.cmd== 'New'"
+                                            ng-disabled="!proposalItemForm.$valid">Guardar y adicionar otro
+                                    </button>
+                                    <button type="submit" ng-click="onlySave()" class="btn btn-primary btn-sm"
+                                            ng-show="proposalItem.editing" ng-disabled="!proposalItemForm.$valid">
+                                        Guardar
+                                    </button>
+                                    <button type="reset" ng-click="cancelProposalItem()" ng-show="proposalItem.editing"
+                                            class="btn btn-default btn-sm">Cancelar
+                                    </button>
+                                    <button ng-click="cancelProposalItem()" ng-show="!proposalItem.editing"
+                                            class="btn btn-primary btn-sm">Aceptar
+                                    </button>
+                                </div>
+
+
+                            </fieldset>
+
+                        </form>
+                    </div>
+
+                    <div class="row m-t-15"
+                         ng-hide="item.items.length == 0 || proposalItemsSettings.showProposalItemForm">
+
+                        <form class=" form-floating">
+                            <div class="col-sm-12 m-t-15">
+                                <div class="card no-margin">
+
+
+                                    <table class="table table-full table-full-small">
+                                        <!--           <colgroup>
+
+                                                       <col class="auto-cell-size">
+                                                   </colgroup> -->
+                                        <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Product/Service</th>
+
+                                            <th>Cant</th>
+                                            <th>Price</th>
+                                            <th>Tax</th>
+                                            <th>Discount</th>
+                                            <th>Description</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                        <tr ng-repeat="current in item.items">
+
+                                            <td>
+                                                <i class="md md-person icon-color icon-color-small orange lighten-1"
+                                                   ng-show="current.type == 2 || current.type.id == 2"></i>
+                                                <i class="md md-local-grocery-store icon-color icon-color-small light-green lighten-1"
+                                                   ng-show="current.type == 1 || current.type.id == 1"></i>
+                                            </td>
+                                            <td>
+                                                <span ng-show="current.requestName">{{ current.requestName }}</span>
+                                                <span ng-show="current.request.name && current.product.name">{{ current.request.name }}</span>
+                                                <span ng-show="current.request.name && current.service.name">{{ current.request.name }}</span>
+
+                                                <span ng-show="!current.request.name && current.product.name">{{ current.product.name }}</span>
+                                                <span ng-show="!current.request.name && current.service.name">{{ current.service.name }}</span>
+
+                                            </td>
+
+                                            <td>{{ current.quantity }}</td>
+                                            <td>{{ current.unit_cost |currency:"$" }}</td>
+                                            <td>{{ current.tax |currency:"$" }}</td>
+                                            <td>{{ current.discount |currency:"$" }}</td>
+                                            <td class="description-wrap">{{ current.description }}</td>
+                                            <td>
+
+                                                <button type="button" class="btn btn-link btn-round"
+                                                        data-title="Edit item"
+                                                        ng-click="editProposalItem(current)"><i class="md md-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-link btn-round"
+                                                        data-title="View item"
+                                                        ng-click="viewProposalItem(current)"><i
+                                                        class="md md-search"></i></button>
+                                                <button type="button" class="btn btn-link btn-round"
+                                                        data-title="Delete item"
+                                                        ng-click="removeProposalItem(current)"><i
+                                                        class="md md-delete"></i></button>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+
+                                    </table>
+
+
+                                </div>
+                            </div>
+
+
+                            <!--
+                                                    <p>You have continued here!</p>
+                                                    <input type="submit" wz-Previous value="Prev"/>
+                                                    <input type="submit" wz-next value="Go on"/> -->
+                        </form>
+                        <div class="col-xs-12 ">
+
+                            <div class="wizard-action-buttons">
+                                <div class="form-group">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" ng-model="item.send"> Enviar por correo al cliente
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" ng-model="item.showPreview"> Mostrar vista previa del
+                                            presupuesto al finalizar
+                                        </label>
+                                    </div>
+                                </div>
+                                <input type="submit" ng-click="finish(item)" wz-next class="btn btn-primary pull-right"
+                                       value="Finalizar"/>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                </wz-step>
+
+            </wizard>
+
+
+        </div>
+    </div>
+</div>

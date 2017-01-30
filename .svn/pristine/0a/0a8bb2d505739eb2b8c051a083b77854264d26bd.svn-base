@@ -1,0 +1,23 @@
+<div class="well white m-t-30">
+    <form class="form-floating  ">
+        <fieldset>
+            <legend class="subtitle">Social network</legend>
+            <div class="form-group col-md-7 no-padding-left">
+                <label  class="control-label">Email</label>
+                <input type="text" class="form-control">
+            </div>
+             <div class="form-group filled col-md-7 no-padding-left">
+                <label for="textArea" class="control-label ">Descripción</label>
+                        <textarea class="form-control vertical " rows="3" id="textArea"
+                                  ng-model="website.basic_info.description"></textarea>
+                <span class="help-block">Help.</span>
+            </div>
+            <div class="clearfix"></div>
+            <div class="form-group text-center">
+                <button type="submit" wz-previous class="btn btn-default">Prev</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" wz-next class="btn btn-primary">Save and continue</button>
+            </div>
+        </fieldset>
+    </form>
+</div>

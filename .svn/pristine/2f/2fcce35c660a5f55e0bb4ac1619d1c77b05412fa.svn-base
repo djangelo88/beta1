@@ -1,0 +1,86 @@
+<div class="well white m-t-30">
+    <form class="form-floating  ">
+        <fieldset>
+            <legend class="subtitle">Site Gallery</legend>
+            <div class="form-group">
+                <label for="textArea" class="control-label">Descripción</label>
+                <textarea class="form-control vertical " rows="3" ng-bind="website.gallery.comments"></textarea>
+                <span class="help-block">Help.</span>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend class="subtitle">Add image</legend>
+            <div class="form-inline">
+                <div ng-controller="UploadController" style="display: inline-block">
+                    <div class="form-group">
+                        <label for="inputEmail" class="control-label">Logotipo</label>
+
+                        <div class="btn btn-info" ng-multiple="true" ngf-select ng-model="files">Upload logo
+                        </div>
+                        <div class="text-center f15" style="width: 75px; display: inline-block">
+                            <i class="md md-image"></i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    <label for="inputEmail" class="control-label">Nombre para mostrar</label>
+                    <input type="text" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="inputEmail" class="control-label">Descripción</label>
+                    <input type="text" class="form-control">
+                </div>
+                <div class="form-group  ">
+                    <button type="submit" class="btn btn-primary"><i class="md md-add"></i></button>
+                    <button type="submit" class="btn btn-default"><i class="md md-clear"></i></button>
+                </div>
+            </div>
+
+
+            <div class="form-group hidden">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="reset" class="btn btn-default">Cancel</button>
+            </div>
+
+        </fieldset>
+        <fieldset>
+            <legend class="m-b-30">Images</legend>
+            <div class="col-md-4">
+                <div class="card bordered">
+                    <div class="card-image">
+                        <img src="/static/assets/img/photos/2.jpg"/>
+                        <span class="card-title">Card click image</span>
+                    </div>
+                    <div class="card-content">
+                        <p>I am a very simple card. I am good at containing small bits of information. I am
+                            convenient because I require little markup to use effectively.</p>
+                    </div>
+                    <div class="card-action clearfix">
+
+                        <a href="" class="btn btn-link btn-icon" ng-model="website.template.id">
+                            <i class="md md-image red-text"></i>
+
+                            <div class="ripple-wrapper"></div>
+                        </a>
+
+                        <div class="pull-right">
+                            <button class="btn btn-link btn-icon "><i class="md md-edit"> </i></button>
+                            <button class="btn btn-link btn-icon"><i class="md md-delete"></i></button>
+
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="form-group pull-right">
+                <button type="submit" wz-previous class="btn btn-default">Prev</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" wz-next class="btn btn-primary">Save and continue</button>
+            </div>
+        </fieldset>
+
+    </form>
+</div>

@@ -1,0 +1,54 @@
+app.controller('ProfileController', ['$scope','ProfileService', function($scope, ProfileService){
+
+    ProfileService.get().success(function(data){
+        $scope.business = data;
+        //console.log($scope.business);
+
+        $scope.$watch('business.websiteurl', function(newwebsiteurl){
+            //console.log(newwebsiteurl);
+            //var value =  (newwebsiteurl != '' && newwebsiteurl != undefined) ?  $scope.business.default_site_mine : false;
+            $scope.business.can_choose_default_site = (newwebsiteurl != '' && newwebsiteurl != undefined);
+            //console.log(value);
+         });
+    });
+
+    //$scope.errors = [];
+
+    $scope.update_profile = function(business){
+        console.log($scope.profileForm);
+
+        //for(var ind = 0; ind<$scope.length; ind++)
+        //{
+        //    var top = $scope.errors.pop();
+        //    console.log(top);
+        //    var field = top.field
+        //    var code = top.code;
+        //    var input = $scope.profileForm[field]
+        //    input.$error[code] = null;
+        //}
+
+        ProfileService.updateProfile($scope.business).success(function(data){
+            console.log('success');
+        }).error(function(data){
+           var errors = JSON.parse(data);
+            console.log(errors);
+           for(var field in errors){
+               var infoarray = errors[field];
+               for(var ind = 0; ind < infoarray.length; ind++){
+                   var info = infoarray[ind];
+                   console.log(info);
+                   var code = info['code']
+                   var message = info['message'];
+                   var input = $scope.profileForm[field]
+                   //input.$error[code] = message;
+                   //$scope.errors.push({field:field,code:code});
+                   console.log(field + ': ' + code + ': ' + message);
+               }
+
+           }
+        });
+    }
+
+
+
+}]);

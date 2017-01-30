@@ -1,0 +1,23 @@
+{% load i18n %}
+
+{% load widget_tweaks %}
+
+<form method="post">{% csrf_token %}
+    <div class="form-group has-feedback {% if form.email.errors %} has-error {% endif %}">
+        <label class="roboto">{% trans 'Email address' %}</label>
+        {% render_field form.email class="form-control " %}
+        <span class="fa fa-envelope form-control-feedback" id="invelope-feed"></span>
+        {% for error in  form.email.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+    <div class="row">
+        <div class=" col-xs-8 pull-right ">
+            <button type="submit"
+                    class="btn btn-success btn-block btn-flat">{% trans 'Reset my password' %}</button>
+        </div>
+    </div>
+
+</form>
+
+

@@ -1,0 +1,719 @@
+{% load i18n admin_static %}
+{% load  staticfiles %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html>
+<meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+<head lang="es">
+    <meta charset="UTF-8">
+    <title> {% block title %} {% endblock %} | Caterfull </title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/AdminLTE.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/skin/skin-grey.css' %}"/>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/iCheck/square/green.css' %}">
+
+
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/sweetalert/sweet-alert.css' %}"/>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/toastr/build/toastr.min.css' %}"/>
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/chosen/chosen.min.css' %}"/>
+{#    <link rel="stylesheet" type="text/css" href="{% static 'plugins/chosen/chosen.css' %}"/>#}
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css' %}"/>
+   <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+   <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/app.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/demo.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/datatables/dataTables.bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/sweetalert/sweet-alert.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.form.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/components/message.inspector.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'plugins/toastr/build/toastr.min.js' %}"></script>
+    <script type="text/javascript"
+            src="{% static 'plugins/bootstrap-datepicker/bootstrap-datepicker.min.js' %}"></script>
+     <script type="text/javascript"
+            src="{% static 'plugins/datepicker/locales/bootstrap-datepicker.es.js' %}"></script>
+     <script type="text/javascript"
+            src="{% static 'plugins/timepicker/bootstrap-timepicker.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/chosen/chosen.jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'plugins/moment/moment.min.js' %}"></script>
+
+<script src="{% static 'plugins/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js' %}"></script>
+</head>
+<body>
+<section class="content m-b-60">
+{#    <h1>{{ business }}</h1>#}
+    <div class="">
+ <ul class="nav nav-tabs" role="tablist" id="profile_tabs">
+        <li role="presentation" class="active"><a href="#profile" aria-controls="profile" role="tab"
+                                                  data-toggle="tab">Platos </a></li>
+        <li role="presentation"><a href="#suscription" aria-controls="suscription" role="tab" data-toggle="tab">Servicios</a>
+        </li>
+
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="profile">
+             {% regroup products by  category as categorylist %}
+                <ul class="nav nav-tabs" role="tablist" id="productos_tabs">
+                    {% for category in categorylist %}
+                        <li role="presentation" class="{% if forloop.counter == 1 %}active{% endif %}"><a href="#{{ category.grouper }}" aria-controls="{{ category.grouper }}" role="tab"
+                                                  data-toggle="tab">{{  category.grouper}} </a></li>
+                    {% endfor %}
+
+                 </ul>
+                <div class="tab-content">
+                    {% for category in categorylist %}
+                        <div role="tabpanel" class="tab-pane {% if forloop.counter == 1 %}active{% endif %}" id="{{ category.grouper }}">
+                            <ul>
+                                {% for plato in category.list %}
+                                    <li class="plato" data-id="{{ plato.id }}">
+
+                                        <h2>{{ plato.name }}
+                                            <input type="checkbox"/>
+                                        </h2>
+                                        <input class="plato_cant" hidden type="number" value="1" min="1" step="1"/>
+                                        <div>{{ plato.description }}</div>
+                                    </li>
+                                 {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+
+
+
+
+        </div>
+        <div role="tabpanel" class="tab-pane" id="suscription">
+            <ul>
+        {% for servicio in services %}
+            <li class="servicio" data-id="{{ servicio.id }}">
+                <h2>{{ servicio.name }}<input type="checkbox"/></h2>
+                <input class="servicio_cant" hidden type="number" value="1" min="0.5" step="0.5"/>
+                <div>{{ servicio.description }}</div>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+    </div>
+    </div>
+    </section>
+
+    <section class="content" >
+    <form id="booking_form" action="{% url 'booking_widget' wskb64 %}" method="post" class="form-horizontal">
+        <div class="">
+        <fieldset>
+            <legend >Datos Personales</legend>
+              <div class="form-group ">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Nombre<span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.cliente_name class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_name"> </div>
+
+
+                </div>
+            </div>
+
+{#            <div class="form-group {% if form.cliente_name.errors %} has-error {% endif %}">#}
+{#                <div>#}
+{#                Nombre {% render_field form.cliente_name %}#}
+{#                </div>#}
+{#            </div>#}
+        <div class="form-group ">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Apellidos<span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.cliente_last_name class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_last_name"> </div>
+
+
+                </div>
+            </div>
+
+{#            <div>#}
+{#             <div>#}
+{#                    Apellidos {% render_field form.cliente_last_name %}#}
+{#                 </div>#}
+{#                 <div class="error" id="error_cliente_name"></div>#}
+{#            </div>#}
+
+         <div class="form-group ">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Correo<span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.cliente_email class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_email"> </div>
+
+
+                </div>
+            </div>
+
+{#             <div>#}
+{#                 <div>#}
+{#                    Correo {% render_field form.cliente_email %}#}
+{#                 </div>#}
+{#                 <div class="error" id="error_cliente_email"></div>#}
+{#            </div>#}
+
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Telefono<span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.cliente_phone class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_phone"> </div>
+
+
+                </div>
+            </div>
+
+{#             <div>#}
+{#                 <div>#}
+{#                    Telefono {% render_field form.cliente_phone %}#}
+{#                 </div>#}
+{#                 <div class="error" id="error_cliente_phone"></div>#}
+{#            </div>#}
+
+             <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Fecha de nacimineto</label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.cliente_birthday class="form-control date-picker" %}
+                         <span class="input-group-btn">
+                        <button class="btn btn-flat btn-default"
+                                type="button">
+                            <i class="ace-icon fa fa-calendar "></i>
+
+                        </button>
+                    </span>
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_birthday"> </div>
+
+
+                </div>
+            </div>
+
+         <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">line 1</label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.cliente_first_line class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_first_line"> </div>
+
+
+                </div>
+            </div>
+
+         <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Line 2</label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.cliente_second_line class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_second_line"> </div>
+
+
+                </div>
+            </div>
+
+{#             <div>#}
+{#                 <div>#}
+{#                    Fecha de nacimineto {% render_field form.cliente_birthday %}#}
+{#                </div>#}
+{#                 <div>#}
+{#                    Line 1 {% render_field form.cliente_first_line %}#}
+{#                </div>#}
+{#                 <div>#}
+{#                    Line 2 {% render_field form.cliente_second_line %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_cliente_second_line"></div>#}
+{#            </div>#}
+
+        <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs"> Codigo Postal</label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.cliente_zip class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_zip"> </div>
+
+
+                </div>
+            </div>
+        <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Ciudad</label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.cliente_city class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_city"> </div>
+
+
+                </div>
+            </div>
+
+{#            <div>#}
+{#                 <div>#}
+{#                    Codigo Postal {% render_field form.cliente_zip %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_cliente_zip"></div>#}
+{#            </div>#}
+{#            <div>#}
+{#                 <div>#}
+{#                    Ciudad {% render_field form.cliente_city %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_cliente_city"></div>#}
+{#            </div>#}
+
+         <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Pais</label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.cliente_country class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_country"> </div>
+
+
+                </div>
+            </div>
+
+{#            <div>#}
+{#                 <div>#}
+{#                    Pais {% render_field form.cliente_country %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_cliente_country"></div>#}
+{#            </div>#}
+
+        <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Estado</label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        <select id="id_cliente_state" name="cliente_state" class="form-control">
+                        <option value="" selected="selected">---------</option>
+                    {% for state in states %}
+                        <option value="{{ state.id }}" class="state_option cliente_country_{{ state.country.id }}">{{ state.name }}</option>
+                     {% endfor %}
+                    </select>
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_country"> </div>
+
+
+                </div>
+            </div>
+
+{#            <div>#}
+{#                 <div>#}
+{#                    Estado#}
+{#                     <select id="id_cliente_state" name="cliente_state">#}
+{#                        <option value="" selected="selected">---------</option>#}
+{#                    {% for state in states %}#}
+{#                        <option value="{{ state.id }}" class="state_option cliente_country_{{ state.country.id }}">{{ state.name }}</option>#}
+{#                     {% endfor %}#}
+{#                    </select>#}
+{#                </div>#}
+{#                 <div class="error" id="error_cliente_country"></div>#}
+{#            </div>#}
+
+        </fieldset>
+        </div>
+        <div class="">
+         <fieldset>
+            <legend>Datos del evento</legend>
+
+             <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Nombre<span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.evento_name class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_evento_name"> </div>
+
+
+                </div>
+            </div>
+
+{#               <div>#}
+{#                 <div>#}
+{#                    Nombre {% render_field form.evento_name %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_evento_name"></div>#}
+{#            </div>#}
+
+             <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Fecha<span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.evento_date class="form-control" %} <span class="input-group-btn">
+                        <button class="btn btn-flat btn-default"
+                                type="button">
+                            <i class="ace-icon fa fa-calendar "></i>
+
+                        </button>
+                    </span>
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_evento_date"> </div>
+
+
+                </div>
+            </div>
+
+          <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Line 1<span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.evento_first_line class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_evento_first_line"> </div>
+
+
+                </div>
+            </div>
+           <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Line 2</label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.evento_second_line class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_evento_second_line"> </div>
+
+
+                </div>
+            </div>
+{#               <div>#}
+{#                 <div>#}
+{#                    Fecha {% render_field form.evento_date %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_evento_date"></div>#}
+{#            </div>#}
+{#           <div>#}
+{#                 <div>#}
+{#                    Line 1 {% render_field form.evento_first_line %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_evento_first_line"></div>#}
+{#            </div>#}
+{#            <div>#}
+{#                 <div>#}
+{#                    Line 2 {% render_field form.evento_second_line %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_evento_second_line"></div>#}
+{#            </div>#}
+         <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Codigo Postal<span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.evento_zip class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_evento_zip"> </div>
+
+
+                </div>
+            </div>
+
+         <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Ciudad<span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.evento_city class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_evento_city"> </div>
+
+
+                </div>
+            </div>
+
+{#            <div>#}
+{#                 <div>#}
+{#                    Codigo Postal {% render_field form.evento_zip %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_evento_zip"></div>#}
+{#            </div>#}
+{#            <div>#}
+{#                 <div>#}
+{#                    Ciudad {% render_field form.evento_city %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_evento_city"></div>#}
+{#            </div>#}
+
+          <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Pais<span class="required-field">*</span></label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        {% render_field form.evento_country class="form-control" %}
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_evento_country"> </div>
+
+
+                </div>
+            </div>
+
+{#            <div>#}
+{#                 <div>#}
+{#                    Pais {% render_field form.evento_country %}#}
+{#                </div>#}
+{#                 <div class="error" id="error_evento_country"></div>#}
+{#            </div>#}
+          <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs">Estado</label>
+
+                <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+                        <select id="id_evento_state" name="evento_state" class="form-control">
+                        <option value="" selected="selected" >---------</option>
+                    {% for state in states %}
+                        <option value="{{ state.id }}" class="state_option evento_country_{{ state.country.id }}">{{ state.name }}</option>
+                     {% endfor %}
+                    </select>
+                    </div>
+
+                        <div class=" error text-validation-error" id="error_cliente_country"> </div>
+
+
+                </div>
+            </div>
+
+{#            <div>#}
+{#                 <div>#}
+{#                    Estado#}
+{#                     <select id="id_evento_state" name="evento_state">#}
+{#                        <option value="" selected="selected">---------</option>#}
+{#                    {% for state in states %}#}
+{#                        <option value="{{ state.id }}" class="state_option evento_country_{{ state.country.id }}">{{ state.name }}</option>#}
+{#                     {% endfor %}#}
+{#                    </select>#}
+{#                </div>#}
+{#                 <div class="error" id="error_evento_country"></div>#}
+{#            </div>#}
+{#            Nombre <input class="cf-widget-evento" name="evento_name"/>#}
+{#            Fecha <input class="cf-widget-evento" name="evento_date"/>#}
+{#            Direccion <input class="cf-widget-evento" name="evento_address"/>#}
+          <div class="form-group">
+
+        <label class="control-label col-xs-12 col-sm-3 no-padding-right text-right text-left-xs"></label>
+                 <div class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+                    <div class="clearfix">
+
+
+                    <input type="submit" value="Reservar" class="btn btn-success btn-flat"/>
+                    </div>
+
+                </div>
+            </div>
+        </fieldset>
+
+        </div>
+
+
+        <input type="hidden" name="platos"/>
+        <input type="hidden" name="servicios"/>
+{#        <div class="form-group clear">#}
+{#            <input type="submit" value="Reservar"/>#}
+{#        </div>#}
+    </form>
+    </section>
+
+
+
+
+<script>
+{#    $('.error').each(function (div) {#}
+{#        console.log($(this));#}
+{#        $(this).html('sdasd');#}
+{#    });#}
+
+    $(document).ready(function(){
+
+            $('#profile_tabs a').click(function (e) {
+                console.log($(this).tab);
+                e.preventDefault();
+                $(this).tab('show');
+            });
+            $('#productos_tabs a').click(function (e) {
+                console.log($(this).tab);
+                e.preventDefault();
+                $(this).tab('show');
+            });
+
+{#        $('.plato input[type="checkbox"]').change(function(event){#}
+{#            event.preventDefault();#}
+{#            var checked = (this).checked#}
+{#            ;#}
+{#            console.log($(this).parent());#}
+{#        });#}
+
+        $('.plato').click(function(event){
+{#            event.preventDefault();#}
+           console.log(event);
+           var checkbox = $(this).find('input[type="checkbox"]')[0];
+           var amount =  $($(this).find('input[type="number"]')[0]);
+           if(checkbox.checked){
+               amount.show();
+           }else{
+               amount.hide();
+           }
+{#            console.log(amount.val());#}
+        });
+         $('.servicio').click(function(event){
+{#            event.preventDefault();#}
+           console.log(event);
+           var checkbox = $(this).find('input[type="checkbox"]')[0];
+           var amount =  $($(this).find('input[type="number"]')[0]);
+           if(checkbox.checked){
+               amount.show();
+           }else{
+               amount.hide();
+           }
+{#            console.log(amount.val());#}
+        });
+
+            $('#booking_form').submit(function(event){
+            event.preventDefault();
+            var url = $(this).attr('action');
+            var platos_req = [];
+            $('.plato').each(function(){
+                var checkbox = $(this).find('input[type="checkbox"]')[0];
+                var amount =  $($(this).find('input[type="number"]')[0]);
+               if(checkbox.checked){
+                platos_req.push(
+                    {
+                        id:$(this).attr('data-id'),
+                        amount:amount.val()
+                    }
+                );
+               }
+            });
+            var platos_req_json = (JSON.stringify(platos_req));
+            $('input[name="platos"]').val(platos_req_json);
+
+            var servicios_req = []
+            $('.servicio').each(function(){
+                var checkbox = $(this).find('input[type="checkbox"]')[0];
+                var amount =  $($(this).find('input[type="number"]')[0]);
+               if(checkbox.checked){
+                servicios_req.push(
+                    {
+                        id:$(this).attr('data-id'),
+                        amount:amount.val()
+                    }
+                );
+               }
+            });
+
+            var servicios_req_json = (JSON.stringify(servicios_req));
+            $('input[name="servicios"]').val(servicios_req_json);
+
+                    $.ajax(url, {
+                        method:'POST',
+                        data:$('#booking_form').serialize(),
+                        success:function(response){
+                        console.log(response);
+                        $('.error').each(function(){
+                            $(this).empty();
+                        })
+                    },
+                        error:function(error){
+                           var response = (error.responseJSON);
+                           var response_obj = JSON.parse(response);
+                           console.log(response_obj);
+                           for(var input_error in response_obj){
+                               var error_field_name = 'error_' + input_error;
+                               var message = response_obj[input_error][0].message;
+                               $('#'+error_field_name).html(message);
+                           }
+                        }
+                    });
+
+    {#        $.post(url, $('#booking_form').serialize(), function(response){#}
+    {#            cosole.log(response);#}
+    {#        });#}
+        });
+
+        $('#id_cliente_country').change(function(){
+           var class_name = 'cliente_country_' + $(this).val();
+           $('#id_cliente_state .state_option').hide();
+           $('.'+class_name).show();
+           $('#id_cliente_state').val('');
+{#           alert($(this).val());#}
+        });
+         $('#id_evento_country').change(function(){
+           var class_name = 'evento_country_' + $(this).val();
+           $('#id_cliente_state .state_option').hide();
+           $('.'+class_name).show();
+           $('#id_evento_state').val('');
+{#           alert($(this).val());#}
+        });
+
+         $('.date-picker').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format:'yyyy-mm-dd',
+
+            language:"es"
+        })
+            //show datepicker when clicking on the icon
+                .next().on('click', function () {
+                    $(this).prev().focus();
+                });
+
+        $('#id_evento_date').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm'
+        }) .next().on('click', function () {
+                    $(this).prev().focus();
+                });;
+
+
+    });
+
+</script>
+</body>
+
+</html>

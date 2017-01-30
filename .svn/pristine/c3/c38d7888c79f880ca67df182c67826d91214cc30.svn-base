@@ -1,0 +1,429 @@
+/**
+ * Created by Hector on 22/01/2017.
+ */
+
+app.controller('WebsiteController', ['$scope', 'NotificationService', 'AlertConfirmService', 'WizardHandler', '$aside', 'WebsiteService', '$stateParams', 'Upload', '$q', function ($scope, NotificationService, AlertConfirmService, WizardHandler, $aside, WebsiteService, $stateParams, Upload, $q) {
+
+
+    $scope.page = {
+        title: 'Website',
+        description: 'In most applications you need basic table listings and editing capabilities.' +
+        ' With this app you can create simple admin functionality based on a json web service.',
+        icon: 'md md-cloud'
+    };
+
+    // settings
+
+    $scope.settings = {
+        wizardEditMode: false,
+        editing: true,
+        singular: '',
+        plural: '',
+        cmd: 'New'
+    };
+
+
+    /*Get Website by Business*/
+    WebsiteService.getAll().success(function (data) {
+        $scope.website = data;
+        console.debug(data);
+    }).error(function (data) {
+
+    }).then(function () {
+        /*Route params & Wizard Step set*/
+        //NotificationService.error("","ahora");
+        if ($stateParams.step) {
+            switch ($stateParams.step) {
+                case "template":
+                    WizardHandler.wizard().goTo(0);
+                    break;
+                case "basic-info":
+                    WizardHandler.wizard().goTo(1);
+                    break;
+                case "image-gallery":
+                    WizardHandler.wizard().goTo(2);
+                    break;
+
+                case "menu":
+                    WizardHandler.wizard().goTo(3);
+                    break;
+
+                case "social-network":
+                    WizardHandler.wizard().goTo(4);
+                    break;
+
+                case "contact-us":
+                    WizardHandler.wizard().goTo(5);
+                    break;
+
+                case "staff-service":
+                    WizardHandler.wizard().goTo(6);
+                    break;
+
+                case "website":
+                    WizardHandler.wizard().goTo(7);
+                    break;
+                default :
+                    WizardHandler.wizard().goTo(0);
+
+            }
+            if ($scope.website.edit === undefined) {
+                $scope.settings.wizardEditMode = true;
+            }
+        }
+    });
+
+
+    //var defer = $q.defer();
+
+
+    //$scope.website = WebsiteService.getWebsite();
+    //console.log($scope.website);
+
+    /*Basic info*/
+    $scope.currentStepOnlyAddAction = false;
+    $scope.saveBasicInfo = function (basicinfo) {
+        if (!$scope.settings.editing) {
+            NotificationService.theme("", "pendiente crear");
+        } else {
+            WebsiteService.edit("basic_info", $scope.website.id, basicinfo)
+                .success(function (data) {
+                    if ($scope.currentStepOnlyAddAction) {
+                        console.log("save");
+                        NotificationService.success("", "Se ha actualizado");
+                    } else {
+                        console.log("save & add");
+                        WizardHandler.wizard().next();
+                    }
+                }).error(function (data) {
+                    NotificationService.error("", "Error al actualizar");
+                });
+
+        }
+        //console.log(basicinfo);
+    }
+
+    $scope.onlySave = function () {
+        $scope.currentStepOnlyAddAction = true;
+    }
+
+    $scope.saveAndContinue = function () {
+        $scope.currentStepOnlyAddAction = false;
+    }
+
+    // File Upload
+    $scope.fileReaderSupported = window.FileReader !== undefined && (window.FileAPI === undefined || FileAPI.html5 !== false);
+    $scope.upload = function (file, url, successCallback, progressCallback) {
+        //alert("dddd")
+
+        if (file !== null && file !== undefined) {
+            switch (url) {
+                case "basic_info":
+                    Upload.upload({
+                        url: '/api/logosave',
+                        file: file
+                    })
+                        //.progress(progressCallback)
+                        .success(successCallback);
+
+                    break;
+                case "gallery":
+                    Upload.upload({
+                        url: '/api/photogallerysave',
+                        file: file
+                    })
+                        //.progress(progressCallback)
+                        .success(successCallback);
+
+                    break;
+
+            }
+
+        }
+    };
+    $scope.$watch('logofile', function () {
+        console.log($scope.logofile);
+        $scope.upload($scope.logofile, 'basic_info', successBasicInfoHandler);
+
+    });
+
+    successBasicInfoHandler = function (data, status, headers, config) {
+        console.log(data);
+        $scope.website.basicinfo.logo = data.logo;
+        //console.log('file ' + config.file.name + 'uploaded. Response: ' + JSON.stringify(data));
+    };
+
+
+    /*Website Gallery*/
+    var formTplGallery = $aside({
+        scope: $scope,
+        templateUrl: '/static/assets/tpl/website/form-gallery.html',
+        show: false,
+        placement: 'left',
+        backdrop: false,
+        animation: 'am-slide-left'
+
+    });
+
+    showGalleryForm = function () {
+        angular.element('.tooltip').remove();
+        formTplGallery.show();
+    };
+
+    hideGalleryForm = function () {
+        formTplGallery.hide();
+    };
+
+    $scope.$on('$destroy', function () {
+        hideGalleryForm();
+    });
+
+    $scope.createGalleryItem = function () {
+        $scope.settings.singular = 'Image';
+        $scope.settings.plural = 'Images';
+
+        $scope.galleryItem = {
+            image: '',
+            name: '',
+            description: '',
+            asbackground: false,
+            editing: true
+        };
+        //alert("dxdfdsf");
+        //$scope.item = item;
+        showGalleryForm();
+    };
+
+    $scope.itemSaveAdd = false;
+
+    $scope.saveGalleryItem = function (galleryItem) {
+
+        console.log(galleryItem);
+        console.log($scope.website.gallery);
+
+        //NotificationService.theme("Pendiente", "Actualizacion de socialNetwork")
+
+        if (!$scope.settings.editing) {
+
+        } else {
+
+            if ($scope.itemSaveAdd) {
+
+                NotificationService.theme("Save and Add");
+            } else {
+                NotificationService.theme("Only save");
+                hideGalleryForm();
+            }
+            //$scope.$apply(function(){
+            //
+            //})
+            $scope.website.gallery.photo.push(galleryItem);
+            galleryItem = {};
+            $scope.galleryItem = galleryItem;
+
+
+            //$scope.website.gallery.photo.reverse();
+
+            //WebsiteService.edit("links", $scope.website.id, contactUs)
+            //    .success(function (data) {
+            //        if ($scope.galleryItemSaveAdd) {
+            //            console.log("save");
+            //            NotificationService.success("", "Se ha actualizado");
+            //        } else {
+            //            console.log("save & add");
+            //            WizardHandler.wizard().next();
+            //        }
+            //    }).error(function (data) {
+            //        NotificationService.error("", "Error al actualizar");
+            //    });
+        }
+    }
+
+    $scope.saveItemBtn = function () {
+        $scope.itemSaveAdd = false;
+    }
+
+    $scope.saveAndAddItemBtn = function () {
+        $scope.itemSaveAdd = true;
+    }
+
+    $scope.editGalleryItem = function (galleryItem) {
+
+        //console.log(galleryItem);
+        if (galleryItem) {
+            //alert("ddd");
+            galleryItem.editing = true;
+            $scope.galleryItem = galleryItem;
+
+            $scope.settings.cmd = 'Edit';
+            //console.log($scope.galleryItem);
+            showGalleryForm();
+        }
+    };
+
+    $scope.removeGalleryItem = function (galleryItem) {
+        if (galleryItem) {
+            callbackFn = function () {
+
+                $scope.website.gallery.photo.splice($scope.website.gallery.photo.indexOf(galleryItem), 1);
+
+                //CustomerService.delete(new Array(item))
+                //    .success(function () {
+                //        NotificationService.success('', 'Se ha eliminado el cliente seleccionado');
+                //        $scope.data.splice($scope.data.indexOf(item), 1);
+                //    }).error(function () {
+                //        NotificationService.error('Error', 'Ha existido un error al eliminar el cliente seleccionado');
+                //    });
+            };
+
+            AlertConfirmService.basicConfirm("Eliminar", "Confirma que desea eliminar el elemento seleccionado?", callbackFn);
+        }
+    };
+
+    $scope.$watch('galleryphoto', function () {
+        //alert("sdsdfdf");
+        console.log($scope.galleryphoto);
+        $scope.upload($scope.galleryphoto, 'gallery', successGalleryHandler);
+
+    });
+
+    successGalleryHandler = function (data, status, headers, config) {
+        console.log(data);
+        $scope.galleryItem.image = data;
+        //console.log('file ' + config.file.name + 'uploaded. Response: ' + JSON.stringify(data));
+    };
+
+
+    /*Website Menu*/
+    var formTplMenu = $aside({
+        scope: $scope,
+        templateUrl: '/static/assets/tpl/website/form-menu.html',
+        show: false,
+        placement: 'left',
+        backdrop: false,
+        animation: 'am-slide-left'
+    });
+
+    showMenuForm = function () {
+        angular.element('.tooltip').remove();
+        formTplMenu.show();
+    };
+
+    hideMenuForm = function () {
+        formTplMenu.hide();
+    };
+
+    $scope.createMenuItem = function () {
+        $scope.menuItem = {
+            category: {},
+            photo: '',
+            name: '',
+            description: '',
+            comments: '',
+            editing: true,
+            menu: []
+
+        }
+        //$scope.item = item;
+        showMenuForm();
+    };
+    $scope.editMenuItem = function (item) {
+
+        //console.log(galleryItem);
+        if (item) {
+            //alert("ddd");
+            item.editing = true;
+            $scope.menuItem = item;
+
+            $scope.settings.cmd = 'Edit';
+            //console.log($scope.galleryItem);
+            showMenuForm();
+        }
+    };
+
+    $scope.addRange = function (item) {
+        alert("sdsddsf");
+        $scope.menuItem.menuprice.push(item);
+        //$($("#proposalItemForm").ajaxForm()).resetForm();
+        $scope.menuItemRange = {};
+    }
+    $scope.removeRange = function (item) {
+        $scope.menuItem.menuprice.splice($scope.menuItem.menuprice.indexOf(item), 1);
+    }
+
+    $scope.removeMenuItem = function (item) {
+
+        if (item) {
+            callbackFn = function () {
+
+                $scope.website.category.menu.splice($scope.website.category.menu.indexOf(item), 1);
+
+                //CustomerService.delete(new Array(item))
+                //    .success(function () {
+                //        NotificationService.success('', 'Se ha eliminado el cliente seleccionado');
+                //        $scope.data.splice($scope.data.indexOf(item), 1);
+                //    }).error(function () {
+                //        NotificationService.error('Error', 'Ha existido un error al eliminar el cliente seleccionado');
+                //    });
+            };
+
+            AlertConfirmService.basicConfirm("Eliminar", "Confirma que desea eliminar el elemento seleccionado?", callbackFn);
+        }
+
+    };
+
+
+    /*Social Networks*/
+    $scope.saveSocialNetworks = function (socialnetworks) {
+
+        console.log(socialnetworks);
+
+        NotificationService.theme("Pendiente", "Actualizacion de socialnetworks")
+
+        if (!$scope.settings.editing) {
+
+        } else {
+
+            WebsiteService.edit("social_networks", $scope.website.id, socialnetworks)
+                .success(function (data) {
+                    if ($scope.currentStepOnlyAddAction) {
+                        console.log("save");
+                        NotificationService.success("", "Se han actualizado sus Redes Sociales");
+                    } else {
+                        console.log("save & add");
+                        WizardHandler.wizard().next();
+                    }
+                }).error(function (data) {
+                    NotificationService.error("", "Error al Actualizar");
+                });
+        }
+    }
+
+    /*Contact Us*/
+    $scope.saveContactUs = function (contactUs) {
+
+        console.log(contactUs);
+
+        NotificationService.theme("Pendiente", "Actualizacion de contactUs")
+
+        if (!$scope.settings.editing) {
+
+        } else {
+
+            WebsiteService.edit("contact_us", $scope.website.id, contactUs)
+                .success(function (data) {
+                    if ($scope.currentStepOnlyAddAction) {
+                        console.log("save");
+                        NotificationService.success("", "Se ha actualizado");
+                    } else {
+                        console.log("save & add");
+                        WizardHandler.wizard().next();
+                    }
+                }).error(function (data) {
+                    NotificationService.error("", "Error al actualizar");
+                });
+        }
+    }
+
+
+}]);

@@ -1,0 +1,45 @@
+{% load widget_tweaks %}
+{% load staticfiles %}
+<form method="post">
+    {% csrf_token %}
+    <div>
+        Nombre {% render_field form.name %}
+        <div>{{ form.name.errors }}</div>
+    </div>
+
+    <div>
+        Direccion {% render_field form.address %}
+        <div>{{ form.address.errors }}</div>
+    </div>
+    <div>
+        Dia{% render_field form.event_date %}
+        <div>{{ form.event_date.errors }}</div>
+    </div>
+    <div>
+        Dia de pago {% render_field form.due_date %}
+        <div>{{ form.due_date.errors }}</div>
+    </div>
+    <div id="customer_field">
+        Cliente {% render_field form.customer %}
+        <div>{{ form.customer.errors }}</div>
+    </div>
+    <div>
+        Comentario {% render_field form.comment %}
+        <div>{{ form.comment.errors }}</div>
+    </div>
+    <div style="border-width: medium">
+        <fieldset id="customer-form">
+
+        </fieldset>
+        <button id="add_client" data-url="{% url 'customer_list' %}" hidden>Guardar</button>
+        <button id="load_client_form" data-url="{% url 'add_customer' %}">Cliente Nuevo</button>
+    </div>
+    <input type="submit" value="Save"/>
+
+    <div>
+        {{ errors }}
+    </div>
+</form>
+
+<script type="text/javascript" src="{% static 'base/js/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'base/js/invoice/event.js' %}"></script>

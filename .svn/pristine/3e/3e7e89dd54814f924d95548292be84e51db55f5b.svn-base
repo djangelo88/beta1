@@ -1,0 +1,160 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()"><i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+            <form class="form-floating caterfull-form" novalidate="novalidate">
+                <fieldset>
+                    <legend>
+                        <span>
+                            <i class="md md-photo grey lighten-1 icon-color"></i>
+                        </span>
+                        <span ng-bind-html="item.icon">  </span> {{ settings.cmd }} {{ settings.singular }}
+                    </legend>
+                </fieldset>
+            </form>
+            <form class=" " novalidate="" ng-submit="saveMenuItem(menuItem)">
+
+                <wizard edit-mode="true">
+                    <wz-step wz-title="Menu">
+                        <div class="row">
+                            <div>
+                                <div class="grey lighten-4 text-center m-b-5">
+                                    <i class="md md-photo fa-5x" style="line-height: 5;"></i>
+                                </div>
+                                <div class="btn btn-info" ngf-select ng-model="menuPhoto">Upload image</div>
+                            </div>
+                            <div class="form-group filled">
+                                <label class="control-label ">Nombre para mostrar</label>
+                                <input type="text" class="form-control" ng-model="menuItem.name">
+                            </div>
+                            <div class="form-group filled">
+                                <label class="control-label ">Descripción</label>
+                                <textarea class="form-control vertical" rows="3"
+                                          ng-model="menuItem.description"></textarea>
+                            </div>
+                            <div class="form-group filled">
+                                <label class="control-label ">Comments</label>
+                                <textarea class="form-control vertical" rows="3"
+                                          ng-model="menuItem.comments"></textarea>
+                            </div>
+
+                        </div>
+
+                    </wz-step>
+                    <wz-step wz-title="Price ranges">
+                        <div class="row center">
+                            <div class="form-group price-field">
+                                <label class="sr-only">Min</label>
+                                <input type="number" class="form-control" placeholder="Min">
+                            </div>
+                            <div class="form-group  price-field">
+                                <label class="sr-only">Max</label>
+                                <input type="number" class="form-control" placeholder="Max">
+                            </div>
+                            <div class="form-group  price-field">
+                                <label class="sr-only">Price</label>
+                                <input type="number" class="form-control" placeholder="Price">
+                            </div>
+                            <div class="form-group  price-field">
+                                <button type="button" class="btn btn-primary" ng-click="addRange()"><i
+                                        class="md md-add"></i></button>
+                                <button type="button" class="btn btn-danger" ng-click="removeRange()"><i
+                                        class="md md-remove"></i></button>
+                            </div>
+
+                            <div class="clearfix"></div>
+                            <div class="col-sm-12 m-t-15 m-b-25">
+                                <div class="card no-margin">
+                                    <h3 class="table-title p-20">Ranges</h3>
+
+                                    <table class="table table-full table-full-small">
+                                        <!--           <colgroup>
+
+                                                       <col class="auto-cell-size">
+                                                   </colgroup> -->
+                                        <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Min</th>
+
+                                            <th>Max</th>
+                                            <th>Price</th>
+
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                        <tr ng-repeat="current in item.items">
+
+                                            <td>
+                                                <i class="md md-person icon-color icon-color-small orange lighten-1"
+                                                   ng-show="current.type == 2 || current.type.id == 2"></i>
+                                                <i class="md md-local-grocery-store icon-color icon-color-small light-green lighten-1"
+                                                   ng-show="current.type == 1 || current.type.id == 1"></i>
+                                            </td>
+                                            <td>
+                                                <span ng-show="current.requestName">{{ current.requestName }}</span>
+                                                <span ng-show="current.request.name && current.product.name">{{ current.request.name }}</span>
+                                                <span ng-show="current.request.name && current.service.name">{{ current.request.name }}</span>
+
+                                                <span ng-show="!current.request.name && current.product.name">{{ current.product.name }}</span>
+                                                <span ng-show="!current.request.name && current.service.name">{{ current.service.name }}</span>
+
+                                            </td>
+
+                                            <td>{{ current.quantity }}</td>
+                                            <td>{{ current.unit_cost |currency:"$" }}</td>
+                                            <td>{{ current.tax |currency:"$" }}</td>
+                                            <td>{{ current.discount |currency:"$" }}</td>
+                                            <td class="description-wrap">{{ current.description }}</td>
+                                            <td>
+
+                                                <button type="button" class="btn btn-link btn-round"
+                                                        data-title="Edit item"
+                                                        ng-click="editProposalItem(current)"><i class="md md-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-link btn-round"
+                                                        data-title="View item"
+                                                        ng-click="viewProposalItem(current)"><i
+                                                        class="md md-search"></i></button>
+                                                <button type="button" class="btn btn-link btn-round"
+                                                        data-title="Delete item"
+                                                        ng-click="removeProposalItem(current)"><i
+                                                        class="md md-delete"></i></button>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+
+                                    </table>
+
+
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </wz-step>
+
+                </wizard>
+
+                <div class="clearfix"></div>
+                <div class="row">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" ng-click="saveItemBtn()">Save</button>
+                        <button type="submit" class="btn btn-primary" ng-click="saveAndAddItemBtn()">Save and add
+                            other
+                        </button>
+                        <!--    <button type="reset" class="btn btn-default">Cancel</button> -->
+                    </div>
+
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

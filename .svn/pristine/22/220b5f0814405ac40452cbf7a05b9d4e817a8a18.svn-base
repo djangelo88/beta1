@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+
+{% block title %} Pago de factura {% endblock %}
+
+{% block header %}
+    <section class="content-header">
+     <h1>
+        <i class="fa fa-book"></i> Cargo por factura
+        <small class="hidden-xs">Pagar suscripcion con Stripe</small>
+
+    </h1>
+    </section>
+
+{% endblock %}
+
+{% block content %}
+    <input hidden id="publishable_key" value="{{ account.stripe_publishable_key }}">
+    <script type="text/javascript">
+        var publishable_key = document.getElementById('publishable_key');
+        Stripe.setPublishableKey(publishable_key.value);
+    </script>
+    {#    <fieldset>#}
+    {#    <legend>Datos de la factura</legend>#}
+    {#    <div>Numero: {{ invoice.number }}</div>#}
+    {#    <div>Monto total: {{ payment_order.amount }}</div>#}
+    {#    <div>Debe pagar: {{ payment_order.due }}</div>#}
+    {#</fieldset>#}
+
+    <form action="" method="POST" id="payment-form" class="form-horizontal">
+
+{#        {{ invoice.status }}#}
+        <div class="form-group ">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right"></label>
+
+            <div class="col-xs-12 col-sm-3">
+                <div class="clearfix">
+                    <h4 class="lighter block green">Datos de la factura</h4>
+                    <h5 class="lighter block green">Estado de la factura: <strong>{{ invoice.status }}</strong></h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group ">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right">Numero</label>
+
+            <div class="col-xs-12 col-sm-3">
+                <div class="clearfix">
+                    <input type="text" class="form-control" value="  {{ invoice.number }}" disabled>
+                </div>
+            </div>
+        </div>
+        <div class="form-group ">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right">Fecha para el pago</label>
+
+            <div class="col-xs-12 col-sm-3">
+                <div class="clearfix">
+                    <input type="text" class="form-control" value="  {{ invoice.due_date }}" disabled>
+                </div>
+            </div>
+        </div>
+        <div class="form-group ">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right">Monto total</label>
+
+            <div class="col-xs-12 col-sm-3">
+                <div class="clearfix">
+                    <input type="text" class="form-control" value="  {{ payment_order.amount }}" disabled>
+                </div>
+            </div>
+        </div>
+        <div class="form-group ">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right">Debe pagar</label>
+
+            <div class="col-xs-12 col-sm-3">
+                <div class="clearfix">
+                    <input type="text" class="form-control" value="  {{ payment_order.due }}" disabled>
+                </div>
+            </div>
+        </div>
+
+
+        <hr/>
+
+
+        <span class="payment-errors"></span>
+
+        <div class="form-group ">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right">Card number</label>
+
+            <div class="col-xs-12 col-sm-3">
+                <div class="clearfix">
+                    <input type="text" size="20" data-stripe="number" class="form-control">
+                </div>
+            </div>
+        </div>
+        <div class="form-group ">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right">Expiration (MM/YY)</label>
+
+            <div class="col-xs-12 col-sm-3">
+                <div class="clearfix">
+                    <input type="text" size="2" data-stripe="exp_month" class="form-control-stripe" placeholder="MM">
+                    <input type="text" size="2" data-stripe="exp_year" class="form-control-stripe" placeholder="YY">
+                </div>
+            </div>
+        </div>
+        <div class="form-group ">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right">CVC</label>
+
+            <div class="col-xs-12 col-sm-3">
+                <div class="clearfix">
+                    <input type="text" size="20" data-stripe="cvc" class="form-control">
+                </div>
+            </div>
+        </div>
+        <div class="form-group ">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right">Billing Zip</label>
+
+            <div class="col-xs-12 col-sm-3">
+                <div class="clearfix">
+                    <input type="text" size="20" data-stripe="address_zip" class="form-control">
+                </div>
+            </div>
+        </div>
+        <div class="form-group ">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right">Ammount</label>
+
+            <div class="col-xs-12 col-sm-3">
+                <div class="clearfix">
+                    <input type="text" size="20" data-stripe="amount" class="form-control">
+                </div>
+            </div>
+        </div>
+        <input hidden name="idempotency" value="{{ idempotency }}">
+        <hr/>
+
+        <div class="form-group ">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right"> </label>
+
+            <div class="col-xs-12 col-sm-3">
+                <input type="submit" class="submit btn btn-success btn-flat" value="Submit Payment">
+
+            </div>
+        </div>
+
+
+    </form>
+    <div>
+        {{ errors }}
+    </div>
+    <script>
+        $(function () {
+
+            var $form = $('#payment-form');
+            $form.submit(function (event) {
+                event.preventDefault();
+
+                // Disable the submit button to prevent repeated clicks:
+                $form.find('.submit').prop('disabled', true);
+
+                // Request a token from Stripe:
+                Stripe.card.createToken($form, stripeResponseHandler);
+                {#        $form.get(0).submit();#}
+                // Prevent the form from being submitted:
+                return false;
+            });
+            function stripeResponseHandler(status, response) {
+                // Grab the form:
+                var $form = $('#payment-form');
+
+                if (response.error) { // Problem!
+
+                    // Show the errors on the form:
+                    $form.find('.payment-errors').text(response.error.message);
+                    $form.find('.submit').prop('disabled', false); // Re-enable submission
+
+                } else { // Token was created!
+
+                    // Get the token ID:
+                    var token = response.id;
+
+                    // Insert the token ID into the form so it gets submitted to the server:
+                    $form.append($('<input type="hidden" name="stripeToken">').val(token));
+
+                    // Submit the form:
+                    $form.get(0).submit();
+                }
+            };
+        });
+    </script>
+{% endblock %}
+
+
+{% block custome_header %}  <script type="text/javascript" src="https://js.stripe.com/v2/"></script>{% endblock %}

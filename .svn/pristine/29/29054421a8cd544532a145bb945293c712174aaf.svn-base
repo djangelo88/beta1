@@ -1,0 +1,200 @@
+{% extends 'base2.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+
+{% block title %} Dashboard {% endblock %}
+{% block item_dashboard %} active {% endblock %}
+{##}
+{#{% block content_header %}#}
+{#    <h1>#}
+{#        <i class="fa fa-dashboard"></i>#}
+{#        Dashboard#}
+{#        <small>Panel de control</small>#}
+{#    </h1>#}
+{#    <ol class="breadcrumb">#}
+{#        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>#}
+{#        <li class="active">Dashboard</li>#}
+{#    </ol>#}
+{#{% endblock %}#}
+{% block style %} style="background-color: transparent"{% endblock %}
+{% block main_content %}
+    <div style="margin: 0 -15px">
+        <div class="row">
+            {% if proximos_eventos %}
+                <div class="col-sm-7 col-lg-6">
+                    {#            <h1>Próximos eventos</h1>#}
+
+                    {% regroup proximos_eventos by proposal.event.event_date as event_list %}
+                    <ul class="timeline">
+                        {% for event in event_list %}
+
+                            <li class="time-label">
+                  <span class="bg-light-blue">
+                  <i class="fa fa-calendar"></i> {{ event.grouper|date:"D, M d Y" }}
+                  </span>
+                            </li>
+
+                            {% for item in event.list %}
+                                <li>
+                                    {% if item.status.name == "DEUDA" %}
+                                        <i class="fa fa-dollar bg-red"></i>
+                                    {% elif item.status.name == "PAGADA" %}
+                                        <i class="fa fa-check label-success"></i>
+                                    {% elif item.status.name == "PENDIENTE" %}
+                                        <i class="fa fa-clock-o label-waring"></i>
+                                    {% elif item.status.name == "EDICION" %}
+                                        <i class="fa fa-pencil label-info"></i>
+                                    {% endif %}
+
+                                    {#  <i class="fa fa-check bg-red"></i>#}
+
+                                    <div class="timeline-item">
+                                <span class="time"><i
+                                        class="fa fa-clock-o"></i> {{ item.proposal.event.event_date | timeuntil }} </span>
+
+                                        <h3 class="timeline-header"><a
+                                                href="{% url "invoice_detalles" item.id %}">{{ item|capfirst }}</a>
+                                        </h3>
+                                        {% if  item.proposal.client_message %}
+                                            <div class="timeline-body border">
+                                                {{ item.proposal.client_message }}
+                                            </div>{% endif %}
+                                        <div class="timeline-footer border "{% if not item.proposal.client_message %}
+                                             style="border-top:none"{% endif %}>
+                                            <div><i class="fa fa-map-marker"></i>
+                                                <span>{{ item.proposal.event.address }}</span></div>
+                                            <div><i class="fa fa-calendar"></i>
+                                                <span>{{ item.proposal.event.event_date | date:"D, M d Y f:i A" }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                            {% endfor %}
+
+
+
+
+                        {% endfor %}
+                        <li>
+                            <i class="fa fa-clock-o bg-gray"></i>
+                        </li>
+                    </ul>
+
+                </div>
+            {% endif %}
+
+
+
+
+
+
+<div class="col-md-5 col-sm-4 col-xs-12 col-lg-3">
+                <div class="info-box bg-green">
+                    <span class="info-box-icon"><i class="fa fa-usd"></i></span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text">Ventas</span>
+                        <span class="info-box-number"> {{ ventas.count }} / $ {{ total_ventas | floatformat:"2" }}</span>
+
+{#                        <div class="progress">#}
+{#                            <div class="progress-bar" style="width: {{ proposal_porciento_ceptados }}%"></div>#}
+{#                        </div>#}
+                  <span class="progress-description">
+{#                   {{ proposal_porciento_ceptados|floatformat:"0" }}% Aceptados#}
+                  </span>
+                    </div>
+                    <!-- /.info-box-content -->
+                </div>
+            </div>
+          <div class="col-md-5 col-sm-6 col-xs-12 col-lg-3">
+                <div class="info-box">
+                <span class="info-box-icon {% if WEBSITE_STATUS == 0 %} bg-red-gradient  {% elif WEBSITE_STATUS > 1 and WEBSITE_STATUS <= 7 %} bg-blue-gradient {% elif WEBSITE_STATUS == 8 %} bg-green-gradient {% endif %}"><i
+                        class="fa fa-cloud"></i></span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text">Sitio web  </span>
+                    <span class="info-box-number">{% if not WEBSITE_STATUS %} Sin
+                        crear   {% elif WEBSITE_STATUS > 1 and WEBSITE_STATUS <= 7 %}
+                        Creado {% elif WEBSITE_STATUS == 8 %} Publicado {% endif %} </span>
+
+                        {% if WEBSITE_STATUS > 0 %}
+                            <div class="info-box-footer">
+                                <a href="{% url 'preview' %}" class="btn btn-info btn-xs" id="preview_btn"
+                                   target="_blank">Vista
+                                    previa</a>
+                                {% if WEBSITE_STATUS > 0 and WEBSITE_STATUS < 8 %}
+                                    <a class="btn btn-success btn-xs" id="publish_link"> <i class="fa fa-play"></i> </a>
+                                {% elif  WEBSITE_STATUS == 8 %}
+                                    <a class="btn btn-danger btn-xs" id="upublish_link"> <i class="fa fa-stop"></i> </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <!-- /.info-box-content -->
+                </div>
+                <!-- /.info-box -->
+            </div>
+            <!-- /.col -->
+   <div class="col-md-5 col-sm-4 col-xs-12 col-lg-6">
+                <div class="info-box bg-aqua">
+                    <span class="info-box-icon"><i class="fa fa-inbox"></i></span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text">Presupuestos aceptados</span>
+                        <span class="info-box-number"> {{ proposals_aceptados.count }} / {{ proposals.count }} </span>
+
+                        <div class="progress">
+                            <div class="progress-bar" style="width: {{ proposal_porciento_ceptados }}%"></div>
+                        </div>
+                  <span class="progress-description">
+                   {{ proposal_porciento_ceptados|floatformat:"0" }}% Aceptados
+                  </span>
+                    </div>
+                    <!-- /.info-box-content -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr/>
+    <script>
+        $(document).ready(function () {
+            $('#publish_link').click(function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "/site/publish/",
+                    type: "GET",
+                    success: function (response) {
+                        toastr.success('Su website se ha publicado correctamente.')
+                        {#                window.location.href = "/site/congrats"#}
+
+
+                    },
+                    error: function () {
+                        return
+                    }
+                });
+
+            });
+
+            $('#upublish_link').click(function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "/site/unpublish/",
+                    type: "GET",
+                    success: function (response) {
+                        toastr.success('Su website se ha despublicado por tanto no estara visible a sus usuarios.')
+                        // window.location.href = "/site/congrats"
+
+                    },
+                    error: function () {
+                        return
+                    }
+                });
+
+            });
+        });
+    </script>
+{% endblock %}

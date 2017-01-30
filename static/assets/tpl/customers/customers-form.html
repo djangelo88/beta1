@@ -1,0 +1,110 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()"><i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+
+            <form class="form-floating caterfull-form" ng-submit="saveClientItem(item)" novalidate="novalidate">
+                <fieldset>
+                    <legend>
+                        <span ng-bind-html="item.icon"></span> {{ settings.cmd }} {{ settings.singular }}</legend>
+                    </fieldset>
+                <fieldset>
+                    <legend class="subtitle">
+                        Datos del cliente
+                    </legend>
+                    <div class="form-group col-sm-3 no-padding-left-responsive">
+                        <label class="control-label">Prefix</label>
+                        <select class="form-control" ng-disabled="!item.editing" ng-model="item.prefix.id"
+                                ng-options="pref.id as pref.text for pref in preffixs">
+                        </select>
+                    </div>
+
+                    <div class="form-group filled col-sm-9 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Firstname <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.first_name" ng-disabled="!item.editing"
+                               required>
+                    </div>
+
+                    <div class="form-group filled col-sm-9 no-padding-left-responsive">
+                        <label class="control-label">Lastname <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.last_name" ng-disabled="!item.editing"
+                               required>
+                    </div>
+
+                    <div class="form-group col-sm-3 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Suffix</label>
+                        <select class="form-control" ng-disabled="!item.editing" ng-model="item.suffix.id"
+                                ng-options="suff.id as suff.text for suff in suffixs">
+                        </select>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="form-group filled col-sm-6 no-padding-left-responsive"
+                         ng-class="{'has-error':validation_errors.email.length > 0}">
+                        <label class="control-label">Email <span class="required-field">*</span></label>
+                        <input type="email" class="form-control" ng-model="item.email" ng-disabled="!item.editing"
+                               required>
+
+                        <div ng-show="validation_errors.email" ng-repeat="error in validation_errors.email">
+                            <span class="help-block has-error error-msg"> {{ error.message }} </span>
+                        </div>
+
+                    </div>
+                    <div class="form-group filled  col-sm-6 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Company</label>
+                        <input type="text" class="form-control" ng-model="item.company" ng-disabled="!item.editing">
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="form-group filled col-sm-4 no-padding-left">
+                        <label class="control-label">Mobile phone</label>
+                        <input type="text" class="form-control" ng-model="item.cellphone" ng-init=""
+                               ng-disabled="!item.editing">
+                    </div>
+                    <div class="form-group filled col-sm-4 ">
+                        <label class="control-label correct-margin-left">Home phone</label>
+                        <input type="text" class="form-control" ng-model="item.phone_home" ng-disabled="!item.editing">
+                    </div>
+                    <div class="form-group filled col-sm-4 no-padding-right"
+                         ng-class="{'has-error':validation_errors.birthday.length > 0}">
+                        <label class="control-label correct-margin-left">Birthdate</label>
+                        <input type="text" class="form-control" ng-model="item.birthday" data-autoclose="1"
+                               bs-datepicker>
+
+                        <div ng-show="validation_errors.birthday" ng-repeat="error in validation_errors.birthday">
+                            <span class="help-block has-error error-msg"> {{ error.message }} </span>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </fieldset>
+                <address-block address="item.address" validation_errors="validation_errors"
+                               editing="item.editing" new="settings.cmd == 'New'"></address-block>
+
+                <fieldset>
+                   <!-- Aqui -->
+                    <div class="clearfix"></div>
+                    <div class="form-group filled">
+                        <label class="control-label">Comments</label>
+                               <textarea class="form-control vertical" rows="3" ng-model="item.comments"
+                                         ng-disabled="!item.editing"></textarea>
+                    </div>
+                    <div class="clearfix"></div>
+
+                    <div class="form-group pull-right ">
+                        <button type="submit" class="btn btn-lg btn-primary" ng-show="item.creating"
+                                ng-click="saveAndAdd(true)">Save & add other
+                        </button>
+                        <button type="submit" class="btn btn-lg btn-primary" ng-hide="!item.editing"
+                                ng-click="saveAndAdd(false)">Save
+                        </button>
+                         <button type="button" class="btn btn-lg btn-default" ng-show="settings.cancelItemButton"
+                                ng-click="cancelClientForm()">Cancel
+                        </button>
+                    </div>
+                </fieldset>
+            </form>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,44 @@
+{% load widget_tweaks %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+{% for item in staff %}
+    <div class="proposal-item col-xs-12 ">
+        <div class="col-sm-1 text-center">
+
+            <a href="/media/{{ item.image }}" target="_blank"> <img class=" img-thumbnail"
+                                                                    height="{% widthratio 65 70 75 %}"
+                                                                    src="/media/{{ item.image }}" alt=""/></a>
+        </div>
+        <div class="col-xs-4 col-sm-4">
+            <h5>{{ item.service }}</h5>
+
+            <p class="description">{{ item.description }}</p>
+        </div>
+        <div class="col-xs-1 col-sm-2 text-right">
+            <h5>$ {{ item.price |floatformat:"2" }}</h5>
+            <p>Precio</p>
+        </div>
+
+        <div class="col-xs-2 col-sm-1 pull-right item-actions">
+            <a href="" class="edit" data-toggle="modal" data-target="#genericModal"
+               data-elem-id="{{ item.id }}"
+               data-edit-url="{% url 'edit_staff' item.id %}"
+               data-modal-title="Editar servicio/staff"
+               data-current-url="{% url 'staffandservice' %}" data-form="staff_form" data-container="stepContainer7"
+                    >
+
+                <i class="fa fa-pencil"></i> </a>
+            {% csrf_token %}
+            <button type="button" class="btn btn-danger btn-xs remove-menu"
+                    data-url-remove="{% url 'remove_staff' item.id %}" data-url="{% url 'staffandservice' %}" data-container="stepContainer7">
+                <i class="fa fa-trash-o"></i>    </span>
+            </button>
+        </div>
+
+    </div>
+{% empty %}
+    <p class="col-xs-12 col-sm-push-1">No existen elementos para mostrar.</p>
+
+{% endfor %}
+<script type="text/javascript" src="{% static 'js/components/delete.menu.form.js' %}"></script>

@@ -1,0 +1,649 @@
+/**
+ * Created by Hector on 20/01/2017.
+ */
+
+app.directive('proposalInvoice', ['$window', '$aside', 'PlaceholderTextService', '$alert', '$http', 'NomenclatorService', '$location', 'ProposalService', 'WizardHandler', 'CustomerService', 'ProductService', 'ServiceService', 'NotificationService', 'AlertConfirmService','ProfileService', function ($window, $aside, PlaceholderTextService, $alert, $http, NomenclatorService, $location, ProposalService, WizardHandler, CustomerService, ProductService, ServiceService, NotificationService, AlertConfirmService,ProfileService) {
+    return {
+        restrict: 'E',
+        templateUrl: '/static/assets/tpl/directives/proposal-list.html',
+        replace: true,
+        scope: {
+            model: '@',
+            plural: '@',
+            singular: '@'
+
+        },
+
+        controller: ['$element', '$location', '$rootScope', '$scope', function ($element, $location, $rootScope, $scope) {
+            console.log("proposal-invoice");
+
+
+            $scope.settings = {
+                cmd: 'New',
+                wizardEditMode: false,
+                cancelItemButton: true
+            };
+
+            $scope.proposalItemsSettings = {
+                showProposalItemForm: false,
+                showAlertMessage: true
+            }
+
+
+            $scope.isProposal = function () {
+                return $scope.model == "proposal";
+            }
+            var service_model = 'invoices';
+
+            if ($scope.isProposal()) {
+                service_model = 'proposals';
+            } else {
+                //service_model = 'invoices';
+            }
+
+            ProposalService.getAll(service_model)
+                .success(function (data, status, headers, config) {
+                    angular.forEach(data, function (item) {
+
+                        if (service_model == "invoices") {
+                            item.can_edit = item.invoice.can_edit;
+                            item.can_send = item.invoice.can_send;
+                            item.can_resend = item.invoice.can_resend;
+                            item.icon = ProposalService.createIcon(service_model, item.invoice.status);
+                        } else {
+                            item.icon = ProposalService.createIcon(service_model, item.status);
+                        }
+                    });
+                    $scope.data = data;
+                    console.log($scope.data);
+                });
+            $scope.businessTax = ProfileService.getTax();
+            //console.log( $scope.data);
+
+            //ProposalService.getAll(service_model)
+            //    .success(function (data, status, headers, config) {
+            //        angular.forEach(data, function (item) {
+            //            item.icon = ProposalService.createIcon(service_model, item.status);
+            //        });
+            //        $scope.data = data;
+            //
+            //    });
+
+
+            CustomerService.getAll()
+                .success(function (data, status, headers, config) {
+                    angular.forEach(data, function (item) {
+                        item.icon = CustomerService.createIcon(item.new);
+                    });
+
+                    $scope.clients = data;
+                });
+
+            // defining template
+            var formTplProposal = $aside({
+                scope: $scope,
+                templateUrl: '/static/assets/tpl/proposals/proposals-form.html',
+                show: false,
+                placement: 'left',
+                backdrop: false,
+                animation: 'am-slide-left'
+
+            });
+
+            // methods
+            $scope.checkAll = function () {
+                angular.forEach($scope.data, function (item) {
+                    item.selected = !item.selected;
+                });
+            };
+
+            resetAsideForm = function () {
+                $scope.proposalItemsSettings.showProposalItemForm = false;
+                $scope.proposalItem = {};
+
+                if ($scope.item.items.length > 0) {
+                    $scope.proposalItemsSettings.showAlertMessage = false;
+                } else {
+                    $scope.proposalItemsSettings.showAlertMessage = true;
+
+                }
+
+            };
+            showForm = function () {
+                angular.element('.tooltip').remove();
+
+                formTplProposal.show();
+
+
+            };
+
+            hideForm = function () {
+                //if ($scope.isProposal()) {
+                formTplProposal.hide();
+                //} else {
+
+                //}
+
+            };
+
+            $scope.$on('$destroy', function () {
+                hideForm();
+
+            });
+
+
+            $scope.editItem = function (item) {
+                if (item) {
+
+                    if (item.can_edit) {
+
+                        item.editing = true;
+                        $scope.item = item;
+                        //console.debug(item);
+                        $scope.item.event.event_time = item.event.event_date;
+                        $scope.item.address = item.event.address;
+
+                        $scope.settings.cmd = 'Edit';
+                        $scope.settings.wizardEditMode = true;
+
+
+                        resetAsideForm();
+
+
+                        showForm();
+
+                    } else {
+                        NotificationService.theme("", "El presupuesto seleccionado no se puede editar");
+                    }
+
+
+                }
+                console.log(item);
+            };
+
+            $scope.viewItem = function (item) {
+
+                if (item) {
+                    item.editing = false;
+                    $scope.item = item;
+                    $scope.item.event.event_time = item.event.event_date;
+                    $scope.settings.cmd = 'View';
+                    $scope.item.address = item.event.address;
+                    $scope.settings.wizardEditMode = true;
+
+                    resetAsideForm();
+
+                    showForm();
+                }
+            };
+
+            $scope.createItem = function () {
+
+                var item = {
+                    editing: true,
+                    items: []
+                }
+                $scope.settings.cmd = 'New';
+                $scope.item = item;
+
+                $scope.settings.wizardEditMode = false;
+                $scope.proposalItemsSettings.showAlertMessage = true;
+                $scope.proposalItemsSettings.showProposalItemForm = false;
+
+                showForm();
+            };
+
+            $scope.saveItem = function (item) {
+
+
+                console.log("save");
+                console.log(item);
+                WizardHandler.wizard().next();
+
+
+                //$scope.newProposalItem(item);
+
+            };
+
+            $scope.remove = function (item) {
+
+                var callbackFn = function () {
+                };
+
+                if (item) {
+                    var callbackFn = function () {
+
+                        ProposalService.delete(service_model, new Array(item))
+                            .success(function () {
+                                NotificationService.success('', 'Se ha eliminado el presupuesto seleccionado');
+                                $scope.data.splice($scope.data.indexOf(item), 1);
+                            }).error(function () {
+                                NotificationService.error('Error', 'Ha existido un error al eliminar el presupuesto seleccionado');
+                            });
+                    }
+                    AlertConfirmService.basicConfirm("Eliminar", "Confirma que desea eliminar el presupuesto seleccionado?", callbackFn);
+
+                } else {
+
+                    callbackFn = function () {
+                        var seleccionados = $scope.data.filter(
+                            function (item) {
+                                return item.selected;
+                            }
+                        );
+                        ProposalService.delete(service_model, seleccionados).success(function () {
+                            NotificationService.success('', 'Se han eliminado los presupuestos seleccionados');
+
+                            for (index in seleccionados) {
+                                $scope.data.splice($scope.data.indexOf(seleccionados[index]), 1);
+                            }
+                        }).error(function () {
+                            NotificationService.error('Error', 'Ha existido un error al eliminar los presupuestos seleccionados');
+                        });
+                    }
+                    AlertConfirmService.basicConfirm("Eliminar", "Confirma que desea eliminar los presupuestos seleccionados?", callbackFn);
+                }
+            };
+
+
+            /*Items*/
+            NomenclatorService.getAll('request').success(function (data) {
+                $scope.itemTypes = data;
+            });
+            $scope.requestsByType = [];
+
+            $scope.reloadRequests = function (proposalItem) {
+console.log(proposalItem)
+
+                if (proposalItem.type !== undefined) {
+                    switch (proposalItem.type.id) {
+                        case 1:
+                            ProductService.getAll().success(function (datos) {
+                                $scope.requestsByType = datos;
+                            });
+
+                            proposalItem.tax = $scope.businessTax;
+
+                            break;
+                        case 2:
+                            ServiceService.getAll().success(function (data) {
+                                $scope.requestsByType = data;
+                            });
+                            proposalItem.tax = 0;
+
+                            break;
+                    }
+
+                }
+            };
+
+
+            $scope.newProposalItem = function () {
+                proposalItem = {
+                    model: "proposal",
+                    editing: true,
+                    quantity: 0,
+                    unit_cost: 0,
+                    tax: $scope.businessTax,
+                    discount: 0,
+                    cmd: 'New',
+                    itemValues: {
+                        subtotal: 0,
+                        taxes: 0,
+                        total: 0,
+                        discount: 0,
+                        grandTotal: 0
+                    }
+
+                };
+
+                $scope.proposalItem = proposalItem;
+
+                $scope.proposalItemsSettings.showAlertMessage = false;
+                $scope.proposalItemsSettings.showProposalItemForm = true;
+
+            }
+
+            $scope.saveProposalItem = function (item, proposalItem) {
+
+                var elems = $scope.requestsByType.filter(function (elem) {
+                    return (elem.id == proposalItem.request.id);
+                })
+
+                //console.debug(proposalItem);
+
+                proposalItem.requestName = elems[0].name
+
+                //console.log(proposalItem.requestName);
+
+                if (proposalItem.cmd == 'New') {
+                    item.items.push(proposalItem);
+                    NotificationService.success("Se ha adicionado el item satisfactoriamente");
+
+                    if ($scope.onlyAdd) {
+                        $scope.proposalItemsSettings.showProposalItemForm = false;
+                    } else {
+                        proposalItem = {};
+                        $scope.newProposalItem(item);
+                        $scope.proposalItemsSettings.showProposalItemForm = true;
+                    }
+                } else if (proposalItem.cmd == 'Edit') {
+                    NotificationService.success("Se ha actualizado el item satisfactoriamente");
+                    $scope.proposalItemsSettings.showProposalItemForm = false;
+                }
+
+                $($("#proposalItemForm").ajaxForm()).resetForm();
+                console.log(proposalItem);
+
+            }
+            $scope.onlyAdd = true
+
+            $scope.saveAndAddProposalItem = function () {
+                $scope.onlyAdd = false;
+
+            }
+            $scope.onlySave = function () {
+                $scope.onlyAdd = true;
+            }
+
+            $scope.cancelProposalItem = function () {
+                $scope.proposalItemsSettings.showProposalItemForm = false;
+                if ($scope.item.items.length == 0) {
+                    $scope.proposalItemsSettings.showAlertMessage = true;
+                }
+            }
+            $scope.viewProposalItem = function (proposalItem) {
+                proposalItem.cmd = 'View';
+                proposalItem.itemValues = {
+                    subtotal: 0,
+                    taxes: 0,
+                    total: 0,
+                    discount: 0,
+                    grandTotal: 0
+                }
+
+                proposalItem.editing = false;
+                proposalItem.model = "proposal";
+                $scope.proposalItem = proposalItem;
+                $scope.calculateValues(proposalItem);
+                $scope.proposalItemsSettings.showProposalItemForm = true;
+
+            }
+            $scope.editProposalItem = function (proposalItem) {
+                proposalItem.model = "proposal";
+                proposalItem.editing = true;
+                proposalItem.cmd = 'Edit';
+                proposalItem.itemValues = {
+                    subtotal: 0,
+                    taxes: 0,
+                    total: 0,
+                    discount: 0,
+                    grandTotal: 0
+                }
+
+                $scope.reloadRequests(proposalItem);
+
+                switch (proposalItem.type.id) {
+                    case 1:
+                        proposalItem.request = proposalItem.product;
+                        break;
+                    case 2:
+                        proposalItem.request = proposalItem.service;
+                        break;
+                }
+
+                $scope.proposalItem = proposalItem;
+                $scope.proposalItemsSettings.showProposalItemForm = true;
+                $scope.calculateValues(proposalItem);
+
+
+            }
+            $scope.removeProposalItem = function (proposalItem) {
+
+                var callbackFn = function () {
+
+                    $scope.item.items.splice($scope.item.items.indexOf(proposalItem), 1);
+                    $scope.cancelProposalItem();
+
+                    NotificationService.success('', 'Se ha eliminado el elemento seleccionado');
+
+                };
+
+                AlertConfirmService.basicConfirm("Eliminar", "Confirma que desea eliminar el elemento seleccionado?", callbackFn);
+
+            }
+
+            var previewTemplatePage = $aside({
+                scope: $scope,
+                templateUrl: '/static/assets/tpl/proposals/proposal-preview.html',
+                show: false,
+                placement: 'left',
+                backdrop: false,
+                animation: 'am-slide-left'
+            });
+
+
+            showPreview = function () {
+                angular.element('.tooltip').remove();
+                previewTemplatePage.show();
+            };
+
+            $scope.showPreviewTemplate = function (item) {
+                $scope.item = item;
+                showPreview();
+            }
+
+            var addClientForm = $aside({
+                scope: $scope,
+                templateUrl: '/static/assets/tpl/customers/customers-form.html',
+                show: false,
+                placement: 'left',
+                backdrop: false,
+                animation: 'am-slide-left'
+            });
+
+            showClientForm = function () {
+                angular.element('.tooltip').remove();
+                addClientForm.show();
+            };
+            hideClientForm = function () {
+                angular.element('.tooltip').remove();
+                addClientForm.hide();
+            };
+
+            $scope.showClientFormTemplate = function () {
+                hideForm();
+                showClientForm();
+            }
+
+            $scope.saveClientItem = function (item) {
+
+                console.log(item);
+
+                item.first_line = item.address.first_line;
+                item.second_line = item.address.second_line;
+                item.city = item.address.city;
+                item.zip = item.address.zip;
+                item.state = item.address.state.id;
+                item.country = item.address.country.id;
+
+
+                $scope.validation_errors = '';
+
+
+                CustomerService.add(item)
+                    .success(function (data) {
+
+                        NotificationService.success('', 'Se ha creado el cliente satisfactoriamente');
+                        $scope.item.event.customer = data;
+
+
+                        //if ($scope.settings.cmd == 'New') {
+                        //    $scope.data.push(item);
+                        //}
+                        hideClientForm();
+                        showForm();
+                        //if ($scope.showNewForm) {
+                        //    $scope.createItem();
+                        //}
+                    }).error(function (data) {
+
+                        $scope.validation_errors = JSON.parse(data);
+                        NotificationService.error('Error', 'Ha existido un error al adicionar el cliente');
+
+
+                    });
+
+
+            };
+
+
+            $scope.cancelClientForm = function () {
+                hideClientForm();
+                showForm();
+            }
+
+
+            $scope.finish = function (item) {
+
+                item.finish = true;
+                var errors = false;
+                switch ($scope.settings.cmd) {
+                    case "New":
+                        ProposalService.add(service_model, item).success(function (data) {
+                            NotificationService.success("Se ha adicionado el proposal");
+
+                            if(data.status){
+
+                            }else{
+                                data.status = 2;
+                            }
+
+                            data.icon = ProposalService.createIcon('invoices',data.status);
+                            $scope.data.push(data);
+
+
+                        }).error(function () {
+                            NotificationService.error("Ha existido un error al adicionar el proposal");
+                            errors = true;
+                        });
+                        break;
+                    case "Edit":
+                        ProposalService.edit(service_model, item.id, item).success(function (data) {
+                            NotificationService.success("Se ha actualizado el presupuesto satisfactoriamente");
+                            data.icon = ProposalService.createIcon(service_model, item.status);
+                            $scope.data[$scope.data.indexOf(item)] = data;
+                            //$scope.item.items.splice($scope.item.items.indexOf(proposalItem), 1);
+                        }).error(function () {
+                            NotificationService.error("Ha existido un error al actualizar el presupuesto");
+                            errors = true;
+                        });
+                        break;
+
+                }
+
+
+                if (item.showPreview !== undefined && item.showPreview) {
+
+                    hideForm();
+                    $scope.item = item;
+                    showPreview();
+                } else if (!errors) {
+                    hideForm();
+                }
+
+                console.log(item);
+
+
+            }
+
+            var totalItemsValues = {
+                subtotal: 0,
+                taxes: 0,
+                total: 0,
+                discount: 0,
+                grandTotal: 0
+            };
+
+
+            $scope.calculateValues = function (proposalItem) {
+
+                /*Subtotal*/
+                if (proposalItem.quantity !== undefined && proposalItem.unit_cost !== undefined) {
+                    proposalItem.itemValues.subtotal = proposalItem.quantity * proposalItem.unit_cost;
+                }
+
+                if (proposalItem.tax !== undefined) {
+                    if (proposalItem.itemValues.subtotal > 0 && proposalItem.tax > 0) {
+                        proposalItem.itemValues.taxes = proposalItem.itemValues.subtotal * proposalItem.tax / 100;
+                    } else {
+                        proposalItem.itemValues.taxes = 0;
+                    }
+                }
+
+                if (proposalItem.discount !== undefined) {
+                    if (proposalItem.discount > 0) {
+                        proposalItem.itemValues.discount = proposalItem.itemValues.total * proposalItem.discount / 100;
+                    } else {
+                        proposalItem.itemValues.discount = 0;
+                    }
+                }
+
+                proposalItem.itemValues.total = proposalItem.itemValues.subtotal + proposalItem.itemValues.taxes;
+                proposalItem.itemValues.grandTotal = proposalItem.itemValues.total - proposalItem.itemValues.discount;
+
+            }
+
+
+            $scope.print = function () {
+                return $window.print();
+            }
+
+            $scope.sendMail = function(item){
+                NotificationService.theme("Email enviado");
+            }
+
+        }],
+        link: function (scope, element, attrs, linkCtrl) {
+
+            //if (scope.isProposal())
+            //    console.debug("aqui 1");
+
+
+            //   console.log(element);
+            //   console.log(scope);
+            //   console.log(attrs);
+
+
+            //          console.log( $element.validation_errors);
+            //console.log(modelCtrl);
+        }
+
+    }
+        ;
+}])
+;
+//
+//app.directive('section-header', function () {
+//    return {
+//        restrict: 'E',
+//        scope: {
+//            page_title: '=',
+//            'page-description': '@',
+//            'page-icon': '='
+//        },
+//        templateUrl: '/static/assets/tpl/directives/prop-inv-section-header.html',
+//        //require: "^proposal-invoice",
+//        controller: ['$element', '$location', '$rootScope', '$scope', function ($element, $location, $rootScope, $scope) {
+//            console.log("section-header");
+//
+//            console.log($element);
+//            console.log($scope);
+//        }],
+//        link: function (scope, element, attrs, modelCtrl) {
+//
+//            console.log("section-header");
+//        }
+//    }
+//});
+//

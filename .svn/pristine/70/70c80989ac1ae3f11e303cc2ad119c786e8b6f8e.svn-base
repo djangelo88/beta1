@@ -1,0 +1,31 @@
+/**
+ * Created by Hector on 12/01/2017.
+ */
+app.factory('CustomerService', ['$rootScope', '$filter', '$http', 'BASE_URL', function ($rootScope, $filter, $http, BASE_URL) {
+
+    //var _baseURL = 'http://app.caterfull.com:8000/api';
+    var _getAll = function (model) {
+        return $http.get(BASE_URL+'customers');
+    };
+
+    var _getById = function (model, id) {
+        return $http.get(BASE_URL+'?model='+model+'&id='+id);
+    };
+
+    var _post = function (object) {
+        return $http.post(BASE_URL + 'customers/',object);
+    };
+    var _postEdit = function (id,object) {
+        return $http.post(BASE_URL + 'customers/'+id+'/',object);
+    };
+
+    return {
+        getAll:_getAll,
+        getById: _getById,
+        add: _post,
+        edit: _postEdit,
+        baseUrl: BASE_URL
+    };
+
+
+}]);

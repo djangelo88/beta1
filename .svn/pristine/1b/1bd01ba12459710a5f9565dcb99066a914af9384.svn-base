@@ -1,0 +1,55 @@
+{% load widget_tweaks %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+{% for item in menus %}
+    <div class="proposal-item col-xs-12 ">
+        <div class="col-sm-1 text-center">
+
+            {% if item.image %}
+                <img class=" img-thumbnail"
+                     height="{% widthratio 65 70 75 %}"
+                     src="/media/{{ item.image }}" alt=""/>
+                {% else %}
+                <i class="fa fa-camera-retro fa-3x text-muted"></i>
+            {% endif %}
+
+        </div>
+        <div class="col-xs-4 col-sm-4">
+            <h5>{{ item.name }}</h5>
+
+            <p class="description">{{ item.description }}</p>
+        </div>
+{#        <div class="col-xs-1 col-sm-2 text-right">#}
+{#            <h5>$ {{ item.price |floatformat:"2" }}</h5>#}
+{##}
+{#            <p>Precio</p>#}
+{#        </div>#}
+        <div class="col-xs-2 col-sm-2">
+            <h5>{{ item.category }}</h5>
+
+            <p>categoria</p>
+        </div>
+        <div class="col-xs-2 col-sm-2">
+            <p class="description">{{ item.comments }} </p>
+        </div>
+        <div class="col-xs-2 col-sm-1 pull-right item-actions">
+            <a href="" class="edit" data-toggle="modal" data-target="#genericModal"
+               data-elem-id="{{ item.id }}"
+               data-edit-url="{% url 'edit_menu' item.id %}"
+               data-modal-title="Editar menu" data-current-url="{% url 'menu' %}" data-form="menu_form"
+               data-container="stepContainer4"> <i class="fa fa-pencil"></i> </a>
+            {% csrf_token %}
+            <button type="button" class="btn btn-danger btn-xs remove-menu"
+                    data-url-remove="{% url 'remove_menu' item.id %}" data-url="{% url 'menu' %}"
+                    data-container="stepContainer4">
+                <i class="fa fa-trash-o"></i>    </span>
+            </button>
+        </div>
+
+    </div>
+{% empty %}
+    <p class="col-xs-12 col-sm-push-1">No existen elementos para mostrar.</p>
+
+{% endfor %}
+<script type="text/javascript" src="{% static 'js/components/delete.menu.form.js' %}"></script>

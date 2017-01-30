@@ -1,0 +1,63 @@
+<div>
+
+
+    <div class="table-responsive well no-padding white no-margin">
+        <h3 class="table-title" ng-if="data">{{ data.length }} {{ plural }} disponibles </h3>
+
+        <h3 class="table-title" ng-if="!data">No existen {{ plural }} disponibles </h3>
+
+        <table class="table table-full m-b-60" id="table-area-1" fsm-big-data="data of data take 30" ng-if="data">
+            <thead>
+            <tr fsm-sticky-header scroll-body="'#table-area-1'" scroll-stop="64">
+                <th><input type="checkbox" class="relative" ng-model="selectAll" ng-click="checkAll()"/></th>
+                <th fsm-sort="status">Estado  </th>
+                <th fsm-sort="event.name">Evento</th>
+                <th fsm-sort="email">Cliente</th>
+                <th>Fecha</th>
+                <th ng-show="model=='invoice'">Fecha de pago </th>
+                <th class="text-right">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="(key, item) in data" ng-click="item.selected=!item.selected" ng-dblclick="editItem(item)">
+                <td><input type="checkbox" class="relative" ng-model="item.selected"
+                           ng-click="$event.stopPropagation()"/></td>
+                <td ng-bind-html="item.icon"> </td>
+                <td>{{ item.event.name }} - {{ item.items.length }} </td>
+                <td>{{ item.event.customer.prefix.text }} {{ item.event.customer.first_name }} {{ item.event.customer.last_name }} {{ item.event.customer.suffix.text }}</td>
+                <td>{{ item.event.event_date |date:'yyyy-MM-dd hh:mm a' }}    </td>
+                <td ng-show="item.invoice.due_date">{{ item.invoice.due_date |date:'yyyy-MM-dd' }}</td>
+                <td class="text-right" ng-click="$event.stopPropagation()">
+
+                    <button type="button" class="btn btn-link btn-round  " data-title="Edit item"
+                            ng-click="sendMail(item)" ng-disabled="(!item.can_send && !item.can_resend) || (!item.invoice.can_send && !item.invoice.can_resend)"
+                            ng-class="{resend:item.can_resend}"><i class="md md-send "></i></button>
+
+
+                    <button type="button" class="btn btn-link btn-round" data-title="Edit item"
+                            ng-disabled="!item.can_edit || !item.invoice.can_edit"
+                            ng-click="editItem(item)"><i class="md md-edit"></i></button>
+                    <button type="button" class="btn btn-link btn-round" data-title="Preview"
+                            ng-click="showPreviewTemplate(item)"><i class="md md-description"></i></button>
+                    <button type="button" class="btn btn-link btn-round" data-title="View item"
+                            ng-click="viewItem(item)"><i class="md md-search"></i></button>
+                    <button type="button" class="btn btn-link btn-round" data-title="Delete item"
+                            ng-click="remove(item)"><i class="md md-delete"></i></button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="footer-buttons no-print">
+        <div class="btn btn-primary btn-round btn-lg m-r-10 btn-footer" ng-show="(data|filter:{selected: true}).length"
+             ng-click="remove()" data-title="Remove {{(data|filter:{selected: true}).length}} item(s)" bs-tooltip><i
+                class="md md-delete"></i></div>
+        <div class="btn btn-default btn-round btn-lg m-r-10 btn-footer" scroll-to="top" ng-hide="scroll<100"
+             data-title="Scroll to top" bs-tooltip><i class="md md-arrow-drop-up"></i></div>
+        <div class="btn btn-primary btn-round btn-lg" ng-click="createItem()" data-title="New {{ model_singular }}"
+             bs-tooltip><i class="md md-add"></i></div>
+    </div>
+
+</div>

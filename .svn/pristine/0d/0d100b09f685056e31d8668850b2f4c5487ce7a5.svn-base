@@ -1,0 +1,96 @@
+/**
+ * Created by Hector on 20/01/2017.
+ */
+
+app.directive('proposalInvoice', ['$window', '$aside', 'PlaceholderTextService', '$alert', '$http', 'NomenclatorService', '$location', 'ProposalService', 'WizardHandler', 'CustomerService', 'ProductService', 'ServiceService', 'NotificationService', 'AlertConfirmService', function ($window, $aside, PlaceholderTextService, $alert, $http, NomenclatorService, $location, ProposalService, WizardHandler, CustomerService, ProductService, ServiceService, NotificationService, AlertConfirmService) {
+    return {
+        restrict: 'E',
+        templateUrl: '/static/assets/tpl/directives/proposal-list.html',
+        replace: true,
+        scope: {
+            model: '@',
+            plural: '@',
+            singular: '@'
+
+        },
+
+        controller: ['$element', '$location', '$rootScope', '$scope', function ($element, $location, $rootScope, $scope) {
+
+//$scope.plural = $scope
+
+
+            console.log("proposal-invoice");
+            //
+            //
+            console.log($scope);
+            //console.log($element);
+            //console.log($location);
+            //console.log($rootScope);
+
+            //// settings
+            //$scope.settings = {
+            //    singular: 'Presupuesto',
+            //    plural: 'Presupuestos',
+            //    cmd: 'New',
+            //    //showAddItemForm: true,
+            //    wizardEditMode: false,
+            //    cancelItemButton: true
+            //
+            //};
+            //$scope.validation_errors = {};
+            ////page
+            //$scope.page = {
+            //    title: 'Presupuestos',
+            //    description: 'In most applications you need basic table listings and editing capabilities.' +
+            //    ' With this app you can create simple admin functionality based on a json web service.',
+            //    icon: 'md md-group'
+            //};
+
+            this.isProposal = function(){
+                return $scope.model == "proposal";
+            }
+
+
+
+        }],
+        link: function (scope, element, attrs, linkCtrl) {
+
+
+
+
+
+         //   console.log(element);
+         //   console.log(scope);
+         //   console.log(attrs);
+
+
+            //          console.log( $element.validation_errors);
+            //console.log(modelCtrl);
+        }
+
+    };
+}]);
+//
+//app.directive('section-header', function () {
+//    return {
+//        restrict: 'E',
+//        scope: {
+//            page_title: '=',
+//            'page-description': '@',
+//            'page-icon': '='
+//        },
+//        templateUrl: '/static/assets/tpl/directives/prop-inv-section-header.html',
+//        //require: "^proposal-invoice",
+//        controller: ['$element', '$location', '$rootScope', '$scope', function ($element, $location, $rootScope, $scope) {
+//            console.log("section-header");
+//
+//            console.log($element);
+//            console.log($scope);
+//        }],
+//        link: function (scope, element, attrs, modelCtrl) {
+//
+//            console.log("section-header");
+//        }
+//    }
+//});
+//

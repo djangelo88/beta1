@@ -1,0 +1,17 @@
+from django.http.response import JsonResponse
+from django.views.generic.base import View
+from base.models import Business
+from business_site.models import Website
+
+__author__ = 'maykel'
+
+class AllWebsiteData(View):
+    def get(self, request, *args, **kwargs):
+        b = Business.objects.get_business_by_user(request.user)
+        w = Website.objects.get_website_by_business(business=b).first()
+        data = w.serialize()
+        return JsonResponse(data, safe=False, status=200)
+
+
+# class WebsiteTemplate(View):
+#     def post(self, ):

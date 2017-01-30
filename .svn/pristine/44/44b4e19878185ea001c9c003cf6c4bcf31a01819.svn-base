@@ -1,0 +1,210 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en" ng-app="materialism" ng-class="{'full-page-map': isFullPageMap}">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Materialism Angular Admin Theme">
+    <meta name="author" content="Theme Guys - The Netherlands">
+
+    <meta name="msapplication-TileColor" content="#9f00a7">
+    <meta name="msapplication-TileImage" content="{% static  'assets/img/favicon/mstile-144x144.png' %}">
+    <meta name="msapplication-config" content="{% static 'assets/img/favicon/browserconfig.xml' %}">
+    <meta name="theme-color" content="#ffffff">
+
+
+    <link rel="apple-touch-icon" sizes="57x57" href="{% static  'assets/img/favicon/apple-touch-icon-57x57.png' %}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{% static  'assets/img/favicon/apple-touch-icon-60x60.png' %}">
+    <link rel="apple-touch-icon" sizes="72x72" href="{% static  'assets/img/favicon/apple-touch-icon-72x72.png' %}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static  'assets/img/favicon/apple-touch-icon-76x76.png' %}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{% static  'assets/img/favicon/apple-touch-icon-114x114.png' %}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static  'assets/img/favicon/apple-touch-icon-120x120.png' %}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static  'assets/img/favicon/apple-touch-icon-144x144.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static  'assets/img/favicon/apple-touch-icon-152x152.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static  'assets/img/favicon/apple-touch-icon-180x180.png' %}">
+
+    <link rel="icon" type="image/png" href="{% static  'assets/img/favicon/favicon-32x32.png' %}" sizes="32x32">
+    <link rel="icon" type="image/png" href="{% static  'assets/img/favicon/android-chrome-192x192.png' %}" sizes="192x192">
+    <link rel="icon" type="image/png" href="{% static  'assets/img/favicon/favicon-96x96.png' %}" sizes="96x96">
+    <link rel="icon" type="image/png" href="{% static  'assets/img/favicon/favicon-16x16.png' %}" sizes="16x16">
+
+    <link rel="manifest" href="{% static  'assets/img/favicon/manifest.json' %}">
+    <link rel="shortcut icon" href="{% static  'assets/img/favicon/favicon.ico' %}">
+
+    <title ng-bind="pageTitle + ' - Caterfull'">Loading... - Caterfull</title>
+
+    <!-- build:css assets/css/vendors.min.css -->
+    <link rel="stylesheet" href="{% static  'assets/css/vendors.min.css' %}">
+    <link rel="stylesheet" href="{% static  'assets/css/main.css' %}">
+    <link rel="stylesheet" href="{% static  'assets/css/angular-ui-select.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/sweetalert/sweet-alert.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/print.css' %}" media="print">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/angular-wizard.css' %}" >
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/js/vendors/angular-confirm/angular-confirm.min.css' %}" >
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/js/vendors/fullcalendar/dist/fullcalendar.min.css' %}" >
+{#    <link rel="stylesheet" type="text/css" href="{% static 'assets/js/vendors/fullcalendar/dist/fullcalendar.print.css' %}" >#}
+
+{#    <link rel="stylesheet" href="{% static  'assets/css/select2.css' %}">#}
+
+    <!-- endbuild -->
+    <!-- build:css assets/css/styles.min.css -->
+    <link rel="stylesheet" href="{% static  'assets/css/styles.min.css' %}">
+    <!-- endbuild -->
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+{#  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>#}
+{#  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>#}
+  <![endif]-->
+</head>
+
+<body ng-controller="MainController" scroll-spy id="top" ng-class="[theme.template, theme.color]">
+<main>
+    {#    <div ng-include src="assets/tpl/partials/sidebar.html"></div>#}
+    <div class="no-print"> {% include 'assets/tpl/partials/sidebar.html' %} </div>
+    <div class="main-container">
+        {#      <div ng-include src="assets/tpl/partials/topnav.html"></div>#}
+        <div> {% include 'assets/tpl/partials/topnav.html' %} </div>
+
+            <div class="main-content print-area" ui-view autoscroll="true" ng-cloak bs-affix-target init-ripples></div>
+
+    </div>
+    {% block print %}{% endblock %}
+</main>
+
+<div class="alert-container-top-right"></div>
+<!--@grep dist:s-->
+{#  <script>#}
+{#    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){#}
+{#      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),#}
+{#      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)#}
+{#    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');#}
+{#    ga('create', 'UA-62479268-1', 'auto');#}
+{#  </script>#}
+<!--@grep dist:e-->
+<!-- build:js assets/js/vendors.min.js -->
+<script src="{% static  'assets/js/vendors.min.aee713a14dea1e7ab4a8.js' %}"></script>
+
+<!-- endbuild -->
+<!-- build:js assets/js/app.min.js -->
+<script charset="utf-8" src="{% static  'js/jquery.form.js' %}"></script>
+
+<script charset="utf-8" src="{% static  'assets/js/vendors/angular-placeholders.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/vendors/side-nav.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/vendors/ripples.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/vendors/fsm-sticky-header.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/vendors/angular-smooth-scroll.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/vendors/angular-confirm/angular-confirm.min.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/vendors/moment/moment-with-locales.min.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/vendors/fullcalendar/dist/fullcalendar.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/vendors/angular-ui-calendar/src/calendar.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/vendors/fullcalendar/dist/gcal.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/vendors/angular-ui-router/release/angular-ui-router.min.js' %}"></script>
+
+
+<script charset="utf-8" src="{% static  'assets/js/colors.js' %}"></script>
+
+<script charset="utf-8" src="{% static  'assets/js/app.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/app.constants.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/app.config.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/app.filters.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/app.demo.js' %}"></script>
+<!--@grep dist-->
+
+<script charset="utf-8" src="{% static  'assets/js/directives/formcontrol.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/navbar-hover.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/navbar-search.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/navbar-toggle.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/noui-slider.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/todo-widget.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/menu-link.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/menu-toggle.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/vectormap.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/autofocus.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/card-flip.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/scroll-spy.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/init-ripples.js' %}"></script>
+
+
+
+
+<script charset="utf-8" src="{% static  'assets/js/services/color-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/todo-service.js' %}"></script>
+
+<script charset="utf-8" src="{% static  'assets/js/controllers/main.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/dashboard.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/charts.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/colors.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/buttons.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/lists.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/maps/full-map.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/maps/basic-map.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/maps/clickable-map.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/maps/searchable-map.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/maps/zoomable-map.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/maps/vector-map.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/forms.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/upload.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/tables/basic.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/tables/data.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/apps/crud.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/apps/todo.js' %}"></script>
+{#caterfull#}
+<script charset="utf-8" src="{% static  'assets/js/services/services-service.js' %}"></script>
+
+
+{#caterfull services#}
+
+<script charset="utf-8" src="{% static  'assets/js/services/recipes-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/ingredients-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/workers-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/position-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/nomenclator-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/customer-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/notification-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/proposal-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/product-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/service-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/confirm-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/business-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/account-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/stripe_services.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/calendar-service.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/services/website-service.js' %}"></script>
+
+{#caterfull controllers#}
+<script charset="utf-8" src="{% static  'assets/js/controllers/products/products.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/recipe/recipe.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/services/services.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/ingredients/ingredients.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/workers/workers-list.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/position/position-list.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/customers/customers-list.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/proposals/proposals-list.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/proposals/angular-wizard.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/business/profile.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/calendar/calendar.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/website/website.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/controllers/stripe/stripe.js' %}"></script>
+
+{#caterfull directives#}
+<script charset="utf-8" src="{% static  'assets/js/directives/address-block.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/proposal-invoice.js' %}"></script>
+<script charset="utf-8" src="{% static  'assets/js/directives/website-status.js' %}"></script>
+
+{#Stripe js#}
+<script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+
+
+{#dependences#}
+{#<script type="text/javascript" src="{% static 'plugins/sweetalert/sweet-alert.min.js' %}"></script>#}
+<!-- endbuild -->
+<script>
+    $(document).ready(function () {
+        $("#textAngular-editableFix-010203040506070809").hide()
+    })
+
+</script>
+</body>
+</html>

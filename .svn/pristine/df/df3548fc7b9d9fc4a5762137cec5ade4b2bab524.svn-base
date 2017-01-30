@@ -1,0 +1,158 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()"><i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+
+            <form class="form-floating caterfull-form" novalidate="novalidate">
+                <fieldset>
+                    <legend>
+                        <span ng-show="!item.icon">
+                        <i class="md md-assignment  grey lighten-1 icon-color"></i></span>
+                        <span ng-bind-html="item.icon">  </span>   {{ settings.singular }}
+
+                        <!--<div class="pull-right">
+                            <button type="button" ng-show="item.status==2" class="btn btn-default btn-round-sm"
+                                    data-placement="bottom" data-title="Denegar" bs-tooltip="" ng-click="">
+                                <span class="md md-block text-danger"></span>
+                            </button>
+
+                            <button type="button" ng-click="sendMail(item)" ng-hide="!item.can_send && !item.can_resend"
+                                    ng-class="{resend:item.can_resend}" class="btn btn-default btn-round-sm"
+                                    data-placement="bottom" data-title="Enviar" bs-tooltip="">
+                                <span class="md md-send"></span>
+                            </button>
+
+                            <button type="button" ng-click=" " class="btn btn-default btn-round-sm"
+                                    data-placement="bottom" data-title="Exportar a PDF" bs-tooltip="">
+                                <span class="md md-file-download"></span>
+                            </button>
+
+                        </div>-->
+
+                    </legend>
+                </fieldset>
+            </form>
+
+
+
+            <section class="cards">
+
+
+                 <div class="row">
+                    <div class="row m-b-10">
+
+                      <div class="col-md-12">
+                          <div class="card bordered">
+                            <div class="card-header">
+                              <span class="card-title">Datos generales</span>
+                            </div>
+
+                            <div class="table-responsive">
+                              <table class="table table-full table-full-small">
+                                <thead>
+                                <tr>
+                                  <th>Nombre</th>
+                                  <th>Fecha</th>
+                                  <th>Hora</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                  <td>{{ item.name }}</td>
+                                  <td >{{ item.event_date|date}}</td>
+                                  <td>{{ item.event_time|date:'hh:mm a' }}</td>
+                                  </tr>
+                                  </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="row m-b-10">
+
+                      <div class="col-md-12">
+                          <div class="card bordered">
+                            <div class="card-header">
+                              <span class="card-title">Cliente</span>
+                            </div>
+
+                            <div class="table-responsive">
+                              <table class="table table-full table-full-small">
+                                <thead>
+                                <tr>
+                                  <th>Nombre</th>
+                                  <th ng-show="item.customer.cellphone">Telefono</th>
+                                  <th>Correo</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                  <td>{{ item.customer.full_name }}</td>
+                                  <td ng-show="item.customer.cellphone">{{ item.customer.cellphone}}</td>
+                                  <td>{{ item.customer.email }}</td>
+                                  </tr>
+                                  </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="row m-b-60">
+
+                      <div class="col-md-12">
+                          <div class="card bordered">
+                            <div class="card-header">
+                              <span class="card-title">Direccion</span>
+                            </div>
+
+                            <div class="table-responsive">
+                              <table class="table table-full table-full-small">
+                                <thead>
+                                <tr>
+                                  <th>Line 1</th>
+                                  <th ng-show="item.address.second_line">Line 2</th>
+                                  <th>Pais</th>
+                                  <th>Estado</th>
+                                  <th>Ciudad</th>
+                                  <th>Codigo postal</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                  <td>{{ item.address.first_line }}</td>
+                                  <td ng-show="item.address.second_line">{{ item.address.second_line }}</td>
+
+                                  <td>{{ item.address.country.name }}</td>
+                                  <td>{{ item.address.state.name }}</td>
+                                  <td>{{ item.address.city }}</td>
+                                  <td>{{ item.address.zip }}</td>
+                                  </tr>
+                                  </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                        </div>
+                    </div>
+                </div>
+             </section>
+
+
+
+
+
+
+
+
+
+
+        </div>
+    </div>
+</div>

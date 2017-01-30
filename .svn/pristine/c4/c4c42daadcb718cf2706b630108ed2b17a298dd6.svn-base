@@ -1,0 +1,15 @@
+{% extends 'base2.html' %}
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+{% block title %} Website - Basic Info {% endblock %}
+{% block main_content %}
+    {% include 'business_site/website_wizard.html' with basic_information_form=form basic_info_status="active" template_status="complete" %}
+
+
+
+{% endblock %}
+
+

@@ -1,0 +1,42 @@
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+<form action="" method="post" enctype="multipart/form-data" id="staff_form">
+    {% csrf_token %}
+
+
+    <div class="form-group col-xs-12 col-sm-7 {% if form.service.errors %} has-error {% endif %}">
+        <label> {{ form.service.label }} </label>
+        {% render_field form.service class="form-control" %}
+        {% for error in  form.service.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group col-xs-12 col-sm-2 {% if form.price.errors %} has-error {% endif %}">
+        <label> {{ form.price.label }} </label>
+        {% render_field form.price class="form-control" %}
+        {% for error in  form.price.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+    <div class="form-group col-xs-12 col-sm-3 {% if form.image.errors %} has-error {% endif %}">
+        <label> {{ form.image.label }} </label>
+        {% render_field form.image class="form-control" %}
+        {% for error in  form.image.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+    <div class="form-group col-xs-12 col-sm-12 {% if form.description.errors %} has-error {% endif %}">
+        <label> {{ form.description.label }} </label>
+        {% render_field form.description class="form-control" %}
+        {% for error in  form.description.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+    <div class="clearfix"></div>
+    {#        {{ form }}#}
+{#        <input type="submit"/>#}
+</form>

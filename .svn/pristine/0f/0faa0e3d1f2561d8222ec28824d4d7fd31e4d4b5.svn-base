@@ -1,0 +1,26 @@
+from datetime import datetime
+from django.forms.forms import Form
+from django import forms
+
+
+class BookingForm(Form):
+
+    cliente_name = forms.CharField(max_length=50)
+    cliente_last_name = forms.CharField(max_length=50)
+    cliente_email = forms.EmailField()
+    cliente_phone = forms.CharField(max_length=50)
+    cliente_address = forms.CharField(max_length=125)
+    cliente_birthday = forms.DateField(required=False)
+
+    evento_name = forms.CharField(max_length=100)
+    evento_date = forms.DateTimeField()
+    evento_address = forms.CharField(max_length=125)
+
+
+    def clean_evento_date(self):
+        print(self.data['evento_date'])
+        #print(self.fields['event_date'].to_python((self.data['event_date'])))
+        #print(datetime.today().timestamp())
+        if self.fields['evento_date'].to_python((self.data['evento_date'])).date() < datetime.today().date():
+            raise forms.ValidationError('La fecha del evento debe ser posterior al fecha actual')
+        return  self.data['evento_date']

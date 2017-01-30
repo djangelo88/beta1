@@ -1,0 +1,25 @@
+{
+  "new": true,
+  "company": null,
+  "prefix": null,
+  "activo": true,
+  "email": "alberto@cuba.cu",
+  "id": 100,
+  "last_name": "Perez",
+  "first_name": "Alberto el militar",
+  "cellphone": "444",
+  "birthday": "1920-01-02",
+  "address": {
+    "zip": 10400,
+    "second_line": null,
+    "first_line": "Calle del medio",
+    "city": 1,
+    "country": "Cuba",
+    "id": 97,
+    "state": "Habana"
+  },
+  "suffix": null,
+  "phone_home": null,
+  "business": 1,
+  "comments": null
+}

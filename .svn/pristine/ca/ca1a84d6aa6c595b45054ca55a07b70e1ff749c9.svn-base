@@ -1,0 +1,40 @@
+<section class="cards" >
+    <div class="page-header">
+        <h1>
+            <i class="md md-cloud"></i>
+            {{ page.title }}
+        </h1>
+        <p class="lead" ng-bind="page.description"></p>
+    </div>
+</section>
+
+
+<div class="col-md-9" >
+    <wizard edit-mode="settings.wizardEditMode">
+        <wz-step wz-title="Template">
+            <div ng-include="'static/assets/tpl/website/template-step.html'"></div>
+        </wz-step>
+        <wz-step wz-title="Basic info">
+            <div ng-include="'static/assets/tpl/website/basic-info-step.html'"></div>
+        </wz-step>
+        <wz-step wz-title="Image gallery">
+            <div ng-include="'static/assets/tpl/website/image-gallery-step.html'"></div>
+        </wz-step>
+        <wz-step wz-title="Menu">
+            <div ng-include="'static/assets/tpl/website/menu-step.html'"></div>
+        </wz-step>
+        <wz-step wz-title="Social network">
+            <div ng-include="'static/assets/tpl/website/social-step.html'"></div>
+        </wz-step>
+        <wz-step wz-title="Contact Us">
+            <div ng-include="'static/assets/tpl/website/contactus-step.html'"></div>
+        </wz-step>
+        <wz-step wz-title="Staff and Services">
+            <div ng-include="'static/assets/tpl/website/staff-step.html'"></div>
+        </wz-step>
+    </wizard>
+</div>
+
+<div class="col-md-3 no-padding" >
+    <website-status status="website"> </website-status>
+</div>

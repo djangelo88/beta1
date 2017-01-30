@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+
+{% block title %} Presupuesto denegado {% endblock %}
+{% block content %}
+
+    <div class="login-page">
+        <div class="login-box message">
+            <div class="login-logo-img">
+                <a href="#"><img src="{% static 'images/logo-large.png' %}" alt=""/></a>
+            </div>
+            <div class="login-box-body">
+                <p class="login-box-msg ">
+                    <strong class="text-caterfull ">:) </strong>
+                    El presupuesto fue denegado.</p>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

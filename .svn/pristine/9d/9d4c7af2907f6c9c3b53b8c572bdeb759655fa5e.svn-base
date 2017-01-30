@@ -1,0 +1,954 @@
+# Create your views here.
+# Create your views here.
+from smtplib import SMTPException
+
+from django.conf import settings
+from django.core.mail.message import EmailMultiAlternatives
+from django.core.urlresolvers import reverse
+from django.http.response import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.shortcuts import render_to_response
+
+# from django.contrib.formtools.wizard.views import SessionWizardView, WizardView
+from django.template.context import RequestContext, Context
+from django.views.defaults import page_not_found
+from django.views.generic.base import View
+from django.views.generic.edit import FormView
+from re import split
+from business_site.forms import BasicInfoForm, GalleryForm, LinksForm, ContactUsForm, TemplateChoice, CategoryForm, MenuForm, MenuEdit, PhotoEditForm, \
+    StaffForm, StaffEditForm, SendMessageForm
+from business_site.models import WebDomain, Website, BasicInfo, WebsiteControl, Photo, Gallery, Links, ContactUs, \
+    Category, Menu, StaffServices, MenuPrice
+from base.models import Business
+from django.template import loader
+
+
+class RedirectView(View):
+    def get(self, request):
+        return request
+
+
+def where_i_go(web):
+    if web == None:
+        place = 'websiteinit'
+    else:
+        wc = WebsiteControl.objects.filter(website=web).first()
+        status = wc.status
+        if status == 0:
+            place = 'template'
+        elif status == 1:
+            place = 'basic_info'
+        elif status == 2:
+            place = 'gallery'
+        elif status == 3:
+            place = 'menu'
+        elif status == 4:
+            place = 'links'
+        elif status == 5:
+            place = 'contactus'
+        elif status == 6:
+            place = 'staffandservice'
+        elif status == 8:
+            place = 'all'
+
+    return place
+
+
+def if_user_have_website(request):
+    if request.user.id != None:
+        business = Business.objects.filter(owner=request.user).first()
+        web = Website.objects.filter(business=business).first()
+        return [web, business]
+    else:
+        return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
+
+
+def UrlCheck(request):
+    objects = if_user_have_website(request)
+    location = where_i_go(objects[0])
+    return location
+
+
+class WebsiteCheck(View):
+    def get(self, request, *args, **kwargs):
+        location = UrlCheck(request)
+        if location == 'websiteinit':
+            return render_to_response('business_site/website_create.html', RequestContext(request))
+        else:
+            return HttpResponseRedirect(location)
+
+
+class WebsiteTemplate(View):
+    template_name = 'business_site/website_template.html'
+    form_class = TemplateChoice
+
+    def get(self, request, *args, **kwargs):
+        # location = UrlCheck(request)
+        # if location == 'all' or location == 'template':
+        #     objects = if_user_have_website(request)
+        #     #voy a mostrar el form con los datos cargados
+        #     return render_to_response(self.template_name,
+        #                               RequestContext(request, {'form': self.form_class, 'data': objects[0].template}))
+        # else:
+        return render_to_response(self.template_name, RequestContext(request, {'form': self.form_class}))
+
+    def post(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        web = objects[0]
+        form = self.form_class(self.request.POST)
+        if form.is_valid():
+            if web == None:
+                web = Website()
+            web.template = self.request.POST['template']
+            web.business = objects[1]
+            try:
+                web.save()
+            except:
+                return HttpResponse(status=500)
+            wc = WebsiteControl.objects.filter(website=web).first()
+            if not wc:
+                wc = WebsiteControl()
+            if not wc.status > 1:
+                wc.status = 1
+                wc.website = web
+            try:
+                wc.save()
+            except Exception as e:
+                return HttpResponse(status=500)
+            return HttpResponseRedirect(reverse('basic_info'))
+        else:
+            return render_to_response(self.template_name, RequestContext(request, {'form': form}))
+
+
+class WebsiteBasics(FormView):
+    template_name = 'business_site/website_basics.html'
+    form_class = BasicInfoForm
+    logo = ""
+
+    def get(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        bi = BasicInfo.objects.filter(website=objects[0]).first()
+        #LOGO
+        logo = ''
+        if bi:
+            if bi.logo.name != "":
+                logo = bi.logo
+            else:
+                if objects[1].logo:
+                    logo = objects[1].logo
+            form = self.form_class(initial={'description': bi.description, 'logo': logo})
+            context = {'logo': logo, 'description': bi.description, 'business_name': objects[1].name, 'form': form}
+        else:
+            bi = BasicInfo()
+            bi.logo = objects[1].logo
+            bi.website = objects[0]
+            try:
+                bi.save()
+                logo = bi.logo
+                context = {'logo': logo, 'business_name': objects[1].name, 'form': self.form_class}
+            except:
+                return HttpResponse(status=500)
+
+            context = {'logo': logo, 'business_name': objects[1].name, 'form': self.form_class}
+
+        return render_to_response(self.template_name, RequestContext(request, context))
+
+    def post(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        bi = BasicInfo.objects.filter(website=objects[0]).first()
+        form = self.form_class(self.request.POST, self.request.FILES)
+        if form.is_valid():
+            #si create
+            if not bi:
+                bi = BasicInfo()
+            bi.description = self.request.POST['description']
+            bi.website = objects[0]
+            if len(self.request.FILES) > 0:
+                bi.logo = self.request.FILES['logo']
+            elif bi.logo:
+                bi.logo = bi.logo
+            else:
+                bi.logo = objects[1].logo
+            try:
+                bi.save()
+            except Exception as e:
+                return HttpResponse(status=500)
+            #el estado de creacion de la website
+            wc = WebsiteControl.objects.filter(website=objects[0]).first()
+            if wc == None:
+                wc = WebsiteControl()
+            if not wc.status > 2:
+                wc.status = 2
+                wc.website = objects[0]
+                try:
+                    wc.save()
+                except Exception as e:
+                    return HttpResponse(status=500)
+            return HttpResponseRedirect(reverse('gallery'))
+        else:
+            objects = if_user_have_website(request)
+            bi = BasicInfo.objects.filter(website=objects[0]).first()
+            #LOGO
+            if bi:
+                if bi.logo != None:
+                    logo = bi.logo
+                else:
+                    if objects[1].logo:
+                        logo = objects[1].logo
+                context = {'logo': logo, 'description': bi.description, 'business_name': objects[1].name, 'form': form}
+            else:
+                if objects[1].logo:
+                    logo = objects[1].logo
+                context = {'logo': logo, 'business_name': objects[1].name, 'form': form}
+            return render_to_response(self.template_name, RequestContext(request, context))
+
+
+class Photos(View):
+    template_name = 'business_site/gallery/table.html'
+
+    def get(self, request, *args, **kwargs):
+
+        objects = if_user_have_website(request)
+        gallery = Gallery.objects.filter(website=objects[0]).first()
+        photos = Photo.objects.filter(gallery=gallery)
+        if request.is_ajax():
+            if photos != None:
+                return render_to_response(self.template_name, RequestContext(request, {'photo_list': photos}))
+            else:
+                return HttpResponse(status=400)
+        return render_to_response(self.template_name, RequestContext(request, {'photo_list': photos}))
+
+
+class PhotosRemove(View):
+    def post(self, request, *args, **kwargs):
+        id = kwargs.get('id')
+        try:
+            Photo.objects.filter(id=id).delete()
+            return HttpResponse(status=200)
+        except:
+            return HttpResponse(status=500)
+
+
+class PhotosAdd(View):
+    errors = {}
+    form_class = GalleryForm
+
+    def post(self, request, *args, **kwargs):
+        is_ajax = request.is_ajax()
+        objects = if_user_have_website(request)
+        form = self.form_class(self.request.POST, self.request.FILES)
+        gall = Gallery.objects.filter(website=objects[0]).first()
+        if form.is_valid():
+            if gall == None:
+                gall = Gallery()
+                gall.website = objects[0]
+                try:
+                    gall.save()
+                except Exception as e:
+                    if is_ajax:
+                        HttpResponse(status=500)
+            photo = Photo()
+            photo.name = self.request.POST.get('name')
+            photo.description = self.request.POST.get('description')
+            if len(self.request.FILES) > 0:
+                photo.image = self.request.FILES.get('image')
+            else:
+                return HttpResponse(status=400)
+            photo.asbackground = False
+            photo.gallery = gall
+
+            tmp = Photo.objects.filter(name=self.request.POST.get('name'))
+            if len(tmp) == 0:
+                try:
+                    photo.save()
+                    if is_ajax:
+                        return HttpResponse(status=200)
+                except Exception as e:
+                    return HttpResponse(status=500)
+            else:
+                return JsonResponse(status=400, data={'errorMessage': "Ya exite una imagen con ese nombre"})
+
+        else:
+            if form.errors.get('image'):
+                return JsonResponse(status=400, data={'errorMessage': "Debe subir una imagen", 'type': 'image'})
+            else:
+                return JsonResponse(status=400,
+                                    data={'errorMessage': "Debe especificar un nombre para la imagen", 'type': 'name'})
+
+                # return render_to_response('business_site/gallery/website_gallery.html', RequestContext(request, {'form': form}), status=400)
+
+
+class PhotosEdit(View):
+    form_class = PhotoEditForm
+
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('id')
+        if id:
+            photo = Photo.objects.filter(id=id).first()
+            dict = {'name': photo.name, 'description': photo.description, 'image': photo.image.name}
+            if request.is_ajax():
+                return JsonResponse(dict)
+            else:
+                return HttpResponse(status=200)
+        else:
+            return HttpResponse(status=404)
+
+    def post(self, request, *args, **kwargs):
+        id = kwargs.get('id')
+        form = self.form_class(request.POST, request.FILES)
+        if id:
+            if form.is_valid():
+                photo = Photo.objects.filter(id=id).first()
+                photo.name = self.request.POST.get('name')
+                photo.description = self.request.POST.get('description')
+                if len(self.request.FILES) > 0:
+                    photo.image = self.request.FILES.get('image')
+                try:
+                    photo.save()
+                    return HttpResponse(status=200)
+                except:
+                    return HttpResponse(400)
+            else:
+                dict = {'errors': form.errors}
+                return JsonResponse(dict)
+
+        else:
+            return HttpResponse(status=404)
+
+
+class WebsiteGallery(FormView):
+    template_name = 'business_site/gallery/website_gallery.html'
+    form_class = GalleryForm
+    arr = []
+
+    def get(self, request, *args, **kwargs):
+        #si tiene website
+        objects = if_user_have_website(request)
+        #listar las fotos de la galeria
+        gallery = Gallery.objects.filter(website=objects[0]).first()
+        photo_list = Photo.objects.filter(gallery=gallery)
+
+        if gallery:
+            context = {'photo_list': photo_list, 'comments': gallery.comments, 'form': self.form_class}
+        else:
+            context = {'form': self.form_class}
+        return render_to_response(self.template_name, RequestContext(request, context))
+
+    def post(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        gall = Gallery.objects.filter(website=objects[0]).first()
+        if gall == None:
+            gall = Gallery()
+            gall.website = objects[0]
+        gall.comments = self.request.POST['comments']
+        try:
+            gall.save()
+        except Exception as e:
+            return HttpResponse(status=500)
+
+        pho1 = Photo.objects.filter(gallery=gall, asbackground=True).first()
+        if pho1:
+            pho1.asbackground = False
+            try:
+                pho1.save()
+            except Exception as e:
+                return HttpResponse(status=500)
+
+        pho = Photo.objects.filter(id=self.request.POST['as_back']).first()
+        if pho:
+            pho.asbackground = True
+            try:
+                pho.save()
+            except Exception as e:
+                return HttpResponse(status=500)
+                #el estado de creacion de la website
+
+        wc = WebsiteControl.objects.filter(website=objects[0]).first()
+        if wc == None:
+            wc = WebsiteControl()
+        if not wc.status > 2:
+            wc.status = 3
+            wc.website = objects[0]
+            try:
+                wc.save()
+            except Exception as e:
+                return HttpResponse(status=500)
+        return HttpResponseRedirect(reverse('menu'))
+
+
+class Menucategory(View):
+    template_name = 'business_site/menu/category.html'
+
+    def get(self, request, *args, **kwargs):
+        return render_to_response(self.template_name, RequestContext(request, {'categorys': Category.objects.all()}))
+
+
+class CategorySelectView(View):
+
+    def get(self, request, *args, **kwargs):
+
+        objects = if_user_have_website(request)
+        categories = Category.objects.filter(website=objects[0])
+        print( request)
+        id = request.GET.get('id')
+        print(id)
+        if id:
+            category = Category.objects.get(pk=id)
+        else:
+            category = None
+
+        # customers = Customer.objects.list_by_business(business)
+        form = MenuForm(initial={'category':category.id,'website':objects[0]})
+        return render_to_response('business_site/menu/select.html', RequestContext(request, {'form':form}))
+
+class MenucategoryAdd(FormView):
+    template_name = 'business_site/menu/category_add.html'
+    form_class = CategoryForm
+
+    def get(self, request, *args, **kwargs):
+        if request.is_ajax():
+            return render_to_response('business_site/menu/category_add_form.html', RequestContext(request, {'form_category': self.form_class}))
+        return render_to_response(self.template_name, RequestContext(request, {'form_category': self.form_class}))
+
+    def post(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        form = self.form_class(self.request.POST)
+        if form.is_valid():
+            cat = Category()
+            cat.description = self.request.POST.get('description')
+            cat.website = objects[0]
+            try:
+                cat.save()
+            except Exception as error:
+                return HttpResponse(status=500)
+            #TODO:description is unique for a website
+
+            if request.is_ajax():
+                return JsonResponse(data={'id':cat.id},status=200)
+
+            return HttpResponseRedirect(reverse('category'))
+        else:
+            if request.is_ajax():
+                return render_to_response('business_site/menu/category_add_form.html', RequestContext(request, {'form_category': self.form_class}), status=400)
+            return render_to_response('business_site/menu/category_add.html', RequestContext(request, {'form_category': form}),
+                                      status=400)
+
+
+class MenuAdd(FormView):
+    template_name = 'business_site/menu/menu_add.html'
+    form_class = MenuForm
+
+    def get(self, request, *args, **kwargs):
+        a = if_user_have_website(request)
+        # categs = Category.objects.filter(website__business__owner = request.user)
+        return render_to_response(self.template_name, RequestContext(request, {'form': self.form_class(initial={'website':a[0]})}))
+
+    def post(self, request, *args, **kwargs):
+        a = if_user_have_website(request)
+        form = self.form_class(self.request.POST, self.request.FILES, initial={'website': a[0]})
+        list = []
+        for index in range(len(request.POST.getlist('min'))):
+            list.append({'min': request.POST.getlist('min')[index], 'max': request.POST.getlist('max')[index],
+                     'price': request.POST.getlist('price')[index]})
+        if form.is_valid():
+            for index in range(len(request.POST.getlist('min'))):
+                if float(request.POST.getlist('price')[index]) == 0:
+                    return render_to_response(self.template_name, RequestContext(request, {'form': form, 'list':list, 'index':index, 'error':"El precio no puede ser cero."}), status=400)
+                    break
+            menu = Menu()
+            menu.category = form.cleaned_data['category']
+            menu.name = form.cleaned_data['name']
+            menu.description = form.cleaned_data['description']
+            menu.image = form.cleaned_data['image']
+            menu.comments = form.cleaned_data['comments']
+            try:
+                menu.save()
+            except:
+                return HttpResponse(status=400)
+
+
+            for index in range(len(request.POST.getlist('min'))):
+                prices = MenuPrice()
+                prices.min = request.POST.getlist('min')[index]
+                prices.max = request.POST.getlist('max')[index]
+                prices.price = request.POST.getlist('price')[index]
+                prices.menu = menu
+
+                try:
+                    prices.save()
+                except:
+                    return HttpResponse(status=400)
+
+            return HttpResponseRedirect(reverse('menu'))
+        else:
+            return render_to_response(self.template_name, RequestContext(request, {'form': form, 'list':list}), status=400)
+
+
+class MenuList(View):
+    def get(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        menus = Menu.objects.filter(category__website=objects[0])
+
+        if request.is_ajax():
+            return render_to_response('business_site/menu/menu_items.html', RequestContext(request,{'menus':menus}),status=200)
+
+        return render_to_response('business_site/menu/website_menu.html', RequestContext(request, {'menus': menus}))
+
+
+class MenuEdit(View):
+    template_name = 'business_site/menu/menu_add.html'
+    form_class = MenuEdit
+
+    def get(self, request, *args, **kwargs):
+        id = kwargs['id']
+        if id:
+            a = if_user_have_website(request)
+            menu = Menu.objects.filter(id=id).first()
+
+            prices = MenuPrice.objects.filter(menu=menu)
+            print(prices)
+            list =[]
+            for item in prices:
+                list.append({'id':item.id, 'min': item.min, 'max': item.max, 'price': item.price})
+            form = self.form_class(initial={'name': menu.name, 'description': menu.description,
+                                            'image': menu.image, 'comments': menu.comments,
+                                            'category': menu.category, 'website': a[0]})
+            # data = {'name': menu.name, 'description': menu.description, 'image': menu.image, 'comments': menu.comments,
+            #         'category': menu.category}
+            return render_to_response(self.template_name, RequestContext(request, {'form': form, 'list': list}))
+        else:
+            return HttpResponse(status=404)
+        # return render_to_response(self.template_name, RequestContext(request, {'form': form}))
+
+    def post(self, request, *args, **kwargs):
+        a = if_user_have_website(request)
+        form = self.form_class(self.request.POST, self.request.FILES, initial={'website':a[0]})
+        list=[]
+        for index in range(len(request.POST.getlist('min'))):
+            list.append({'min': request.POST.getlist('min')[index], 'max': request.POST.getlist('max')[index],
+                     'price': request.POST.getlist('price')[index]})
+
+        if form.is_valid():
+            for index in range(len(request.POST.getlist('min'))):
+                if float(request.POST.getlist('price')[index]) == 0:
+                    return render_to_response(self.template_name, RequestContext(request, {'form': form, 'list':list, 'index':index, 'error':"El precio no puede ser cero."}), status=400)
+                    break
+            men = Menu.objects.filter(id=kwargs['id']).first()
+            men.name = self.request.POST.get('name')
+            men.description = self.request.POST.get('description')
+
+            if len(self.request.FILES) > 0:
+                men.image = self.request.FILES.get('image')
+            men.comments = self.request.POST.get('comments')
+            men.category = Category.objects.filter(id=self.request.POST.get('category')).first()
+
+            try:
+                men.save()
+            except Exception as e:
+                print(e)
+                return HttpResponse(status=500)
+
+            MenuPrice.objects.filter(menu=men).delete()
+
+            for index in range(len(request.POST.getlist('min'))):
+                prices = MenuPrice()
+                prices.min = request.POST.getlist('min')[index]
+                prices.max = request.POST.getlist('max')[index]
+                prices.price = request.POST.getlist('price')[index]
+                prices.menu = men
+
+                try:
+                    prices.save()
+                except:
+                    return HttpResponse(status=400)
+
+
+            return HttpResponseRedirect(reverse('menu'), status=200)
+        else:
+            return render_to_response(self.template_name, RequestContext(request, {'form': form, 'list':list}), status=400)
+
+
+class MenuRemove(View):
+    template_name = 'business_site/menu/menu_items.html'
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('id')
+        menu = Menu.objects.filter(id=id).first()
+        if menu:
+            try:
+                menu.delete()
+                #return HttpResponse(status=200)
+                objects = if_user_have_website(request)
+                menus = Menu.objects.filter(category__website=objects[0].id)
+                return render_to_response(self.template_name, RequestContext(request, {'menus': menus}),status=200)
+            except:
+                return HttpResponse(status=500)
+        else:
+            return HttpResponse(status=404)
+
+
+class StaffList(View):
+    template_name = 'business_site/staffandservices/staff_items.html'
+
+    def get(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        staff = StaffServices.objects.filter(website=objects[0].id)
+        self.template_name = 'business_site/website_staff.html'
+        if staff:
+            if request.is_ajax():
+
+                return render_to_response('business_site/staffandservices/staff_items.html', RequestContext(request, {'staff': staff}), status=200)
+            else:
+
+                return render_to_response(self.template_name, RequestContext(request, {'staff': staff}), status=200)
+        else:
+            staf=[]
+            return render_to_response(self.template_name, RequestContext(request, {'staff': staff}), status=200)
+            # return JsonResponse({'error': 'No hay elementos que mostrar'})
+
+class StaffAdd(FormView):
+    form_class = StaffForm
+    template_name = 'business_site/staffandservices/staff_add.html'
+
+    def get(self, request, *args, **kwargs):
+        return render_to_response(self.template_name, RequestContext(request, {'form': self.form_class}))
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(self.request.POST, self.request.FILES)
+        temp = if_user_have_website(request)
+
+        if form.is_valid():
+            sas = StaffServices()
+            sas.service = form.cleaned_data['service']
+            sas.description = form.cleaned_data['description']
+            sas.price = form.cleaned_data['price']
+            sas.image = form.cleaned_data['image']
+            sas.website = temp[0]
+            try:
+                sas.save()
+            except Exception as e:
+                return HttpResponse(status=500)
+            return HttpResponse(status=200)
+        else:
+            return render_to_response(self.template_name, RequestContext(request, {'form': form}), status=400)
+
+class StaffRemove(View):
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('id')
+        sas = StaffServices.objects.filter(id=id).first()
+        objects = if_user_have_website(request)
+        staff = StaffServices.objects.filter(website=objects[0].id)
+        if sas:
+            try:
+                sas.delete()
+                return render_to_response('business_site/staffandservices/staff_items.html', RequestContext(request, {'staff': staff}), status=200)
+            except:
+                return HttpResponse(status=500)
+        else:
+            return HttpResponse(status=404)
+
+class StaffEdit(FormView):
+    form_class = StaffEditForm
+    template_name = 'business_site/staffandservices/staff_add.html'
+    def get(self, request, *args, **kwargs):
+        id=kwargs.get('id')
+        objects = if_user_have_website(request)
+        if id:
+            aux = StaffServices.objects.filter(id=id, website=objects[0]).first()
+            if aux:
+                initial = {'service': aux.service, 'description': aux.description, 'image': aux.image,
+                           'price': aux.price}
+                form = self.form_class(initial=initial)
+                return render_to_response(self.template_name, RequestContext(request, {'form': form}))
+            else:
+                return HttpResponse(status=400)
+
+        else:
+
+            return HttpResponse(status=404)
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(self.request.POST, self.request.FILES)
+        objects = if_user_have_website(request)
+        id=kwargs.get('id')
+        if form.is_valid():
+            sas = StaffServices.objects.filter(id=id, website=objects[0]).first()
+            sas.service = form.cleaned_data['service']
+            sas.description = form.cleaned_data['description']
+            if len(self.request.FILES) > 0:
+                sas.image = form.cleaned_data['image']
+            sas.price = form.cleaned_data['price']
+            try:
+                sas.save()
+
+            except:
+                return HttpResponse(status=400)
+
+            return HttpResponseRedirect(reverse('staffandservice'), status=200)
+        else:
+
+            return render_to_response(self.template_name, RequestContext(request, {'form':form}),status=400)
+
+
+class WebsiteLinks(FormView):
+    template_name = 'business_site/website_links.html'
+    form_class = LinksForm
+
+    def get(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        links = Links.objects.filter(website=objects[0]).first()
+        if links:
+            temp = {'twitter': links.twitter, 'instagram': links.instagram, 'facebook_page': links.facebookpage,
+                    'yelp':links.yelp, 'gplus': links.gplus}
+            form = self.form_class(initial=temp)
+            context = {'form': form}
+        else:
+            context = {'form': self.form_class}
+        return render_to_response(self.template_name, RequestContext(request, context))
+
+    def post(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        form = self.form_class(self.request.POST)
+        if form.is_valid():
+            link = Links.objects.filter(website=objects[0]).first()
+            if link == None:
+                link = Links()
+            link.twitter = self.request.POST['twitter']
+            link.instagram = self.request.POST['instagram']
+            link.facebookpage = self.request.POST['facebook_page']
+            link.yelp = self.request.POST['yelp']
+            link.gplus = self.request.POST['gplus']
+            link.website = objects[0]
+
+            try:
+                link.save()
+            except:
+                return HttpResponse(status=500)
+            #el estado de creacion de la website
+            wc = WebsiteControl.objects.filter(website=objects[0]).first()
+            if wc == None:
+                wc = WebsiteControl()
+            if not wc.status > 3:
+                wc.status = 4
+                wc.website = objects[0]
+                try:
+                    wc.save()
+                except Exception as e:
+                    return HttpResponse(status=500)
+            return HttpResponseRedirect(reverse('contactus'))
+        else:
+            return render_to_response(self.template_name, RequestContext(request, {'form': form}))
+
+
+class WebsiteContactUs(FormView):
+    template_name = 'business_site/website_contactus.html'
+    form_class = ContactUsForm
+
+    def get(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        cont = ContactUs.objects.filter(website=objects[0]).first()
+        if cont != None:
+            temp = {'phone': cont.phone, 'email': cont.email, 'address': cont.address}
+            form = self.form_class(initial=temp)
+            context = {'form': form, 'data': cont}
+        else:
+            context = {'form': self.form_class}
+
+        return render_to_response(self.template_name, RequestContext(request, context))
+
+    def post(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        form = self.form_class(self.request.POST)
+
+        if form.is_valid():
+
+            cont = ContactUs.objects.filter(website=objects[0]).first()
+            if cont == None:
+                cont = ContactUs()
+            cont.address = self.request.POST['address']
+            cont.email = self.request.POST['email']
+            cont.phone = self.request.POST['phone']
+            cont.website = objects[0]
+
+
+            try:
+                cont.save()
+
+            except Exception as e:
+                print("en mi maquina no funciona")
+                print(e)
+                return HttpResponse(status=500)
+            #el estado de creacion de la website
+            wc = WebsiteControl.objects.filter(website=objects[0]).first()
+            if wc == None:
+                wc = WebsiteControl()
+            wc.status = 6
+            wc.website = objects[0]
+            try:
+                wc.save()
+            except:
+                return HttpResponse(status=500)
+
+            return HttpResponseRedirect(reverse('staffandservice'))
+        else:
+            return render_to_response(self.template_name, RequestContext(request, {'form': form}))
+
+
+class WebsitePreview(View):
+    template_name = 'business_site/landing_pages/template1/index.html'
+
+    def get(self, request, *args, **kwargs):
+        objects = if_user_have_website(request)
+        if not objects[0]:
+            return where_i_go(objects[0])
+        else:
+            template = objects[0].template
+            basic_info = BasicInfo.objects.filter(website=objects[0]).first()
+            logo = basic_info.logo
+            gallery_object = Gallery.objects.filter(website=objects[0]).first()
+            gallery_comments = gallery_object.comments
+            photo_list = Photo.objects.filter(gallery=gallery_object, asbackground=False)
+            background_photo = Photo.objects.filter(gallery=gallery_object, asbackground=True).first()
+            social_links = Links.objects.filter(website=objects[0]).first()
+            contact_info = ContactUs.objects.filter(website=objects[0]).first()
+            staff_services = StaffServices.objects.filter(website=objects[0])
+            menu_list = Menu.objects.filter(category__website=objects[0])
+            list=[]
+            for item in menu_list:
+                list.append({'menu': item,'rangos': MenuPrice.objects.filter(menu=item)})
+            context = {'template': template, 'basic_info': basic_info, 'logo': logo,
+                       'gallery_comments': gallery_comments, 'photo_list': photo_list,
+                       'background_photo': background_photo, 'social_links': social_links,
+                       'contact_info': contact_info, 'staff_services': staff_services, 'menu_list': list}
+
+        return render_to_response(self.template_name, RequestContext(request, context), status=200)
+
+    def post(self, request):
+        return
+
+
+class WebsiteCongrats(View):
+    def get(self, request):
+
+        objects = if_user_have_website(request)
+        wc = WebsiteControl.objects.filter(website=objects[0]).first()
+
+        if wc:
+            if wc.status < 8:
+               wc.status = 7
+               try:
+                  wc.save()
+               except Exception as e:
+                  return HttpResponse(status=500)
+
+            wd = WebDomain.objects.filter(website=objects[0]).first()
+            if not wd:
+                wd = WebDomain()
+            pieces = split(' ', objects[1].name)
+            res = ""
+            for a in pieces:
+                res = res + a
+            wildcard = res.lower()
+            wd.domain = wildcard + '.caterfull.com'
+            wd.website = objects[0]
+            try:
+                wd.save()
+                return render_to_response('business_site/website_congrats.html',
+                                          RequestContext(request, {'domain_name': wildcard + '.caterfull.com'}))
+            except:
+                return HttpResponse(status=500)
+        else:
+            return HttpResponseRedirect(reverse('contactus'))
+
+
+def WebsiteRender(request, *args, **kwargs):
+    template_name = 'business_site/landing_pages/template1/index.html'
+    form_class = SendMessageForm
+    temp = WebDomain.objects.filter(domain=request.domain_name).first()
+    if temp:
+        wc = WebsiteControl.objects.filter(website=temp.website).first()
+        if wc.status == 8:
+            # wc = WebsiteControl.objects.filter(website=temp.website).first()
+            #Si el dominio esta refistrado para un business y si el website esta en estado publicado
+            # if wc.status == 8 and temp:
+            template = temp.website.template
+            basic_info = BasicInfo.objects.filter(website=temp.website).first()
+            logo = basic_info.logo
+            gallery_object = Gallery.objects.filter(website=temp.website).first()
+            gallery_comments = gallery_object.comments
+            photo_list = Photo.objects.filter(gallery=gallery_object, asbackground=False)
+            background_photo = Photo.objects.filter(gallery=gallery_object, asbackground=True).first()
+            social_links = Links.objects.filter(website=temp.website).first()
+            contact_info = ContactUs.objects.filter(website=temp.website).first()
+            staff_services = StaffServices.objects.filter(website=temp.website)
+            menu_list = Menu.objects.filter(category__website=temp.website)
+
+            context = {'template': template, 'basic_info': basic_info, 'logo': logo,
+                       'gallery_comments': gallery_comments, 'photo_list': photo_list,
+                       'background_photo': background_photo, 'social_links': social_links, 'contact_info': contact_info,
+                       'staff_services':staff_services,'form':form_class,'menu_list':menu_list}
+
+            return render_to_response(template_name, RequestContext(request, context), status=200)
+
+        else:
+            return render_to_response('business_site/unpblished.html', RequestContext(request))
+    else:
+        return page_not_found(request, 'Exception', template_name='template/404.html')
+
+
+class Unpublish(View):
+    def get(self, request):
+        objects = if_user_have_website(request)
+        wc = WebsiteControl.objects.filter(website=objects[0]).first()
+        if request.is_ajax():
+            wc.status = 7
+            try:
+                wc.save()
+                return HttpResponse(status=200)
+            except:
+                return HttpResponse(status=404)
+        else:
+            return HttpResponse(status=404)
+class Publish(View):
+    def get(self, request):
+        objects = if_user_have_website(request)
+        wc = WebsiteControl.objects.filter(website=objects[0]).first()
+        if request.is_ajax():
+            wc.status = 8
+            try:
+                wc.save()
+                return HttpResponse(status=200)
+            except:
+                return HttpResponse(status=404)
+        else:
+            return HttpResponse(status=404)
+
+def sendmail_customer_message(data):
+    #de parte del cliente para el business , lo envia el admin como intermediario.
+
+    subject = "Mensage de Cliente"
+    from_email = settings.ADMIN_EMAIL
+    to = data.get('business_email')#Business email
+
+    template = loader.get_template("business_site/email/client_message.html")
+    context = Context({'customer_email': data.get('email'), 'customer_name': data.get('name'), 'customer_message':data.get('message')})
+    text_content = template.render(context)
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+    try:
+        msg.send(fail_silently=False)
+    except SMTPException as e:
+        print(e)
+
+class SendMailContact(View):
+    template_name = 'business_site/landing_pages/template1/sendmailform.html'
+    form_class = SendMessageForm
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        website = WebDomain.objects.filter(domain=request.domain_name).first()
+        business_email = website.website.business.contact_email()
+        if form.is_valid():
+            data = {'name': form.cleaned_data['name'], 'email': form.cleaned_data['email'],
+                    'message': form.cleaned_data['message'], 'business_email': business_email}
+            sendmail_customer_message(data)
+            if request.is_ajax:
+                return render_to_response(self.template_name, RequestContext(request, {'form': self.form_class}), status=200)
+        else:
+            # return render(request, {'form': form}, status=400)
+            if request.is_ajax:
+                return render_to_response(self.template_name, RequestContext(request, {'form': form}), status=400)

@@ -1,0 +1,137 @@
+from json.encoder import JSONEncoder
+
+from django.db import transaction
+from django.http.response import JsonResponse, HttpResponseBadRequest, HttpResponse
+from django.shortcuts import render_to_response
+from django.template.context import RequestContext
+from django.views.generic.base import View
+
+from base.booking_form import BookingForm
+from base.exceptions import CustomerDataError
+from base.model_invoice import Event
+from base.models import Business, Customer
+import json
+from base.prodserv_models import Service
+
+__author__ = 'amado'
+
+
+def get_products():
+        products = []
+        # products = [
+        #     {'id':1, 'name':'Pan con pasta','description':'barato'},
+        #     {'id':2, 'name':'Pan con croqueta','description':'rico y sabroso'},
+        #     {'id':3, 'name':'Pan con medallon','description':'se pega en la garganta'},
+        #     {'id':4, 'name':'Pan con tortilla','description':'se quema la hornilla'},
+        # ]
+        return products
+
+def get_services():
+        services = Service.objects.all()
+        print(services)
+        # services = [
+        #     {'id':1, 'name':'DJ','description':'pongo la musica que me de la gana'},
+        #     {'id':2, 'name':'Cocinero','description':'se quema la cocina'},
+        #     {'id':3, 'name':'Camarero','description':'Tengo una mosca en la sopa'},
+        # ]
+        return services
+
+def test_products(request):
+        data = get_products()
+        return JsonResponse(data=data, safe=False)
+
+def test_servicios(request):
+        data = get_services()
+        return JsonResponse(data=data, safe=False)
+
+class Booking(View):
+
+
+
+
+
+
+
+    def get(self, request, *args, **kwargs):
+        key = kwargs.get('bsk64')
+        business = Business.objects.get_by_widget_sk(key)
+        if business:
+            form = BookingForm()
+            return render_to_response('base/booking/booking_widget.html', RequestContext(request,
+                                                                                 {'business':business,
+                                                                                  'wskb64':key,
+                                                                                  'form':form,
+                                                                                  'services':get_services(),
+                                                                                  'products':get_products()}))
+        else:
+            return HttpResponseBadRequest()
+
+    def post(self, request, *args, **kwargs):
+        form = BookingForm(request.POST)
+        platos_req = request.POST.get('platos')
+
+        platos_req = json.loads(platos_req)
+
+        servicios_req = request.POST.get('servicios')
+
+        servicios_req = json.loads(servicios_req)
+
+        print(platos_req)
+        print(servicios_req)
+
+        # for req in platos_req:
+        #     print(req)
+        #     print(req.get('id'))
+        #
+        # return HttpResponse()
+
+        key = kwargs.get('bsk64')
+        business = Business.objects.get_by_widget_sk(key)
+        if business:
+            # print(request.POST)
+            if form.is_valid():
+                print(form.cleaned_data)
+                message = ""
+                try:
+                    with transaction.atomic():
+                        customer = Customer.objects.check_customer_from_external_source(data=form.cleaned_data, business=business)
+
+                        event = Event.objects.create_event_from_external_source(data=form.cleaned_data, customer=customer,
+                                                                                req_platos=platos_req,
+                                                                                req_servicios=servicios_req)
+                        if event.is_scheduled():
+                            message = "Felicidades tenemos disponibilidad y le hemos enviado su Proposal al corro que nos dio!"
+                        else:
+                            message = "Hemos recibido su orden y la estamos procesando, en unos minutos tendrá noticias nuestras!"
+
+                except CustomerDataError:
+                    errors = {"customer_error":[{"message":'Error al procesar los datos personales'}]}
+                    return JsonResponse(JSONEncoder().encode(errors), status=400, safe=False)
+                except Exception as e:
+                    print(e)
+                    errors = {"global_error":[{"message":'Error al procesar los datos'}]}
+
+                    return JsonResponse(JSONEncoder().encode(errors), status=400, safe=False)
+                return JsonResponse({'message':message})
+            else:
+                print(form.errors.as_json())
+                return JsonResponse(form.errors.as_json(), status=400, safe=False)
+
+        else:
+            return HttpResponseBadRequest()
+
+class EventView(View):
+
+    def get(self, request, *args, **kwargs):
+
+        user = request.user
+        business = Business.objects.filter(owner=user).first()
+        id  = kwargs.get('id')
+        query = Event.objects.get_events_(id=id, business=business)
+        lista = []
+        for event in query:
+            lista.append(event.serialize())
+        # result = (list(query.values()))
+
+
+        return JsonResponse(data=lista, safe=False)

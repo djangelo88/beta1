@@ -1,0 +1,29 @@
+{% extends 'base2.html' %}
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+{% block title %} Website - Congrats{% endblock %}
+{% block main_content %}
+  <div class="text-center well-xg well ">
+            <h1>Congratulations!!!</h1>
+            <h4>Se ha creado su sitio web </h4>
+            <a href="{% url 'preview' %}" target="_blank" class="btn btn-flat btn-info btn-lg">Preview</a>
+            {% if WEBSITE_STATUS < 8 %}
+                <a href="#" id="publish_link" target="_blank" class="btn btn-flat btn-success btn-lg">Publish</a>
+                  </br></br>
+                <p id="mensajito">Su website no se ha publicado por tanto no estará visible a sus usuarios.</p>
+
+            {% elif WEBSITE_STATUS == 8 %}
+                <a href="#" id="upublish_link" class="btn btn-flat btn-danger btn-lg">Unpublish</a>
+                </br></br>
+                <p id="url_domain">Puede acceder a él desde aqui <a href="http://{{ domain_name }}"
+                                                                    target="_blank">  {{ domain_name }}</a></p>
+            {% endif %}
+        </div>
+
+{% endblock %}
+{% block js_block_one %}
+<script type="text/javascript" src="{% static 'js/publish.js' %}"></script>
+{% endblock %}

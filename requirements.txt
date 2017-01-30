@@ -1,0 +1,7 @@
+django==1.9.12
+django-widget-tweaks
+stripe==1.41.1
+django-excel==0.0.5
+pyexcel-xls==0.3.0
+xhtml2pdf==0.1b3
+waitress==1.0.1

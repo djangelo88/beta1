@@ -1,0 +1,28 @@
+{% extends 'base2.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+{% block title %} Detalles {% endblock %}
+{% block item_proposals %} active {% endblock %}
+
+{% block content_header %}
+    <h1  class="no-print">
+        <i class="fa fa-inbox"></i> Proposals
+        <small class="hidden-xs">Detalles de un presupuesto</small>
+    </h1>
+    <ol class="breadcrumb no-print">
+        <li><a href="#"><i class="fa fa-inbox"></i> Home</a></li>
+        <li><a href="{% url 'proposal_list' %}">Proposal</a></li>
+        <li class="active">Detalles</li>
+    </ol>
+
+{% endblock %}
+{% block main_content %}
+
+    {% include 'base/invoice/proposal/proposal_detalles.html' %}
+
+{% endblock %}
+
+{% block print_block %}
+    {% include 'base/invoice/proposal/proposal_detalles_print_view.html' %}
+{% endblock %}

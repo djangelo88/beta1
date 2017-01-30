@@ -1,0 +1,768 @@
+from datetime import datetime, timedelta
+import django
+from django.conf import settings
+
+from django.contrib.auth.models import User, Group
+from django.core.exceptions import ValidationError
+from django.core.validators import EmailValidator
+from django.db import models, transaction
+
+#Managers
+from django.db.models.manager import Manager
+from django.db.utils import IntegrityError
+from django.utils import timezone, formats
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from base.api.util import serialize_query
+from base.exceptions import CustomerDataError
+from stripe_cater.models import StripeCustomer, StripeAccount, StripeSubscripcion
+
+class ModelSerialize():
+
+    def serialize(self, fields=[]):
+
+        if len(fields) == 0:
+            fields = self.default_fields
+
+        response = {}
+        for fd in fields:
+            # print(fd,self.serializable_value(fd))
+            response[fd] = self.serializable_value(fd)
+        return response
+
+class CustomerManager(models.Manager):
+
+    ERROR = -1
+    EMAIL_ERROR = -2
+    ERRORS = [ERROR, EMAIL_ERROR]
+
+    def check_customer_from_external_source(self, data, business, state):
+        first_name = data.get('cliente_name')
+        last_name = data.get('cliente_last_name')
+        cellphone = data.get('cliente_phone')
+        birthday = data.get('cliente_birthday')
+        email = data.get('cliente_email')
+        address = {}
+        address['first_line'] = data.get('cliente_first_line')
+        address['second_line'] = data.get('cliente_second_line')
+        address['city'] = data.get('cliente_city')
+        address['zip'] = data.get('cliente_zip')
+        # address = data.get('cliente_address')
+
+        db_customer = self.get_customer_by_email(email=email, business=business)
+
+        if db_customer:
+            db_customer.address.update(data=address, state=state)
+            return db_customer
+
+        data_to_save = {'first_name':first_name, 'last_name':last_name, 'cellphone':cellphone, 'birthday':birthday, 'email':email,
+                        'first_line':data.get('cliente_first_line'),
+                        'second_line':data.get('cliente_second_line'),
+                        'city':data.get('cliente_city'),
+                        'zip':data.get('cliente_zip')}
+
+        resp = self.create_or_update_customer(data=data_to_save, business=business, state=state)
+
+        if resp not in self.ERRORS:
+            resp.set_new_customer(True)
+            return resp
+        raise CustomerDataError()
+
+
+
+
+    def list_by_business(self, business):
+        return self.filter(business=business).filter(activo=True)
+
+    def get_customer_by_email(self, email, business):
+        query = self.filter(activo=True).filter(email=email).filter(business=business)
+        return query.first()
+
+
+
+    def get_one_by_business_and_id(self, business, id):
+        return self.filter(business=business).filter(id=id).filter(activo=True).first()
+
+    def delete_by_business(self, id, business):
+        customer = self.get_one_by_business_and_id(business, id)
+        token = int(datetime.today().timestamp())
+        customer.token_removed = token
+        customer.activo = False
+        customer.save()
+
+
+
+    def create_or_update_customer(self, data, business,state, customer=None, flush=True):
+        prefix = data.get('prefix')
+        suffix = data.get('suffix')
+        email = data.get('email')
+        company = data.get('company')
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        comments = data.get('comments')
+        cellphone = data.get('cellphone')
+        phone_home = data.get('phone_home')
+        birthday = data.get('birthday')
+        # first_line = data.get('first_line')
+        # second_line = data.get('second_line')
+        # zip = data.get('zip')
+        # city = data.get('city')
+        # state = state
+        company = N_Company.objects.get_by_name(company)
+        try:
+            if not customer:
+                address = Address.objects.create_address(data=data, state=state)
+                # address = Address(first_line=first_line, second_line=second_line, zip=zip, state=state, city=city)
+                if flush:
+                    with transaction.atomic():
+
+                        customer = self.create(
+                            prefix=prefix, suffix=suffix, email=email, company=company, first_name=first_name,
+                            last_name=last_name, comments=comments, business = business,
+                            phone_home=phone_home, cellphone=cellphone,
+                            birthday=birthday,
+                            address=address
+                        )
+                        # address.customer = customer
+                        # address.save()
+
+                else:
+                    customer = Customer(prefix=prefix, suffix=suffix, email=email, company=company, first_name=first_name,
+                        last_name=last_name, comments=comments, business = business,
+                        phone_home=phone_home, cellphone=cellphone,
+                        birthday=birthday, address=address)
+            else:
+               customer.first_name = first_name
+               customer.last_name = last_name
+               customer.suffix = suffix
+               customer.prefix = prefix
+               customer.email = email
+               customer.company = company
+               customer.comments = comments
+               customer.phone_home = phone_home
+               customer.cellphone = cellphone
+               customer.birthday = birthday
+               customer.address.update(data=data,state=state, flush=flush)
+            if flush:
+                customer.save()
+            return customer
+
+        except IntegrityError as e:
+            print(e)
+            return self.EMAIL_ERROR
+        except Exception as e:
+            print(e)
+            return self.ERROR
+
+    def extract_data_from_record(self, record):
+        birthday = record.get('Fecha de Nacimiento')
+        # if birthday:
+        #     birthday = birthday.strip()
+
+        if birthday == '':
+            birthday = None
+        return {
+            'first_name':record.get('Nombre'),
+            'last_name': record.get('Apellidos'),
+            'email': record.get('Correo'),
+            'company': record.get('Compania'),
+            'birthday': birthday,
+            'cellphone':record.get('Telefono'),
+            'phone_home': record.get('Telefono Casa')
+        }
+
+    def export_to_excel(self, business):
+        query = self.list_by_business(business=business)
+        return [{'Nombre':cust.first_name, 'Apellidos':cust.last_name,
+          'Correo':cust.email, 'Fecha de Nacimiento':cust.birthday,
+          'Compania':cust.get_company_name(),
+          'Telefono':cust.cellphone,'Telefono Casa':cust.phone_home} for cust in query]
+
+    def import_from_excel(self, records, business):
+        try:
+            escape_headers = False
+            list = []
+            for rec in records:
+                if not escape_headers:
+                    escape_headers = True
+                    continue
+                data = self.extract_data_from_record(record=rec)
+
+                c = self.create_or_update_customer(data, business=business, flush=False)
+                list.append(c)
+
+        # try:
+
+            objs = Customer.objects.bulk_create(list)
+            return len(objs)
+        except Exception as e:
+            print(e)
+            return self.ERROR
+
+class CompanyManager(models.Manager):
+
+    def get_by_name(self, name):
+        cmp = self.filter(text=name).first()
+        if cmp:
+            return cmp
+        elif name:
+            cmp = self.create(text=name)
+            cmp.save()
+            return cmp
+class OrderManager(models.Manager):
+    def create_order(self, due_date, amount, type=type):
+        order = self.create(total_amount=amount, due_date=due_date, type=type)
+        order.save()
+        # Task_Order
+        return order
+
+class ConfirmEmailManager(models.Manager):
+     '''
+    Manager del model: CheckEmailOrder
+    '''
+
+     def create_confirm_register_email(self, user):
+
+         expire_date = datetime.date(datetime.today()) + timedelta(days=settings.DAYS_TO_CONFIRM_EMAIL)
+
+         key = urlsafe_base64_encode(force_bytes(user.pk))
+         order = self.create(user=user, key=key, expire_date=expire_date)
+
+         order.save()
+         return order
+
+
+class BusinessManager(models.Manager):
+    ERROR = -1
+    EMAIL_ERROR = -2
+    # ERRORS = [ERROR, EMAIL_ERROR]
+
+    ERRORS = [ERROR, EMAIL_ERROR]
+
+    def get_business_by_user(self, user):
+    # its current subsciption has to be actived
+        bs = self.filter(owner=user).first()
+        return bs
+    def get_business_by_id(self, id):
+        return self.filter(id=id).first()
+
+    def create_business(self, data):
+        password = data.get('password')
+        email = data.get('email')
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        # subscriptiontype = data.get('subscriptions')
+        name = data.get('name')
+        phone = data.get('phone')
+        address = data.get('address')
+        tax = data.get('tax')
+        trial_end = datetime.date(datetime.today()) + timedelta(days=settings.STRIPE_TRIAL_DAYS)
+        sk_int_value = int(datetime.today().timestamp())
+        widget_sk = str(sk_int_value)
+        try:
+            with transaction.atomic():
+                user = self.create_user(email, first_name, last_name, password)
+                business = self.create(widget_sk=widget_sk, name=name, address=address, owner=user, tax=tax, phone=phone, trial_end=trial_end)
+                business.save()
+        # type = SubscriptionType.objects.get(pk=SubscriptionType.TRIAL)
+        # Subscription.objects.create_subscription(type, business)
+            return business
+        except ValidationError:
+             return self.EMAIL_ERROR
+        except Exception as e:
+             print(e)
+             return self.ERROR
+
+    def update_business_data(self, business, data, logo=None):
+
+        email = data.get('email')
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+
+        name = data.get('name')
+        phone = data.get('phone')
+        address = data.get('address')
+        tax = data.get('tax')
+        websiteurl = data.get('websiteurl')
+        default_website_mine = data.get('default_site')
+        print(logo)
+
+        if websiteurl == '':
+            websiteurl = None
+            default_website_mine = False
+
+        try:
+            self.update_user(business.owner, email, first_name, last_name)
+            business.name = name
+            business.phone = phone
+            business.address = address
+            business.tax = tax
+            business.logo = logo
+            business.websiteurl = websiteurl
+            business.default_site_mine = default_website_mine
+            business.save()
+            return business
+        except ValidationError:
+            return self.EMAIL_ERROR
+        except Exception as e:
+            print(e)
+            return self.ERROR
+
+
+    def create_user(self, email,first_name, last_name,password):
+
+        self.check_user_integrity(email)
+
+        usename = urlsafe_base64_encode(force_bytes(datetime.today().timestamp()))
+        user = User.objects.create_user(username=usename, email=email, password=password)
+        user.first_name = first_name
+        user.last_name = last_name
+        user.is_active = False
+        group = Group.objects.get_by_natural_key(name=settings.BUSINESS_TRIAL)
+        user.groups.add(group)
+        user.save()
+
+        return user
+
+    def update_user(self,user, email,first_name, last_name):
+        has_changed = False
+        if user.email != email:
+            self.check_user_integrity(email)
+            user.email = email
+            has_changed = True
+
+        if user.first_name != first_name:
+            user.first_name = first_name
+            has_changed = True
+
+        if user.last_name != last_name:
+            user.last_name = last_name
+            has_changed = True
+
+        if has_changed:
+            user.save()
+
+        return user
+
+    def check_user_integrity(self, email):
+        email_already_used = User.objects.filter(email=email).filter(is_active=True).first()
+        if email_already_used:
+            raise ValidationError({'email':[u'%s Ya existe como correo' % email]})
+
+    def get_by_token(self, token):
+        return self.filter(accout_creation_token=token).first()
+
+    def get_by_stripe_customer(self, stripe_customer):
+        return self.filter(stripecustomer=stripe_customer).first()
+
+    def get_customers_whose_trial_period_has_expired(self):
+        return Business.objects.filter(stripecustomer=None).filter(trial_end__gt=datetime.today().date())
+
+    def get_by_widget_sk(self, b64wsk):
+        try:
+            widget_sk = force_text(urlsafe_base64_decode(b64wsk))
+            return self.filter(widget_sk=widget_sk).first()
+        except:
+            return None
+
+
+class NotificationManager(models.Manager):
+
+    def create_notification(self, user, type, title_arg=None, body_arg=None):
+        title = type.title_format.format(*title_arg)
+        body = type.body_format.format(*body_arg)
+        self.create(user=user, type=type, title=title, body=body)
+
+class OfertaManager(models.Manager):
+
+    def get_oferta_by_name(self, name, business):
+        oferta = self.filter(business=business).filter(name=name).first()
+        if oferta:
+            return oferta
+        else:
+            oferta = self.create(business=business, name=name)
+            return oferta
+
+class AddressManager(Manager):
+
+    def create_address(self, data, state):
+        first_line = data.get('first_line')
+        second_line = data.get('second_line')
+        zip = data.get('zip')
+        city = data.get('city')
+        return self.create(first_line=first_line, second_line=second_line, zip=zip, city=city, state=state)
+
+# Create your models here.
+class Business(models.Model):
+
+    MAP_GROUP_SUBS_STATUS = {StripeSubscripcion.CANCELED:settings.BUSINESS_BASIC,
+                             StripeSubscripcion.ACTIVE:settings.BUSINESS_MEMBER,
+                             StripeSubscripcion.TRIAL:settings.BUSINESS_TRIAL}
+
+    objects = BusinessManager()
+    phone = models.CharField(max_length=20)
+    name = models.CharField(max_length=250)
+    # email = models.EmailField()
+    address = models.CharField(max_length=250)
+    owner = models.ForeignKey(User)
+    stripecustomer = models.ForeignKey(StripeCustomer, null=True)
+    # subscriptions = models.ManyToManyField('SubscriptionType',through='Subscription')
+    tax = models.DecimalField(max_digits=4, decimal_places=2, default=0)
+    stripe_account = models.ForeignKey(StripeAccount, null=True)
+    accout_creation_token = models.CharField(max_length=50, null=True)
+    logo = models.FileField(null=True, upload_to=settings.PROFILE_DIR_NAME)
+    trial_end = models.DateField()
+    websiteurl = models.URLField(null=True)
+    default_site_mine = models.BooleanField(default=False)
+    widget_sk = models.CharField(max_length=100)
+    capacity = models.IntegerField(default=0)
+
+    def can_schedule_one_more(self, current_number_of_events):
+        # return self.capacity == 0 or self.capacity > current_number_of_events
+        return self.capacity > current_number_of_events
+
+    def get_widget_sk_b64(self):
+        int_value = int(self.widget_sk)
+        return urlsafe_base64_encode(force_bytes(int_value))
+
+    def can_choose_default_site(self):
+        return self.websiteurl and self.get_website()
+
+    def set_default_website(self, mine=True):
+        self.default_site_mine = mine
+
+    def get_website(self):
+        return self.website.first()
+
+    def get_trial_end_value_to_subscribe(self):
+        if self.current_group().name == settings.BUSINESS_BASIC:
+            return 'now'
+        else:
+            return str(int(datetime(year=self.trial_end.year, month=self.trial_end.month, day=self.trial_end.day)))
+    def check_trial_period(self):
+        if not self.has_been_subscribed() and self.trial_end > datetime.today().date():
+            self.change_group(settings.BUSINESS_TRIAL, settings.BUSINESS_BASIC)
+
+    def get_logo_url(self):
+        if self.logo:
+            return self.logo.url[self.logo.url.find('/media/'+settings.PROFILE_DIR_NAME+'/'):]
+        return None
+
+    def has_an_account(self):
+        return self.stripe_account != None
+
+    # def need_payment_order(self):
+    #     subs = self.get_subscription()
+    #     return not subs.has_payment_order()
+
+    def get_subscription(self):
+        if self.has_been_subscribed():
+            subs = self.stripecustomer.current_subscription()
+            return subs
+        else:
+            return None
+
+    def has_been_subscribed(self):
+        return self.stripecustomer != None
+
+
+    def __str__(self):
+        return self.name
+
+    def regenerate_token(self):
+        token = str(urlsafe_base64_encode(force_bytes(self.id))) + '$' + str(urlsafe_base64_encode(force_bytes(int(datetime.today().timestamp()))))
+        self.accout_creation_token = token
+        self.save()
+        return self.accout_creation_token
+
+    def set_account(self, account):
+        self.stripe_account = account
+        self.save()
+
+    def set_stripe_customer(self, customer):
+        self.stripecustomer = customer
+        self.save()
+
+    def check_subscription_status(self):
+        subs_status = self.stripecustomer.current_status()
+        if subs_status != StripeSubscripcion.PAST_DUE: #Do nothing on past due
+            actual_group = Business.MAP_GROUP_SUBS_STATUS[subs_status]
+            current_group = self.current_group()
+            current_group_name = current_group.name
+            if current_group_name != actual_group:
+                self.change_group(old_group_name=current_group_name, new_group_name=actual_group)
+
+    def change_group(self, old_group_name, new_group_name):
+        self.owner.groups.filter(name=old_group_name).delete()
+        group = Group.objects.get_by_natural_key(name=new_group_name)
+        self.owner.groups.add(group)
+
+    def current_group(self):
+        return self.owner.groups.first()
+
+    def contact_email(self):
+        return self.owner.email
+
+
+
+
+class Oferta(models.Model):
+    objects = OfertaManager()
+    name = models.CharField(max_length=25)
+    business = models.ForeignKey(Business, related_name='ofertas')
+    price = models.DecimalField(max_digits=9, decimal_places=3, default=0) #precio por unidades
+    # unit = models.ForeignKey('N_Unit')
+
+    def __str__(self):
+        return self.name
+
+
+
+
+
+class Customer(models.Model, ModelSerialize):
+
+    objects = CustomerManager()
+
+    PREFIX = (
+        ('Sir', 'Sir'),
+        ('Mr', 'Mr'),
+        ('Mrs', 'Mrs'),
+        ('Mss', 'Mss'),
+        ('Ms', 'Ms'),
+    )
+
+    SUFFIX = (('Jr','Jr'),)
+
+
+
+    prefix = models.CharField(max_length=5, null=True, choices=PREFIX, blank=True)
+    suffix = models.CharField(max_length=5, null=True, choices=SUFFIX, blank=True)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    email = models.EmailField(validators=[EmailValidator()])
+    company = models.ForeignKey('N_Company',null=True)
+    comments = models.TextField(null=True)
+    business = models.ForeignKey(Business)
+    activo = models.BooleanField(default=True)
+    birthday = models.DateField(null=True)
+    cellphone = models.CharField(max_length=25, null=True)
+    phone_home = models.CharField(max_length=25, null=True)
+    token_removed = models.IntegerField(default=0)
+    address = models.ForeignKey('Address')
+    new = models.BooleanField(default=False)
+
+    default_fields = ['prefix','suffix','first_name','last_name','email','company','comments','business','activo','birthday',
+                      'cellphone','phone_home','address','new','id']
+
+    class Meta:
+        unique_together = (('email','activo','token_removed','business')),
+
+
+    def full_name(self):
+        return (self.prefix or '') + ' ' + self.first_name + ' ' + self.last_name + ' ' + (self.suffix or '')
+
+    def __str__(self):
+        return self.full_name()
+
+    def get_company_name(self):
+        if self.company:
+            return self.company.text
+        return ''
+
+    def set_new_customer(self, value):
+        self.new = value
+        self.save()
+
+    def serializable_value(self, field_name):
+        if field_name == 'address':
+            return self.address.serialize()
+        if field_name == 'company':
+            if self.company:
+                return self.company.text
+            else:
+                return None
+        return super(Customer, self).serializable_value(field_name)
+
+
+
+class Address(models.Model, ModelSerialize):
+
+    objects = AddressManager()
+
+    first_line = models.CharField(max_length=150)
+    second_line = models.CharField(max_length=150, null=True)
+    city = models.CharField(max_length=25)
+    state = models.ForeignKey('N_State')
+    zip = models.IntegerField()
+    # customer = models.OneToOneField(Customer)
+
+    default_fields = ['first_line','second_line','city','zip','country', 'state','id']
+
+    def __str__(self):
+        return self.first_line
+
+    def serializable_value(self, field_name):
+        if field_name == 'country':
+            return {'name':self.state.country.name,
+                    'id':self.state.country.id}
+        if field_name == 'state':
+            return {'name':self.state.name,
+                    'id':self.state.id}
+        return super(Address, self).serializable_value(field_name=field_name)
+
+    def update(self, data, state,flush=True):
+        self.first_line = data.get('first_line')
+        self.second_line = data.get('second_line')
+        self.zip = data.get('zip')
+        self.city = data.get('city')
+        self.state = state
+        if flush:
+            self.save()
+
+
+
+class ConfirmEmailOrder(models.Model):
+
+    OK = 0
+    EMAIL_ERROR = -1
+    EXPIRED = -2
+
+    objects = ConfirmEmailManager()
+    key = models.CharField(max_length=255)
+    checked = models.BooleanField(default=False)
+    pending = models.BooleanField(default=True)
+    user = models.ForeignKey(User, related_name='orders')
+    expire_date = models.DateTimeField(default=timezone.now)
+
+    create_at = models.DateTimeField(default=timezone.now)
+
+
+    def invoke(self):
+        if self.expire_date.date() < datetime.today().date():
+            return self.EXPIRED
+        self.user.is_active = True
+        try:
+            Business.objects.check_user_integrity(self.user.email)
+            self.user.save()
+            self.checked = True
+            self.pending = False
+            self.save()
+            return self.OK
+        except:
+            return self.EMAIL_ERROR
+    def __unicode__(self):
+        return self.user.first_name
+
+class Notification(models.Model):
+
+    objects = NotificationManager()
+    type = models.ForeignKey('N_NotificationType')
+    title = models.CharField(max_length=50)
+    body = models.TextField(max_length=150)
+    user = models.ForeignKey(User)
+    read = models.BooleanField(default=False)
+    create_at = models.DateField(auto_now_add=True)
+
+# Nomencladores
+
+class N_Prefix(models.Model, ModelSerialize):
+
+    default_fields = ['text','id']
+
+    text = models.CharField(max_length=5)
+
+    def __str__(self):
+        return self.text
+
+class N_Suffix(models.Model, ModelSerialize):
+    default_fields = ['text','id']
+    text = models.CharField(max_length=5)
+
+    def __str__(self):
+        return self.text
+
+class N_Company(models.Model, ModelSerialize):
+    default_fields = ['text','id']
+    objects = CompanyManager()
+
+    text = models.CharField(max_length=50)
+
+    def __str__(self):
+       return self.text
+
+# class N_SubscriptionType(models.Model):
+#     name = models.CharField(max_length=25)
+#
+#     def __str__(self):
+#        return self.name
+
+# class N_OrderType(models.Model):
+#     SUBSCRIPTION = 1
+#     INVOICE = 2
+#     name = models.CharField(max_length=25)
+#
+#     def __str__(self):
+#        return self.name
+
+# class N_SubscriptionStatus(models.Model):
+#     name = models.CharField(max_length=25)
+#     ACTIVE = 1
+#     PENDIND = 2
+#     EXPIRED = 3
+#
+#     def __str__(self):
+#        return self.name
+
+class N_NotificationType(models.Model):
+    default_fields = ['name','title_format','body_format']
+    name = models.CharField(max_length=25)
+    title_format = models.CharField(max_length=50)
+    body_format = models.TextField(max_length=150)
+    EXPIRE_DATE_ALERT = 1
+
+
+    def __str__(self):
+       return self.name
+
+# class N_Unit(models.Model):
+#     name = models.CharField(max_length=25)
+#
+#     def __str__(self):
+#        return self.name
+
+class N_Country(models.Model, ModelSerialize):
+
+    default_fields = ['name', 'states','id']
+
+    name = models.CharField(max_length=25)
+
+    def serializable_value(self, field_name):
+        if field_name == 'states':
+
+            return serialize_query(self.n_state_set.all())
+        return super(N_Country, self).serializable_value(field_name)
+
+    def __str__(self):
+        return self.name
+
+class N_State(models.Model, ModelSerialize):
+    default_fields = ['name','id']
+    name = models.CharField(max_length=25)
+    country = models.ForeignKey(N_Country)
+
+    def __str__(self):
+        return self.name
+
+
+# class N_City(models.Model):
+#
+#     name = models.CharField(max_length=25)
+#     state = models.ForeignKey(N_State)
+#
+#     def __str__(self):
+#         return self.name
+
+
+
+

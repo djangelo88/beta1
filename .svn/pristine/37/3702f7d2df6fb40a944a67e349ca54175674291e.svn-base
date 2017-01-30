@@ -1,0 +1,80 @@
+"""caterfull URL Configuration
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/1.9/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
+Including another URLconf
+    1. Add an import:  from blog import urls as blog_urls
+    2. Import the include() function: from django.conf.urls import url, include
+    3. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
+"""
+from django.conf.urls import url
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+
+from base.api.views.account import ChangePassword
+from base.api.views.business import BusinessView, UploadLogoView
+from base.api.views.calendar import EventView, EventDeleteView
+from base.api.views.customer_view import CustomerView, CustomerDeleteView
+from base.api.views.invoice import InvoiceView, InvoiceDeleteView
+from base.api.views.proposal import ProposalView, ProposalDeleteView
+from base.api.views.stripe_view import UpdateBillingEmail, CancelSubscription
+from base.views.customer_view import TestRest
+from base.views.nomenclator import Nomenclator
+from base.api.views.prodserv_views import ProductList, ServicesList, PositionList, PositionEdit, PositionAdd, \
+    PositionRemove, WorkerAdd, WorkerList, WorkerRemove, WorkerEdit, ServicesAdd, ServicesRemove, ServicesEdit, \
+    IngredientsList, IngredientsAdd, MeasuresList, IngredientsRemove, IngredientsEdit, RecipesList
+
+
+urlpatterns = [
+    url(r'^test$', csrf_exempt(TestRest.as_view()), name='test_rest'),
+
+    url(r'^nomenclator$', csrf_exempt(Nomenclator.as_view()), name='api_nomenclator'),
+    url(r'^customers', login_required(CustomerView.as_view()), name="api_customers"),
+    url(r'^customers/delete$', login_required(CustomerDeleteView.as_view()), name="api_customers_delete"),
+    url(r'^customers/(?P<id>\d+)$', login_required(CustomerView.as_view()), name="api_customer"),
+    url(r'^proposals/(?P<id>\d+)$', login_required(ProposalView.as_view()), name="api_proposal"),
+    url(r'^proposals', login_required(ProposalView.as_view()), name="api_proposals"),
+    url(r'^proposals/delete$', login_required(ProposalDeleteView.as_view()), name="api_proposals_delete"),
+    url(r'^products', login_required(ProductList.as_view()), name="products"),
+    url(r'^services$', login_required(ServicesList.as_view()), name="services"),
+    url(r'^services/add$', csrf_exempt(login_required(ServicesAdd.as_view())), name="services_add"),
+    url(r'^services/edit/(?P<id>\d+)$', csrf_exempt(login_required(ServicesEdit.as_view())), name="services_edit"),
+    url(r'^services/remove$', login_required(ServicesRemove.as_view()), name="services_remove"),
+    url(r'^positions$', login_required(PositionList.as_view()), name='positions'),
+    url(r'^positions/add$', csrf_exempt(login_required(PositionAdd.as_view())), name='position_add'),
+    url(r'^positions/edit/(?P<id>\d+)$', csrf_exempt(login_required(PositionEdit.as_view())), name='position_edit'),
+    url(r'^positions/remove$', login_required(PositionRemove.as_view()), name='position_remove'),
+    url(r'^business/uploadlogo', login_required(UploadLogoView.as_view()), name="api_profile"),
+    url(r'^business', login_required(BusinessView.as_view()), name="api_profile"),
+    url(r'^account', login_required(ChangePassword.as_view()), name="api_account"),
+
+    url(r'^workers$', login_required(WorkerList.as_view()), name='workers'),
+    url(r'^workers/add$', csrf_exempt(login_required(WorkerAdd.as_view())), name='workers_add'),
+    url(r'^workers/edit/(?P<id>\d+)$', csrf_exempt(login_required(WorkerEdit.as_view())), name='position_edit'),
+    url(r'^workers/remove$', login_required(WorkerRemove.as_view()), name='worker_remove'),
+
+    url(r'^measures$', login_required(MeasuresList.as_view()), name='measures'),
+    url(r'^ingredients$', login_required(IngredientsList.as_view()), name='ingredients'),
+    url(r'^ingredients/add$',  csrf_exempt(login_required(IngredientsAdd.as_view())), name='ingredients_add'),
+    url(r'^ingredients/edit/(?P<id>\d+)$',  csrf_exempt(login_required(IngredientsEdit.as_view())), name='ingredients_edit'),
+    url(r'^ingredients/remove$', login_required(IngredientsRemove.as_view()), name='ingredients_remove'),
+
+    url(r'recipes$', login_required(RecipesList.as_view()), name='recipes'),
+
+    url(r'^stripe/subscription/email/$', login_required(UpdateBillingEmail.as_view()), name='api_change_billing_email'),
+    url(r'^stripe/subscription/cancel/', login_required(CancelSubscription.as_view()),name='api_cancel_subcription'),
+    url(r'^invoices/(?P<id>\d+)', login_required(InvoiceView.as_view()), name="api_invoice"),
+    url(r'^invoices/delete', login_required(InvoiceDeleteView.as_view()), name="api_invoices_delete"),
+    url(r'^invoices', login_required(InvoiceView.as_view()), name="api_invoices"),
+    url(r'^events/(?P<id>\d+)', login_required(EventView.as_view()), name="api_event"),
+    url(r'^events/delete$', login_required(EventDeleteView.as_view()), name="api_events_delete"),
+    url(r'^events', login_required(EventView.as_view()), name="api_events"),
+
+  ]

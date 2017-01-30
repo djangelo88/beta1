@@ -1,0 +1,43 @@
+{% extends 'base_print.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+{% block print_title %}Proposals {% endblock %}
+{% block print_subtitle %}Listado de presupuestos {% endblock %}
+{% block print_content %}
+
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th class="text-uppercase">Nombre</th>
+            <th class="text-uppercase">Cliente</th>
+            <th class="text-uppercase">Fecha</th>
+            <th class="text-uppercase">Fecha de pago</th>
+            <th class="text-uppercase">Estado</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        {% for proposal in proposals %}
+            <tr>
+                <td> {{ proposal.event.name }} </td>
+                <td>{{ proposal.event.customer }}</td>
+                <td>{{ proposal.event.event_date }}</td>
+                <td>
+                    {{ proposal.event.due_date }}
+
+                </td>
+                <td>
+
+                    {{ proposal.status }}
+
+                </td>
+
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+{% endblock %}

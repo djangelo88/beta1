@@ -1,0 +1,78 @@
+<section class="forms-advanced" ng-controller="ProfileController">
+  <div class="page-header">
+    <h1>
+      <i class="md md-input"></i>
+      Perfil
+    </h1>
+    <p class="lead">
+      All form elements we created for you which you can use for your successful web projects!
+    </p>
+  </div>
+
+
+  <div class="row m-b-40">
+    <div class="col-md-3 col-md-push-9" id="general-elements-intro">
+      <h5>General form elements used in basic forms</h5>
+      <p>All the elements are just default bootstrap markup in execption of the selection box which is a <a target="_blank" href="https://github.com/angular-ui/ui-select">Angular ui-select directive</a>.</p>
+    </div>
+
+    <div class="col-md-8 col-md-pull-3">
+      <div class="well white">
+        <form class="form-floating placeholder-form" novalidate name="profileForm">
+          <fieldset>
+            <legend>Datos generales</legend>
+            <div class="form-group">
+              <label for="input" class="control-label">Nombre <span class="required-field">*</span></label>
+              <input type="text" name="first_name" class="form-control" ng-model="business.owner.first_name" required>
+            </div>
+           <div class="form-group">
+              <label for="input" class="control-label">Apellidos <span class="required-field">*</span></label>
+              <input type="text" name="last_name" class="form-control" ng-model="business.owner.last_name" required>
+            </div>
+          <div class="form-group">
+              <label for="input" class="control-label">Nombre del negocio <span class="required-field">*</span></label>
+              <input type="text" name="name" class="form-control" ng-model="business.name" required>
+            </div>
+          <address-block address="business.address" validation_errors="validation_errors"
+                                       editing="true"></address-block>
+          <div class="form-group filled">
+              <label for="inputEmail" class="control-label">Correo electronico <span class="required-field">*</span></label>
+              <input type="email" name="email" class="form-control" ng-model="business.owner.email" required>
+            </div>
+           <div class="form-group">
+              <label for="input" class="control-label">Telefono <span class="required-field">*</span></label>
+              <input type="text" name="phone" class="form-control" ng-model="business.phone" ng-pattern="/[0-9]$/" required>
+            </div>
+            <div class="form-group filled">
+              <label for="inputNumber" class="control-label">Tasa impositiva (Tax) <span class="required-field">*</span></label>
+              <input type="number" name="tax" class="form-control" ng-model="business.tax" step="0.01" required>
+{#                <span class="has-error" ng-show="profileForm.tax.$error.min_value">{{ profileForm.tax.$error.min_value }}</span>#}
+            </div>
+            <div class="form-group filled">
+              <label for="inputNumber" class="control-label">Capacidad de eventos</label>
+              <input type="number" name="capacity" class="form-control" ng-model="business.capacity" min="0">
+            </div>
+               <div class="form-group filled">
+              <label for="input" class="control-label">Website url</label>
+              <input type="url" name="websiteurl" class="form-control" ng-model="business.websiteurl">
+            </div>
+              <div class="form-group" ng-show="business.can_choose_default_site">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="default_site" ng-model="business.default_site_mine"> Sitio Propio por defecto
+                    </label>
+                </div>
+                </div>
+
+        <div class="form-group">
+              <button type="submit" ng-disabled="profileForm.$invalid" ng-click="update_profile(businesss)" class="btn btn-primary">Aceptar</button>
+              <button type="button" class="btn btn-default">Cambiar contraseña</button>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+</section>

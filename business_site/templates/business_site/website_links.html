@@ -1,0 +1,12 @@
+{% extends 'base2.html' %}
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+{% block title %} Website - Links {% endblock %}
+
+{% block main_content %}
+    {% include 'business_site/website_wizard.html' with links_form=form links_form_data=data links_status="active" menu_status="complete" basic_info_status="complete" gallery_status="complete" template_status="complete" %}
+
+{% endblock %}

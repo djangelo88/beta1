@@ -1,0 +1,24 @@
+from django.forms.models import ModelForm
+from base.prodserv_models import Measure, Ingredients
+
+__author__ = 'maykel'
+
+from django import forms
+
+class IngredientsForm(ModelForm):
+    measure = forms.ModelChoiceField(queryset=Measure.objects.all())
+    class Meta:
+        model = Ingredients
+        fields = ['name', 'description']
+
+
+
+class RecipesForm(forms.Form):
+    name = forms.CharField(max_length=250, required=True)
+    ingredients = forms.ModelChoiceField(required=True, queryset=Ingredients.objects.all())
+    measure  = forms.ModelChoiceField(required=True, queryset=Measure.objects.all())
+    cant = forms.IntegerField(required=True)
+
+
+
+

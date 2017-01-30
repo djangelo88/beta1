@@ -1,0 +1,77 @@
+__author__ = 'maykel'
+
+from django.db import models
+from base.models import Business
+
+class Service(models.Model):
+    name = models.CharField(max_length=250)
+    description = models.TextField(max_length=350)
+    tarifa_horaria = models.CharField(max_length=250)
+    bussines = models.ForeignKey(Business)
+
+class Position(models.Model):
+    description = models.TextField(max_length=350)
+
+class Worker(models.Model):
+    name = models.CharField(max_length=250)
+    last_name = models.CharField(max_length=250)
+    position = models.ForeignKey(Position)
+
+class ServiceWorkers(models.Model):
+    service = models.ForeignKey(Service)
+    worker = models.ForeignKey(Worker)
+
+class Magnitude(models.Model):
+    name = models.CharField(max_length=100, null=False)
+    def __str__(self):
+        return self.name
+
+class Measure(models.Model):
+    name = models.CharField(max_length=250, null=False, blank=False)
+    description = models.TextField(max_length=300, null=True, blank=True)
+    siglas = models.CharField(max_length=250, null=False, blank=False, default="")
+    magnitude = models.ForeignKey(Magnitude, default=0)
+    def __str__(self):
+        return self.name
+
+class Conversion(models.Model):
+    measure = models.ForeignKey(Measure)
+    measure_goal = models.ForeignKey(Measure, related_name = 'goal')
+    factor = models.DecimalField(decimal_places=2, max_digits=100000000)
+
+class Ingredients(models.Model):
+    name = models.CharField(max_length=250, null=False, blank=False)
+    description = models.TextField(null=True, blank=True)
+    business = models.ForeignKey(Business, default=0)
+
+class Recipe(models.Model):
+    name = models.CharField(max_length=250)
+    business = models.ForeignKey(Business, default=0)
+
+class RecipeIngredients(models.Model):
+    ingredient = models.ForeignKey(Ingredients)
+    recipe = models.ForeignKey(Recipe)
+    magnitude = models.ForeignKey(Magnitude)
+
+class Product(models.Model):
+    name = models.CharField(max_length=250)
+    description = models.TextField(max_length=350)
+    recipe = models.OneToOneField(Recipe)
+    business = models.ForeignKey(Business, default=0)
+
+class ProductPrice(models.Model):
+    min = models.IntegerField(null=False)
+    max = models.IntegerField(null=False)#(If max is 0 mean infinity)
+    price = models.FloatField(null=False, default=0.00)
+    product = models.ForeignKey(Product)
+    def get_total(self):
+        return round(self.max*self.price, 2)
+    def get_product_price(self, cant, product):
+        if product == self.product:
+            if(cant > self.min and cant < self.max) or (cant > self.min and self.max == 0):
+                return self.price*cant
+
+
+
+
+

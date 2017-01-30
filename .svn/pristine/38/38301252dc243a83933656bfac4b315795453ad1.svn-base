@@ -1,0 +1,100 @@
+app.controller('ProfileController', ['$scope','$location','ProfileService',
+    'AccountService',
+    'NotificationService',
+    'StripeService',
+    function($scope, $location,ProfileService,AccountService,NotificationService,StripeService){
+
+    ProfileService.get().success(function(data){
+        $scope.business = data;
+        console.log($scope.business);
+
+        $scope.$watch('business.websiteurl', function(newwebsiteurl){
+            //console.log(newwebsiteurl);
+            //var value =  (newwebsiteurl != '' && newwebsiteurl != undefined) ?  $scope.business.default_site_mine : false;
+            $scope.business.can_choose_default_site = (newwebsiteurl != '' && newwebsiteurl != undefined);
+            //console.log(value);
+         });
+    });
+
+    $scope.errors = {};
+
+    $scope.password_errors = {};
+    $scope.check_password = function(){
+        if ($scope.profile !== undefined){
+
+           return $scope.profile.new_password1 === $scope.profile.new_password2;
+        }
+        return false;
+    }
+    $scope.update_billing_email = function(){
+        console.log($scope.business.stripecustomer.billing_email);
+        console.log($scope.business.change_billing_email_url);
+        StripeService.updateBillingEmail($scope.business.change_billing_email_url, {email:$scope.business.stripecustomer.billing_email}).
+            success(function (data) {
+                console.log('success');
+            }).error(function (errors, h, c) {
+                console.log(errors);
+            });
+    }
+
+    $scope.update_password = function(){
+        $scope.password_errors = {};
+        AccountService.updatePassword($scope.profile).success(function(data){
+            NotificationService.success('','Su contraseña ha sido cambiada satisfactoriamente');
+            console.log(data);
+        }).error(function(errors){
+            var errors_json = JSON.parse(errors);
+            for(var field in errors_json){
+                var info_array  = errors_json[field];
+                $scope.password_errors[field] = [];
+                for(var ind = 0; ind < info_array.length; ind++){
+                    var info = info_array[ind];
+                    var code = info.code;
+                    var message = info.message;
+                    $scope.password_errors[field].push({code:code, message:message});
+                }
+            }
+            console.log($scope.password_errors);
+        });
+    }
+
+    $scope.update_profile = function(business){
+
+        console.log($scope.profileForm);
+        $scope.errors = {};
+        //for(var ind = 0; ind<$scope.length; ind++)
+        //{
+        //    var top = $scope.errors.pop();
+        //    console.log(top);
+        //    var field = top.field
+        //    var code = top.code;
+        //    var input = $scope.profileForm[field]
+        //    input.$error[code] = null;
+        //}
+
+        ProfileService.updateProfile($scope.business).success(function(data){
+            console.log('success');
+        }).error(function(data){
+           var errors = JSON.parse(data);
+            console.log(errors);
+           for(var field in errors){
+               var infoarray = errors[field];
+               $scope.errors[field] = []
+               for(var ind = 0; ind < infoarray.length; ind++){
+                   var info = infoarray[ind];
+                   console.log(info);
+                   var code = info['code']
+                   var message = info['message'];
+                   var input = $scope.profileForm[field]
+                   //input.$error[code] = message;
+                   $scope.errors[field].push({code:code, message:message});
+                   console.log(field + ': ' + code + ': ' + message);
+               }
+
+           }
+        });
+    }
+
+
+
+}]);

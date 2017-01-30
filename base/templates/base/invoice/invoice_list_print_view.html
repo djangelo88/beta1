@@ -1,0 +1,78 @@
+{% extends 'base_print.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+{% block print_title %}Invoices {% endblock %}
+{% block print_subtitle %}Listado de invoices {% endblock %}
+{% block print_content %}
+
+    <table class="table  table-bordered">
+        <thead>
+        <tr>
+            <th class="text-uppercase">Nombre</th>
+            <th class="text-uppercase">Cliente</th>
+            <th class="text-uppercase">Fecha</th>
+            <th class="text-uppercase">Fecha de pago</th>
+            <th class="text-uppercase">Estado</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        {% for inv in invoices %}
+            <tr>
+                <td>{{ inv.proposal.event.name }}</td>
+                <td>{{ inv.proposal.event.customer }}</td>
+                <td>{{ inv.proposal.event.event_date }}</td>
+                <td>
+                    {{ inv.due_date }}
+                </td>
+                <td>
+
+                    {{ inv.status }}
+
+                </td>
+
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+
+    {##}
+    {#    <table class="table table-bordered">#}
+    {#        <thead>#}
+    {#        <tr>#}
+    {#            <th   class="text-uppercase">Customer Name</th>#}
+    {#            <th class="text-uppercase">Email</th>#}
+    {#            <th class="text-uppercase">Company</th>#}
+    {##}
+    {#        </tr>#}
+    {#        </thead>#}
+    {#        <tbody>#}
+    {#        {% for customer in customers %}#}
+    {#            <tr>#}
+    {#                <td>#}
+    {#                    {{ customer.full_name }}#}
+    {##}
+    {#                </td>#}
+    {#                <td>#}
+    {#                    {{ customer.email }}#}
+    {#                </td>#}
+    {##}
+    {#                <td>#}
+    {#                    {{ customer.company }}#}
+    {#                </td>#}
+    {#            </tr>#}
+    {#        {% endfor %}#}
+    {#        </tbody>#}
+    {#    </table>#}
+
+
+{% endblock %}
+{##}
+{#{% block content %}#}
+{# <div id="content">#}
+{#                <h1>Hi there!</h1>#}
+{#            </div>#}
+{#{% endblock %}#}

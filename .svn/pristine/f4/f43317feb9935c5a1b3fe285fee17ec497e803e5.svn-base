@@ -1,0 +1,6 @@
+{% load  widget_tweaks %}
+<form method="post">
+    {% csrf_token %}
+    <div>Correo: {% render_field form.email %}</div>
+    <input type="submit" value="Cambiar Correo"/>
+</form>

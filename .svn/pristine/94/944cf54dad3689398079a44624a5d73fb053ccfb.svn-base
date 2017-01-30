@@ -1,0 +1,46 @@
+<fieldset>
+    <legend class="subtitle">Address</legend>
+
+    <div class="form-group filled ">
+        <label class="control-label">Line 1 <span class="required-field">*</span></label>
+        <input type="text" class="form-control" ng-model="address.first_line"  ng-disabled="!editing" required>
+    </div>
+    <div class="form-group filled ">
+        <label class="control-label">Line 2</label>
+        <input type="text" class="form-control" ng-model="address.second_line"  ng-disabled="!editing">
+    </div>
+    <div class="form-group filled col-sm-6 no-padding-left">
+
+        <label class="control-label">Country <span class="required-field">*</span></label>
+        <select class="form-control" ng-disabled="!editing" ng-model="address.country.id"
+                ng-options="country.id as country.name for country in countries" required
+                ng-change="reloadStates()"/>
+
+    </div>
+    <div class="form-group filled col-sm-6 no-padding-right">
+
+        <label class="control-label correct-margin-left">State <span
+                class="required-field">*</span></label>
+        <select class="form-control" ng-disabled="!editing" ng-model="address.state.id"
+                ng-options="state.id as state.name for state in countryStates" required/>
+    </div>
+    <div class="form-group filled col-sm-6 no-padding-left">
+        <label class="control-label">City <span class="required-field">*</span></label>
+        <input type="text" class="form-control" ng-model="address.city" ng-disabled="!editing"
+               required>
+    </div>
+    <div class="form-group filled col-sm-6 no-padding-right "
+         ng-class="{'has-error':validation_errors.zip.length > 0}">
+
+        <label class="control-label correct-margin-left">Zip Code <span class="required-field">*</span></label>
+        <input type="number" class="form-control" ng-model="address.zip"
+               ng-disabled="!editing" required>
+
+        <div ng-show="validation_errors.zip" ng-repeat="error in validation_errors.zip">
+            <span class="help-block has-error error-msg"> {{ error.message }} </span>
+        </div>
+    </div>
+{{ validation_errors }}
+    <div class="clearfix"></div>
+
+</fieldset>

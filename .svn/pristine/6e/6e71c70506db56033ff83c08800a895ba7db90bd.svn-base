@@ -1,0 +1,38 @@
+{% extends 'base_angular_static.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+{% block title %} Password reset {% endblock %}
+
+
+{% block body %}
+    <body class="page-login theme-template-light theme-light-green" init-ripples>
+    <div class="center">
+        <div class="card bordered z-depth-2" style="margin:0% auto; max-width:400px;">
+            <div class="card-header">
+                <div class="brand-logo">
+                    <div id="logo">
+                        <div class="foot1"></div>
+                        <div class="foot2"></div>
+                        <div class="foot3"></div>
+                        <div class="foot4"></div>
+                    </div>
+                    Materialism
+                </div>
+            </div>
+            <div class="card-content">
+
+                <p>{% trans "Your password has been set.  You may go ahead and log in now." %}</p>
+
+            </div>
+            <div class="card-action clearfix">
+                <a href="/accounts/login" class="btn btn-link pull-right">Login page</a>
+            </div>
+        </div>
+    </div>
+
+    {#    <script charset="utf-8" src="//code.jquery.com/jquery-1.11.3.min.js"></script>#}
+
+
+    </body>
+{% endblock %}

@@ -1,0 +1,105 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()"><i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+
+            <form class="form-floating caterfull-form" novalidate="novalidate" ng-submit="saveItem(item)">
+                <fieldset>
+                    <legend>
+                        <span >
+                        <i class="fa fa-user  grey lighten-1 icon-color" ng-show="!item.new"></i>
+                        <i class="fa fa-user  light-green lighten-1 icon-color" ng-show="item.new"></i>
+
+                    </span> {{ cmd }} {{ settings.singular }}</legend>
+                    <div class="form-group col-sm-3 no-padding-left-responsive">
+                        <label class="control-label">Prefix</label>
+                        <select class="form-control" ng-disabled="!item.editing" ng-model="selectedPreffix.id" ng-options="pref.id as pref.text for pref in preffixs"  >
+                        </select>
+                    </div>
+
+                    <div class="form-group filled col-sm-9 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Firstname <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.first_name" ng-disabled="!item.editing" required>
+                    </div>
+
+                    <div class="form-group filled col-sm-9 no-padding-left-responsive">
+                        <label class="control-label">Lastname <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.last_name" ng-disabled="!item.editing" required>
+                    </div>
+
+                    <div class="form-group col-sm-3 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Suffix</label>
+                        <select class="form-control" ng-disabled="!item.editing" ng-model="selectedSuffix.id" ng-options="suff.id as suff.text for suff in suffixs">
+                        </select>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="form-group filled col-sm-6 no-padding-left-responsive">
+                        <label class="control-label">Email <span class="required-field">*</span></label>
+                        <input type="email" class="form-control" ng-model="item.email" ng-disabled="!item.editing" required>
+                    </div>
+                    <div class="form-group filled  col-sm-6 no-padding-right-responsive">
+                        <label class="control-label correct-margin-left">Company</label>
+                        <input type="text" class="form-control" ng-model="item.company" ng-disabled="!item.editing">
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="form-group filled col-sm-4 no-padding-left">
+                        <label class="control-label">Mobile phone</label>
+                        <input type="text" class="form-control" ng-model="item.cellphone"
+                               ng-disabled="!item.editing">
+                    </div>
+                    <div class="form-group filled col-sm-4 ">
+                        <label class="control-label correct-margin-left" >Home phone</label>
+                        <input type="text" class="form-control" ng-model="item.phone_home" ng-disabled="!item.editing">
+                    </div>
+                    <div class="form-group filled col-sm-4 no-padding-right">
+              <label class="control-label correct-margin-left">Birthdate</label>
+              <input type="text" class="form-control" ng-model="item.birthday" data-autoclose="1" bs-datepicker>
+            </div>
+                    <div class="clearfix"></div>
+                    <h4>Address</h4>
+
+                    <div class="form-group filled ">
+                        <label class="control-label">Line 1 <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.address.first_line" ng-disabled="!item.editing" required>
+                    </div>
+                    <div class="form-group filled ">
+                        <label class="control-label">Line 2</label>
+                        <input type="text" class="form-control" ng-model="item.address.second_line" ng-disabled="!item.editing" >
+                    </div>
+                    <div class="form-group filled col-sm-6 no-padding-left">
+                        <label class="control-label">Country <span class="required-field">*</span></label>
+                        <select class="form-control" ng-disabled="!item.editing" ng-model="item.address.country.id" ng-options="country.id as country.name for country in countries" required ng-change="reloadStates()"/>
+
+                    </div>
+                    <div class="form-group filled col-sm-6 no-padding-right">
+                        <label class="control-label correct-margin-left">State <span class="required-field">*</span></label>
+                        <select class="form-control" ng-disabled="!item.editing" ng-model="item.address.state.id" ng-options="state.id as state.name for state in countryStates" required  />
+                    </div>
+                    <div class="form-group filled col-sm-6 no-padding-left">
+                        <label class="control-label">City  <span class="required-field">*</span></label>
+                        <input type="text" class="form-control" ng-model="item.address.city" ng-disabled="!item.editing" required>
+                    </div>
+                    <div class="form-group filled col-sm-6 no-padding-right">
+                        <label class="control-label correct-margin-left">Zip Code <span class="required-field">*</span></label>
+                        <input type="number" class="form-control" ng-model="item.address.zip" ng-disabled="!item.editing" required>
+                    </div>
+                    <div class="clearfix"></div>
+                     <div class="form-group filled">
+                               <label class="control-label">Comments</label>
+                               <textarea class="form-control vertical" rows="3" ng-model="item.comments"
+                                         ng-disabled="!item.editing"></textarea>
+                           </div>
+                    <div class="clearfix"></div>
+                    <div class="form-group ">
+                        <button type="submit" class="btn btn-lg btn-primary" ng-show="item.creating">Save & add other</button>
+                        <button type="submit" class="btn btn-lg btn-primary" ng-hide="!item.editing">Save</button>
+                    </div>
+                </fieldset>
+            </form>
+
+        </div>
+    </div>
+</div>

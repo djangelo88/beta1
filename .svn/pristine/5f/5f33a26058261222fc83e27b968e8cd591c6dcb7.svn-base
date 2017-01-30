@@ -1,0 +1,19 @@
+<html>
+<head>
+
+</head>
+<body>
+<fieldset>
+    <legend>Datos de la factura</legend>
+    <div>Numero de Factura: {{ invoice.number }}</div>
+    <div>Fecha limite para el pago: {{ invoice.due_date }}</div>
+    <div>Evento: {{ invoice.proposal.event.name }}</div>
+</fieldset>
+<div>
+    <p>
+        Acceda a este link para pagar <a href="{{ domain }}{% url 'stripe_invoice_charge' iidb64 token %}">Pay now</a>
+    </p>
+</div>
+</body>
+</html>
+

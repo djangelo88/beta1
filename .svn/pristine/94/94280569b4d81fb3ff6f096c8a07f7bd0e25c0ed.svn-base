@@ -1,0 +1,188 @@
+app.controller('ProfileController', ['$scope','Upload','$location','$timeout','ProfileService',
+    'AccountService',
+    'NotificationService',
+    'StripeService',
+    function($scope,Upload, $location,$timeout,ProfileService,AccountService,NotificationService,StripeService){
+
+    $scope.get_profile = function(){
+        ProfileService.get().success(function(data){
+        $scope.business = data;
+        $scope.business.is_pending = function () {
+            ;
+            return this.owner.group == 'Business_Trial';
+        }    ;
+        console.log($scope.business);
+
+        $scope.$watch('business.websiteurl', function(newwebsiteurl){
+            //console.log(newwebsiteurl);
+            //var value =  (newwebsiteurl != '' && newwebsiteurl != undefined) ?  $scope.business.default_site_mine : false;
+            $scope.business.can_choose_default_site = (newwebsiteurl != '' && newwebsiteurl != undefined);
+            //console.log(value);
+         });
+    });
+
+    }
+    $scope.get_profile();
+    $scope.errors = {};
+
+    $scope.password_errors = {};
+    $scope.check_password = function(){
+        if ($scope.profile !== undefined){
+
+           return $scope.profile.new_password1 === $scope.profile.new_password2;
+        }
+        return false;
+    }
+    $scope.update_billing_email = function(){
+        console.log($scope.business.stripecustomer.billing_email);
+        console.log($scope.business.change_billing_email_url);
+        StripeService.updateBillingEmail($scope.business.change_billing_email_url, {email:$scope.business.stripecustomer.billing_email}).
+            success(function (data) {
+                NotificationService.success('',data.message);
+
+            }).error(function (errors, status) {
+
+                if( status == 500) {
+
+                    NotificationService.warning('', errors.message);
+
+                }
+            });
+    }
+
+    $scope.cancel_subscription = function(){
+        StripeService.cancelSubscription($scope.business.cancel_subcription_url).success(function (data) {
+            NotificationService.success('',data.message);
+            $scope.get_profile();
+        }).error(function (error, status) {
+            if(status == 500){
+                NotificationService.warning('', error.message);
+            }
+        });
+    }
+
+    $scope.update_password = function(){
+        $scope.password_errors = {};
+        AccountService.updatePassword($scope.profile).success(function(data){
+            NotificationService.success('','Su contraseña ha sido cambiada satisfactoriamente');
+            console.log(data);
+        }).error(function(errors){
+            var errors_json = JSON.parse(errors);
+            for(var field in errors_json){
+                var info_array  = errors_json[field];
+                $scope.password_errors[field] = [];
+                for(var ind = 0; ind < info_array.length; ind++){
+                    var info = info_array[ind];
+                    var code = info.code;
+            }
+                    var message = info.message;
+                    $scope.password_errors[field].push({code:code, message:message});
+                }
+            console.log($scope.password_errors);
+        });
+    }
+
+    $scope.update_profile = function(business){
+
+        console.log($scope.profileForm);
+        $scope.errors = {};
+        //for(var ind = 0; ind<$scope.length; ind++)
+        //{
+        //    var top = $scope.errors.pop();
+        //    console.log(top);
+        //    var field = top.field
+        //    var code = top.code;
+        //    var input = $scope.profileForm[field]
+        //    input.$error[code] = null;
+        //}
+
+        ProfileService.updateProfile($scope.business).success(function(data){
+            console.log('success');
+        }).error(function(data){
+           var errors = JSON.parse(data);
+            console.log(errors);
+           for(var field in errors){
+               var infoarray = errors[field];
+               $scope.errors[field] = []
+               for(var ind = 0; ind < infoarray.length; ind++){
+                   var info = infoarray[ind];
+                   console.log(info);
+                   var code = info['code']
+                   var message = info['message'];
+                   var input = $scope.profileForm[field]
+                   //input.$error[code] = message;
+                   $scope.errors[field].push({code:code, message:message});
+                   console.log(field + ': ' + code + ': ' + message);
+               }
+
+           }
+        });
+    }
+
+   // File Upload
+  $scope.fileReaderSupported = window.FileReader !== undefined && (window.FileAPI === undefined || FileAPI.html5 !== false);
+
+  $scope.$watch('logofile', function () {
+      //console.log($scope.logofile);
+    $scope.upload($scope.logofile);
+  });
+
+  //progressHandler = function(evt) {
+  //  var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+  //  console.log('progress: ' + progressPercentage + '% ' + evt.config.file.name);
+  //};
+  //
+  successHandler = function(data, status, headers, config) {
+      console.log(data);
+      $scope.business.logo = data.logo;
+    //console.log('file ' + config.file.name + 'uploaded. Response: ' + JSON.stringify(data));
+  };
+
+  thumbHandler = function(file) {
+    generateThumb(file);
+  };
+
+  //generateThumb = function(file) {
+  //  if (file !== undefined) {
+  //    if ($scope.fileReaderSupported && file.type.indexOf('image') > -1) {
+  //      $timeout(function() {
+  //        var fileReader = new FileReader();
+  //        fileReader.readAsDataURL(file);
+  //        fileReader.onload = function(e) {
+  //          $timeout(function() {
+  //            file.dataUrl = e.target.result;
+  //            console.log(file.dataUrl);
+  //          });
+  //        };
+  //      });
+  //    }
+  //  }
+  //};
+
+  $scope.upload = function (file) {
+    if (file !== null && file !== undefined) {
+
+
+        Upload.upload({
+          url: '/api/business/uploadlogo',
+          file: file
+        })
+        //.progress(progressHandler)
+        .success(successHandler);
+
+    }
+  };
+
+  //$scope.$watch('logofile', function(file) {
+  //  $scope.formUpload = false;
+  //  if (file !== undefined && file !== null) {
+  //
+  //      $scope.errorMsg = undefined;
+  //        //console.log(file);
+  //      (thumbHandler)(file);
+  //
+  //  }
+  //});
+
+
+}]);

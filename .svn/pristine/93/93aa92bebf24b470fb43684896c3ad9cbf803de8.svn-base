@@ -1,0 +1,100 @@
+<section class="forms-advanced" >
+  <div class="page-header">
+    <h1>
+      <i class="md md-input"></i>
+      Suscription
+    </h1>
+    <p class="lead">
+
+
+    </p>
+  </div>
+
+
+  <div class="row m-b-10" >
+
+
+    <div class="col-md-7">
+      <div class="well white">
+        <form class="form-floating placeholder-form" name="payment-form" novalidate id="payment-form">
+        <span class="payment-errors"></span>
+            <div class="form-group">
+              <label for="input" class="control-label">Card Number <span class="required-field">*</span></label>
+              <input type="text" size="20" data-stripe="number" class="form-control">
+            </div>
+           <div class="form-group">
+              <label for="input" class="control-label">Expiration <span class="required-field">*</span></label>
+               <input type="text" size="2" data-stripe="exp_month" class="form-control" placeholder="MM">
+              <input type="text" size="2" data-stripe="exp_year" class="form-control" placeholder="YY">
+            </div>
+          <div class="form-group">
+              <label for="input" class="control-label">CVC<span class="required-field">*</span></label>
+              <input type="text" size="20" data-stripe="cvc" class="form-control">
+
+            </div>
+
+          <div class="form-group ">
+              <label for="inputEmail" class="control-label">Billing address<span class="required-field">*</span></label>
+              <input type="text" size="20" data-stripe="address_zip" class="form-control">
+
+            </div>
+
+
+        <div class="form-group">
+              <button type="submit" class="btn btn-primary">Aceptar</button>
+
+               <a class="btn btn-default" ui-sref="dashboard">Cancelar</a>
+            </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+</section>
+
+<section class="forms-advanced" >
+    <input hidden type="text" value="{{ PUBLISHABLE_KEY }}" id="PUBLISHABLE_KEY"/>
+    <!--<script type="text/javascript">
+        var publishable_key = document.getElementById('PUBLISHABLE_KEY');
+
+
+
+        Stripe.setPublishableKey(publishable_key.value);
+    </script>-->
+
+        <form class="form-floating placeholder-form" name="payment-form" novalidate id="payment-form">
+            <span class="payment-errors"></span>
+            <div class="form-group">
+              <label for="input" class="control-label">Card number <span class="required-field">*</span></label>
+              <input type="text" size="20" data-stripe="number" class="form-control">
+
+            </div>
+            <div class="form-group">
+             <!-- <label for="input" class="control-label">Expiration (MM/YY)<span class="required-field">*</span></label>-->
+              <input type="text" size="2" data-stripe="exp_month" class="form-control-stripe" placeholder="MM">
+              <input type="text" size="2" data-stripe="exp_year" class="form-control-stripe" placeholder="YY">
+
+            </div>
+            <div class="form-group">
+              <label for="input" class="control-label">CVC<span class="required-field">*</span></label>
+              <input type="text" size="20" data-stripe="cvc" class="form-control">
+
+            </div>
+            <div class="form-group">
+              <label for="input" class="control-label">Billing Zip<span class="required-field">*</span></label>
+               <input type="text" size="20" data-stripe="address_zip" class="form-control">
+
+            </div>
+             <div class="form-group">
+
+                <input type="submit" class="btn btn-primary" value="Submit Payment">
+                <a ui-sref="profile" class="btn btn-default">Cancelar</a>
+            </div>
+        </form>
+
+
+
+
+</section>

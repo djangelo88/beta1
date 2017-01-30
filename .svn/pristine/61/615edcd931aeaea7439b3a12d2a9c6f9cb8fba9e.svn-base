@@ -1,0 +1,204 @@
+<div class="aside bs-docs-aside" tabindex="-1" role="dialog">
+    <div class="close">
+        <div class="btn btn-round btn-info" ng-click="$hide()"><i class="md md-close"></i></div>
+    </div>
+
+    <div class="aside-dialog">
+        <div class="aside-body bs-sidebar">
+
+            <form class="form-floating caterfull-form" novalidate="novalidate">
+                <fieldset>
+                    <legend>
+                        <span ng-show="!item.icon">
+                        <i class="md md-assignment  grey lighten-1 icon-color"></i></span>
+                        <span ng-bind-html="item.icon">  </span> {{ cmd }} {{ settings.singular }}
+
+                        <div class="pull-right">
+                            <button type="button" ng-show="item.status==2" class="btn btn-default btn-round-sm"
+                                    data-placement="bottom" data-title="Denegar" bs-tooltip="" ng-click="">
+                                <span class="md md-block text-danger"></span>
+                            </button>
+
+                            <button type="button" ng-click="sendMail(item)" ng-hide="!item.can_send && !item.can_resend"
+                                    ng-class="{resend:item.can_resend}" class="btn btn-default btn-round-sm"
+                                    data-placement="bottom" data-title="Enviar" bs-tooltip="">
+                                <span class="md md-send"></span>
+                            </button>
+
+                            <a href="/{{ (model=='proposal')?'proposal':'invoice' }}/download/{{ (model=='proposal')?item.id:item.invoice.id }}/" ng-click=" " class="btn btn-default btn-round-sm"
+                                    data-placement="bottom" data-title="Exportar a PDF" bs-tooltip="">
+                                <span class="md md-file-download"></span>
+                            </a>
+
+                        </div>
+
+                    </legend>
+                </fieldset>
+            </form>
+
+            <div class="">
+
+
+                <div class="col-xs-12 event-detail proposal" ng-class="{invoic:item.model=='invoice'}"
+                     ng-class="{proposal:item.model=='proposal'}" style="display: block">
+                    <div class="row">
+                        <div class="col-xs-6 col-sm-5 ">
+                            <h3 class="h3-title">
+                                <span ng-if="item.model=='invoice'">factura a </span>
+                                <span ng-if="item.model=='proposal'">presupuesto a </span>
+                            </h3>
+                        </div>
+                        <div class="col-xs-6 col-sm-4  pull-right">
+                            <h1 class="h1-title" ng-bind="settings.singular"></h1>
+                        </div>
+                    </div>
+                    <div class="row client">
+                        <div class="col-sm-6">
+                            <p class="pull-left">
+                                {{ item.event.customer.first_name }} {{ item.event.customer.last_name }}
+                            </p>
+                        </div>
+
+                        <div class="col-sm-6" ng-show="item.model=='invoice'">
+                            <p class="pull-right">
+                                {{ item.number }}
+                            </p>
+                        </div>
+
+                    </div>
+                    <div class="row descriptions">
+                        <div class="col-sm-6">
+                            <p>          {{ item.event.customer.email }}     </p>
+
+                            <p>          {{ item.event.customer.cell_phone }}     </p>
+
+                            <p><strong> {{ item.event.name }} </strong></p>
+
+                            <p>{{ item.event.address.first_line }} </p>
+
+                            <p>{{ item.event.date }} </p>
+
+                            <p ng-show="item.model=='invoice'">{{ due_date }} </p>
+
+                        </div>
+                        <div class="col-sm-6 text-right">
+                                       <!-- <p><strong> {{ event.name }} </strong></p>
+
+                                        <p>{{ event.address }} </p>
+
+                                        <p>{{ event.date }} </p>
+                                        {% if invoice %}
+                                            <p>{{ due_date }} </p>
+                                        {% endif %} -->
+
+                        </div>
+                    </div>
+                    <div class="row items col-sm-10 pull-right">
+
+
+                        <div ng-show="item.items.length > 0">
+
+                            <table class="table table-bordered table-responsive  detail-items-table">
+                                <thead>
+                                <tr>
+                                    <th>item</th>
+                                    <th>descripcion</th>
+                                    <th>cantidad</th>
+                                    <th>costo unitario</th>
+                                    <th class="descuento">descuento</th>
+                                    <th class="total"> total</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                    <tr ng-repeat="(key,elem) in item.items">
+                                        <td> {{ item.oferta.name }}</td>
+                                        <td> {{ item.description }}</td>
+                                        <td class="text-center"> {{ elem.quantity }}</td>
+                                        <td class="text-right"> $ {{ elem.unit_cost }}</td>
+                                        <td class="text-right disc"> {{ elem.discount }} %</td>
+                                       <!-- <td class="text-right"> $ {{ elem.total|floatformat:"2" }}</td> -->
+                                    </tr>
+
+                                <tr>
+                                    <td colspan="4" class="no-border-subtotal"></td>
+                                    <td class="subtotal-title">Subtotal</td>
+                                   <!-- <td class="subtotal-value">$ {{ proposal.get_subtotal|floatformat:"2" }}</td> -->
+                                </tr>
+                                </tbody>
+                            </table>
+                            <br/>
+
+               <!--               <div class="event-status
+
+
+                                    {% if invoice %}{{ invoice.status |lower }}{% else %}{{ proposal.status|lower }}{% endif %}">
+                                {% if invoice %}
+                                    {{ invoice.status }}
+                                {% else %}
+                                    {{ proposal.status }}
+                                {% endif %}
+
+                                {% if invoice.status.name == "DENEGADO" or  proposal.status.name == "DENEGADO" %}
+                                    {% if proposal.denied_by_system %}
+                                    {% else %}
+                                        <br/>
+                                        <small style="font-size: 10pt"> por el cliente</small>
+                                    {% endif %}
+                                {% endif %}
+
+                            </div>
+
+                          <div class="col-md-4 pull-right no-padding-right">
+                                <table class="table table-bordered table-responsive detail-items-table">
+                                    <thead>
+                                    <tr>
+                                        <th class="descuento" style="border-right: none !important;">taxes</th>
+                                        <th class="descuento">descuento</th>
+                                        <th class="total">total</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td class="subtotal-title text-right">
+                                            $ {{ proposal.get_taxes|floatformat:"2" }}</td>
+                                        <td class="subtotal-title text-right">
+                                            $ {{ proposal.get_total_discount|floatformat:"2" }}</td>
+                                        <td class="subtotal-value">$ {{ proposal.get_total|floatformat:"2" }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        -->
+                        </div>
+                        <p ng-show="item.items.length == 0">El evento no contiene items.</p>
+                    </div>
+                    <div class="clearfix"></div>
+
+
+                    <div class=" detail-footer-content no-padding-right pull-right text-right">
+
+         <!--               <p>{{ BUSINESS_DATA.name }}</p>
+                        <h4>{{ BUSINESS_DATA.owner.get_full_name }}</h4>
+                        {% if BUSINESS_DATA.phone %}
+                            <p>  {{ BUSINESS_DATA.phone }} <i class="fa fa-phone"></i></p>
+                        {% endif %}
+
+                        {% if BUSINESS_DATA.address %}
+                            <p> {{ BUSINESS_DATA.address }} <i class="fa fa-map-marker"></i></p>
+                        {% endif %}
+
+                        {% if  BUSINESS_DATA.website_url %}
+                            <p>  {{ BUSINESS_DATA.website_url }} <i class="fa fa-link"></i></p>
+                        {% endif %}
+
+-->
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,10 @@
+{% load widget_tweaks %}
+{% load i18n admin_static %}
+
+<div class="clearfix">
+    {% render_field form.customer class="form-control chosen-select" %}
+</div>
+{% for error in  form.customer.errors %}
+    <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+{% endfor %}
+

@@ -1,0 +1,61 @@
+{% extends 'base_angular_static.html' %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+{% block title %} Password reset {% endblock %}
+{% block body %}
+    <body class="page-login  theme-template-light theme-light-green" init-ripples>
+    <div class="center">
+        <div class="card bordered z-depth-2" style="margin:0% auto; max-width:400px;">
+            <div class="card-header">
+                <div class="brand-logo">
+                    <div id="logo">
+                        <div class="foot1"></div>
+                        <div class="foot2"></div>
+                        <div class="foot3"></div>
+                        <div class="foot4"></div>
+                    </div>
+                    Materialism
+                </div>
+            </div>
+            <form method="post" class="form-floating">{% csrf_token %}
+                <div class="card-content">
+
+                    <div class="m-b-30">
+                        <div class="card-title strong light-green-text">Password reset</div>
+                        <p class="card-title-desc">
+                            {% trans "Forgotten your password? Enter your email address below, and we'll email instructions for setting a new one." %}
+                        </p>
+                    </div>
+
+
+                    <div class="form-group filled">
+                        <label for="inputEmail" class="control-label">{% trans 'Username' %}</label>
+                        {% render_field form.email class="form-control " %}
+                        <span class="fa fa-envelope form-control-feedback light-green-text" id="ënvelope-feed"></span>
+                        {% for error in  form.email.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+                <div class="card-action clearfix">
+                    <div class="pull-right">
+{#                        <a href="{% url 'password_reset' %}" class="btn btn-link black-text">Forgot password</a>#}
+                        <button type="submit" class="btn btn-primary  ">{% trans 'Reset my password' %}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {#    <script charset="utf-8" src="//code.jquery.com/jquery-1.11.3.min.js"></script>#}
+
+
+    </body>
+{% endblock %}
+{% block js_bottom %}
+    <script charset="utf-8" src="{% static  'assets/js/login.js' %}"></script>
+{% endblock %}
+

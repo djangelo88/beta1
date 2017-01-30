@@ -1,0 +1,17 @@
+/**
+ * Created by Hector on 12/01/2017.
+ */
+app.controller('ProposalWizardController', ['$scope', '$window', '$aside', 'PlaceholderTextService', function ($scope, $window, PlaceholderTextService, $alert) {
+
+    // settings
+    $scope.settings = {
+        singular: 'Cliente',
+        plural: 'Clientes',
+        cmd: 'Nuevo'
+    };
+
+    $scope.activeStep = 1;
+
+
+
+}]);

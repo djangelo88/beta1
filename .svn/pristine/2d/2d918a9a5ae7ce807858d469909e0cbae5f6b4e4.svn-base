@@ -1,0 +1,90 @@
+{% load staticfiles %}
+
+<div class="clearfix ">
+    <div class="pull-left">
+{#        {% if proposal.status.name == 'PENDIENTE' or proposal.status.name == 'DENEGADO' %}#}
+{#            <a id="accept_proposal" href="{% url 'accept_proposal_sys' proposal.id %}"#}
+{#               class="btn btn-success no-print  "> <i#}
+{#                    class="fa fa-check"></i> <span class="hidden-xs"> Aceptar</span></a>#}
+{#        {% endif %}#}
+        {% if proposal.status.name == 'PENDIENTE' %}
+            <a id="deny_proposal" href="{% url 'deny_proposal_sys' proposal.id %}" class="btn btn-danger  no-print  ">
+                <i
+                        class="fa fa-times"></i> <span class="hidden-xs"> Denegar</span></a>
+        {% endif %}
+    </div>
+    <div class="pull-right clearfix">
+
+        <a href="#" class="btn btn-github btn-print  "> <i class="fa fa-print"></i> <span
+                class="hidden-xs"> Imprimir</span></a>
+        <a href="{% url 'proposal_download' proposal.id %}" class="btn btn-pdf btn-github">
+            <i class="  fa fa-file-text"></i>
+            <span class="hidden-xs"> Exportar a PDF</span>
+        </a>
+        {% if proposal.may_send_email %}
+            {% csrf_token %}
+
+            <button id="send_proposal" class="btn btn-send btn-github "
+                    data-url="{% url 'proposal_send' proposal.id %}" data-status="{{ proposal.status.name }}">
+                <i class="  fa fa-envelope"></i>
+                <span class="hidden-xs">  {% if proposal.status.name == "DENEGADO" or proposal.status.name == "EDICION"  %} Enviar {% elif proposal.status.name == "PENDIENTE" %} Reenviar {% endif %}</span>
+            </button>
+        {% endif %}
+    </div>
+</div>
+
+
+{% include 'base/invoice/includes/event.html' with event=proposal.event proposal=proposal %}
+
+
+<script src="{% static 'base/js/jquery.js' %}"></script>
+<script src="{% static 'base/js/invoice/send_proposal.js' %}"></script>
+<script>
+    $(".btn-print").click(function () {
+        return window.print();
+    });
+    $("#accept_proposal").click(function (event) {
+
+        event.preventDefault();
+        $url = $(this).attr('href');
+
+        $.get({
+            url: $url,
+            success: function (request) {
+                toastr.success('Se ha aceptado el presupuesto y se envió un correo al cliente con la factura.');
+                $("#accept_proposal").hide();
+                $("#deny_proposal").hide();
+            },
+            error: function (request) {
+                toastr.error('Ha existido un error al aceptar el presupuesto.');
+            }
+        })
+
+
+
+    });
+    $("#deny_proposal").click(function (event) {
+
+        event.preventDefault();
+        $url = $(this).attr('href');
+
+        $.get({
+            url: $url,
+            success: function (request) {
+                toastr.success('Se ha denegado el presupuesto.');
+                $("#accept_proposal").hide();
+                $("#deny_proposal").hide();
+                 window.location.reload();
+            },
+            error: function (request) {
+                toastr.error('Ha existido un error al denegar el presupuesto.');
+            }
+        });
+
+
+
+
+
+    });
+</script>
+

@@ -1,0 +1,8 @@
+app.controller('ProfileController', ['$scope','ProfileService', function($scope, ProfileService){
+
+    ProfileService.get().success(function(data){
+        $scope.business = data;
+        console.log($scope.business);
+    });
+
+}]);

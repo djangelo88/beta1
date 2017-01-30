@@ -1,0 +1,171 @@
+from django.conf import settings
+from django.db import models
+from base.models import Business
+from base.api.util import serialize_query
+# Create your models here.
+from caterfull.serialize import ModelSerialize
+
+
+class WebsiteManager(models.Manager):
+    def get_website_by_business(self, business):
+        return self.filter(business=business)
+
+class Website(models.Model, ModelSerialize):
+    objects = WebsiteManager()
+    template = models.IntegerField(default=1) #Ahora este campo es estatico
+    business = models.ForeignKey(Business, default=0, related_name='website')
+
+    def __str__(self):
+        return self.business.name
+
+    default_fields = ['id','template', 'business', 'basicinfo', 'gallery', 'category', 'staffservice', 'links', 'contactus']
+
+    def serializable_value(self, field_name):
+        if field_name == 'business':
+            return self.business.serialize(fields=['name'])
+        if field_name == 'basicinfo':
+            return self.basicinfo.serialize()
+        if field_name == 'gallery':
+            gallery = self.gallery
+            if gallery:
+                return gallery.serialize()
+            return None
+        if field_name == 'category':
+            return serialize_query(self.category_set.all())
+        if field_name == 'staffservice':
+            return serialize_query(self.staffservices_set.all())
+        if field_name == 'links':
+            return self.links.serialize()
+        if field_name == 'contactus':
+            return self.contactus.serialize()
+        return super(Website, self).serializable_value(field_name)
+
+
+class WebDomain(models.Model):
+    domain = models.CharField(max_length=50, blank=False)
+    website = models.OneToOneField(Website, default=0)
+
+    def __str__(self):
+        return self.domain
+
+
+class BasicInfo(models.Model, ModelSerialize):
+    logo = models.FileField(upload_to='photos', null=True)
+    description = models.CharField(max_length=250, blank=False)
+    website = models.OneToOneField(Website, default=0)
+
+    default_fields = ['logo', 'description']
+
+    def serializable_value(self, field_name):
+        if field_name == 'logo':
+                return self.logo._get_url()
+        return super(BasicInfo, self).serializable_value(field_name)
+
+
+class Gallery(models.Model, ModelSerialize):
+    comments = models.CharField(max_length=50, blank=True)
+    # background = models.FileField(upload_to=settings.MEDIA_ROOT+'/photos', blank=False)
+    website = models.OneToOneField(Website)
+
+    default_fields = ['comments', 'photo']
+
+    def serializable_value(self, field_name):
+        if field_name == 'photo':
+            return serialize_query(self.photo_set.all())
+        return super(Gallery, self).serializable_value(field_name)
+
+class Photo(models.Model, ModelSerialize):
+    name = models.CharField(max_length=30)
+    description = models.CharField(max_length=200)
+    image = models.FileField(upload_to='photos', blank=False)
+    asbackground = models.BooleanField(default=False)
+    gallery = models.ForeignKey(Gallery)
+
+    default_fields = ['name', 'description', 'image', 'asbackground']
+    def serializable_value(self, field_name):
+        if field_name == 'image':
+                return self.image._get_url()
+        return super(Photo, self).serializable_value(field_name)
+
+
+class Category(models.Model, ModelSerialize):
+    description = models.CharField(max_length=100)
+    website = models.ForeignKey(Website)
+
+    default_fields = ['description', 'menu']
+
+    def serializable_value(self, field_name):
+        if field_name == 'menu':
+            return serialize_query(self.menu_set.all())
+        return super(Category, self).serializable_value(field_name)
+
+    class Meta:
+        unique_together = (('description','website'),)
+
+    def __str__(self):
+        return self.description
+
+class Menu(models.Model, ModelSerialize):
+    name = models.CharField(max_length=150, null=False)
+    description = models.TextField(max_length=150, null=True, blank=True)
+    # price = models.FloatField(default=0.00, null=False)
+    image = models.FileField(upload_to='photos')
+    comments = models.TextField(max_length=200, null=True, blank=True)
+    category = models.ForeignKey(Category)
+
+    default_fields = ['name', 'description', 'image', 'comments', 'menuprice']
+
+    def serializable_value(self, field_name):
+        if field_name == 'menuprice':
+            return serialize_query(self.menuprice_set.all())
+        if field_name == 'image':
+                return self.image._get_url()
+        return super(Menu, self).serializable_value(field_name)
+
+class MenuPrice(models.Model, ModelSerialize):
+    min = models.IntegerField(null=False)
+    max = models.IntegerField(null=False)
+    price = models.FloatField(null=False, default=0.00)
+    menu = models.ForeignKey(Menu)
+
+    default_fields = ['min', 'max', 'price']
+
+    def get_total(self):
+        return self.max*self.price
+
+
+class StaffServices(models.Model, ModelSerialize):
+    service = models.CharField(max_length=100, null=False, blank=False)
+    description = models.TextField(max_length=250, null=True, blank=True)
+    image = models.FileField(upload_to='photos')
+    price = models.FloatField(default=0.00, null=False)
+    website = models.ForeignKey(Website)
+
+    default_fields = ['service', 'description', 'image', 'price']
+
+    def serializable_value(self, field_name):
+        if field_name == 'image':
+            return self.image._get_url()
+        return super(StaffServices, self).serializable_value(field_name)
+
+class Links(models.Model, ModelSerialize):
+    twitter = models.URLField(default="twitter.com", null=True)
+    instagram = models.URLField(default="instagram.com", null=True)
+    facebookpage = models.URLField(default="facebook.com", null=True)
+    yelp = models.URLField(default="yelp.com", null=True)
+    gplus = models.URLField(default="gplus.com", null=True)
+    website = models.OneToOneField(Website)
+
+    default_fields = ['twitter', 'instagram', 'facebookpage', 'yelp', 'gplus']
+
+class ContactUs(models.Model, ModelSerialize):
+    phone = models.CharField(max_length=15, null=False)
+    email = models.EmailField()
+    address = models.CharField(max_length=100, null=True)
+    website = models.OneToOneField(Website)
+
+    default_fields = ['phone', 'email', 'address']
+
+class WebsiteControl(models.Model):
+    status = models.IntegerField(default=0)#(0-create, 1-template, 2-basic, 3-gallery,4-Menu, 5-Staff, 6-links, 7-contact, 8-publish)
+    website = models.OneToOneField(Website)

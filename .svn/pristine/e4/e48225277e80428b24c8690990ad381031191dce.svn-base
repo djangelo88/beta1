@@ -1,0 +1,32 @@
+<div class="well white m-t-30" ng-controller="WebsiteController">
+    <form name="website_basic_info_form" class="form-floating " ng-submit="saveBasicInfo(website)"
+          novalidate="novalidate">
+        <fieldset>
+            <legend class="subtitle">General elements</legend>
+            <div class="form-group filled col-md-7">
+                <label class="control-label correct-margin-left">Nombre del negocio</label>
+                <input type="text" class="form-control" ng-model="website.basic_info.name" required>
+            </div>
+            <div class="form-group filled col-md-4 pull-right">
+                <label for="inputEmail" class="control-label correct-margin-left">Logotipo</label>
+                <img src="/static/images/logo.png" class="thumbnail" style="margin-top: 5px"/>
+
+                <div class="btn btn-info" ng-multiple="true" ngf-select ng-model="files">Upload logo</div>
+            </div>
+            <div class="form-group filled col-md-7 ">
+                <label for="textArea" class="control-label correct-margin-left">Descripción</label>
+                        <textarea class="form-control vertical " rows="3" id="textArea"
+                                  ng-model="website.basic_info.description"></textarea>
+                <span class="help-block">Help.</span>
+            </div>
+
+            <div class="clearfix"></div>
+            <div class="form-group text-center">
+                <button type="submit" wz-previous class="btn btn-default">Prev</button>
+                <button type="submit" class="btn btn-primary" ng-click="onlySaveBasicInfo()">Save</button>
+                <button type="submit" class="btn btn-primary" ng-click="saveAndContinueBasicInfo()">Save and continue
+                </button>
+            </div>
+        </fieldset>
+    </form>
+</div>

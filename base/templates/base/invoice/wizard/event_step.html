@@ -1,0 +1,278 @@
+{% load widget_tweaks %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+
+
+<form method="post" action="" name="eventForm" id="eventForm" class="form-horizontal" novalidate="novalidate">
+    {% csrf_token %}
+
+    <div class="form-group {% if form.name.errors %} has-error {% endif %}">
+        <label class="control-label col-xs-12 col-sm-3 no-padding-right">Nombre <span
+                class="required-field">*</span></label>
+
+        <div class="col-xs-12 col-sm-4">
+            <div class="clearfix">
+                {% render_field form.name class="form-control" %}
+            </div>
+            {% for error in  form.name.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <div class="form-group {% if form.address.errors %} has-error {% endif %}">
+        <label class="control-label col-xs-12 col-sm-3 no-padding-right">Dirección <span class="required-field">*</span></label>
+
+        <div class="col-xs-12 col-sm-6">
+            <div class="clearfix">
+                {% render_field form.address class="form-control" %}
+            </div>
+            {% for error in  form.address.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="form-group {% if form.event_date.errors %} has-error {% endif %}">
+        <label class="control-label col-xs-12 col-sm-3 no-padding-right">Dia <span
+                class="required-field">*</span></label>
+
+        <div class="col-xs-12 col-sm-3">
+            <div class="input-group ">
+                {% render_field form.event_date class="form-control date" %}
+             <span class="input-group-btn">
+                        <button class="btn btn-flat btn-default" type="button">
+                            <i class="ace-icon fa fa-calendar "></i>
+                        </button>
+                    </span>
+            </div>
+
+            {% for error in  form.event_date.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {#<div class='col-sm-6'>#}
+    {#            <div class="form-group">#}
+    {#                <div class='input-group date' id='datetimepicker1'>#}
+    {#                    <input type='text' class="form-control" />#}
+    {#                    <span class="input-group-addon">#}
+    {#                        <span class="glyphicon glyphicon-calendar"></span>#}
+    {#                    </span>#}
+    {#                </div>#}
+    {#            </div>#}
+    {#        </div>#}
+    {#        #}
+
+    {% ifequal model 'invoice' %}
+
+
+        <div class="form-group {% if form.due_date.errors %} has-error {% endif %}">
+            <label class="control-label col-xs-12 col-sm-3 no-padding-right">Dia de pago <span
+                    class="required-field">*</span></label>
+
+            <div class="col-xs-12 col-sm-3">
+                <div class="input-group">
+                    {% render_field form.due_date class="form-control date-picker" %}
+                  <span class="input-group-btn">
+                        <button class="btn btn-flat btn-default"
+                                type="button">
+                            <i class="ace-icon fa fa-calendar "></i>
+
+                        </button>
+                    </span>
+                </div>
+                {% for error in  form.due_date.errors %}
+                    <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endifequal %}
+    <div class="hr hr-dotted"></div>
+    <div class="form-group {% if form.customer.errors %} has-error {% endif %}">
+        <label class="control-label col-xs-12 col-sm-3 no-padding-right">Cliente <span
+                class="required-field">*</span></label>
+
+        <div class="col-xs-11 col-sm-2" id="selectContainer">
+            <div class="clearfix">
+                {% render_field form.customer class="form-control chosen-select" %}
+            </div>
+            {% for error in  form.customer.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+
+        </div>
+        <button id="add_client" class="btn btn-success btn-flat add from-event" style="margin-left: -16px; height: 34px"
+                data-toggle="modal"
+                data-target="#newCustomerModal"
+                data-modal-title="Nuevo cliente" type="button"><i class="fa fa-plus"></i></button>
+        <div class="client-detail col-xs-12 col-sm-3 col-sm-push-3 hidden">
+            <div><i class="fa fa-user"></i> <strong> <span class="name"></span></strong> <span class="company"></span>
+            </div>
+            <div><span class="phone"></span> <span class="email"></span></div>
+        </div>
+    </div>
+
+    <div class="form-group {% if form.comment.errors %} has-error {% endif %}">
+        <label class="control-label col-xs-12 col-sm-3 no-padding-right">Comentario</label>
+
+        <div class="col-xs-12 col-sm-4">
+            <div class="clearfix">
+                {% render_field form.comment class="form-control" rows="5" %}
+            </div>
+            {% for error in  form.comment.errors %}
+                <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+            {% endfor %}
+        </div>
+    </div>
+
+
+</form>
+<script>
+
+    $(document).ready(function () {
+//datepicker plugin
+        //link
+        {#        $("#id_due_date").attr('disabled', 'disabled');#}
+
+        $('#id_due_date').datepicker({
+            autoclose: true,
+            todayHighlight: true,
+            format: 'yyyy-mm-dd',
+            {#            endDate:"2016-12-22",#}
+            language: "es"
+        })
+            //show datepicker when clicking on the icon
+                .next().on('click', function () {
+                    $(this).prev().focus();
+                });
+
+        {#        $('#id_event_date').change(function () {#}
+        {#             alert("ddd");#}
+        {#            if ($('#id_event_date').val() != '') {#}
+        {#                $("#id_due_date").removeAttr('disabled');#}
+        {##}
+        {#                $("#id_due_date").datepicker({#}
+        {#                    autoclose: true,#}
+        {#                    todayHighlight: true,#}
+        {#                    format: 'yyyy-mm-dd',#}
+        {#                    endDate: $('#id_event_date').val(),#}
+        {#                    language: "es"#}
+        {#                }).next().on('click', function () {#}
+        {#                            $(this).prev().focus();#}
+        {#                        });#}
+        {#            }#}
+        {#        })#}
+
+
+        $('#id_event_date').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm'
+        }) .next().on('click', function () {
+                    $(this).prev().focus();
+                });;
+
+
+        /*Select*/
+        $('.chosen-select').chosen({allow_single_deselect: true});
+        {##}
+        {#                $("#id_event_date").focusout(function () {#}
+        {##}
+        {#        alert( $('#id_due_date').endDate);#}
+        {#                });#}
+
+
+        //resize the chosen on window resize
+
+        $(window)
+                .off('resize.chosen')
+                .on('resize.chosen',function () {
+                    $('.chosen-select').each(function () {
+                        var $this = $(this);
+                        $this.next().css({'width': $this.parent().width()});
+                    })
+                }).trigger('resize.chosen');
+
+
+        $.CustomDatatableFormObject.model_name = "customers";
+
+        $.CustomDatatableFormObject.modal_dialog_id = "#newCustomerModal";
+        $.CustomDatatableFormObject.form_id = "#newCustomerForm";
+        $.CustomDatatableFormObject.has_fn_callback = true;
+        $.CustomDatatableFormObject.fn_callback = function () {
+            var url = '/customers/list';
+
+            $.get(url, {id: this.model_id}, function (data) {
+                $('#selectContainer').empty().append(data);
+            });
+
+        };
+
+        $model_name = 'proposal';
+
+        $('.chosen-select').change(function () {
+
+            var id = $(this).val();
+            if (id != "") {
+                $.ajax({
+                            url: '/customers/' + id + '/',
+                            type: "GET",
+                            statusCode: {
+                                200: function (data) {
+                                    $(".client-detail").removeClass('hidden');
+
+                                    $full_name = "";
+                                    $company = "";
+                                    $(".name").empty();
+                                    $(".company").empty();
+                                    $(".phone").empty();
+                                    $(".email").empty();
+
+                                    $custumer = JSON.parse(data.customer);
+
+                                    console.log($custumer.fields);
+                                    if ($custumer.fields.prefix) {
+                                        $full_name += $custumer.fields.prefix;
+                                    }
+                                    $full_name += $custumer.fields.first_name + " " + $custumer.fields.last_name
+                                    if ($custumer.fields.sufix) {
+                                        $full_name += $custumer.fields.sufix;
+                                    }
+                                    $(".name").empty().append($full_name);
+
+                                    if ($custumer.fields.company) {
+                                        $company = data.company;
+                                        $(".company").empty().append(" - " + $company);
+                                    }
+                                    if ($custumer.fields.cellphone) {
+                                        $(".phone").empty().append($custumer.fields.cellphone);
+                                        if ($custumer.fields.email) {
+                                            $(".phone").append(" - ");
+                                        }
+                                    }
+                                    if ($custumer.fields.email) {
+                                        $(".email").empty().append($custumer.fields.email);
+                                    }
+                                },
+                                400: function (response) {
+                                    $(".client-detail").addClass('hidden');
+                                }
+                            }
+                        }
+                );
+            } else {
+                $(".client-detail").addClass('hidden');
+            }
+
+        });
+
+    });
+</script>
+{% include 'base/includes/modalFormCusomer.html' %}
+
+<script src="{% static 'base/js/invoice/item.js' %}"></script>
+
+<link rel="stylesheet" type="text/css"
+      href="{% static 'plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css' %}"/>
+

@@ -1,0 +1,203 @@
+/**
+ * Created by Hector on 10/01/2017.
+ */
+app.controller('CustomersController', ['$scope', '$window', '$aside', 'PlaceholderTextService', '$alert', '$http', 'NomenclatorService', function ($scope, $window, $aside, PlaceholderTextService, $alert, $http, NomenclatorService) {
+
+    // settings
+    $scope.settings = {
+        singular: 'Cliente',
+        plural: 'Clientes',
+        cmd: 'Nuevo'
+    };
+    //page
+    $scope.page = {
+        title: 'Clientes',
+        description: 'In most applications you need basic table listings and editing capabilities.' +
+        ' With this app you can create simple admin functionality based on a json web service.',
+        icon: 'md md-group'
+    };
+
+
+    //console.debug($hh);
+
+    // adding customers data
+    var data = [];
+    NomenclatorService.getAll('customer')
+        .success(function (data, status, headers, config) {
+
+            var activos =  data.filter(
+                    function (item) {
+                        return item.activo;
+                    }
+                );
+
+            $scope.data = activos;
+            //console.log( $scope.data);
+        });
+
+    //adding others stuffs
+    // adding customers data
+    var preffixs = []
+    NomenclatorService.getAll('prefix')
+        .success(function (data, status, headers, config) {
+            $scope.preffixs = data;
+        });
+
+
+    var suffixs = [];
+    NomenclatorService.getAll('suffix')
+        .success(function (data, status, headers, config) {
+            $scope.suffixs = data;
+        });
+
+    // defining template
+    var formTpl = $aside({
+        scope: $scope,
+        templateUrl: '/static/assets/tpl/customers/customers-form.html',
+        show: false,
+        placement: 'left',
+        backdrop: false,
+        animation: 'am-slide-left'
+    });
+
+    // methods
+    $scope.checkAll = function () {
+        angular.forEach($scope.data, function (item) {
+            item.selected = !item.selected;
+        });
+    };
+
+    $scope.editItem = function (item) {
+        if (item) {
+            item.editing = true;
+            $scope.item = item;
+            $scope.settings.cmd = 'Edit';
+            showForm();
+        }
+    };
+
+    $scope.viewItem = function (item) {
+        if (item) {
+            item.editing = false;
+            $scope.item = item;
+            $scope.settings.cmd = 'View';
+            showForm();
+        }
+    };
+
+    $scope.createItem = function () {
+        //GET
+        //$tt = $http.get('http://app.caterfull.com:8000/api/test')
+        //    .success(function(data,status,headers,config){
+        //        console.log( status);
+        //        console.log( data);
+        //    });
+        //var obj = {
+        //    asignatura: "HTML",
+        //    nota: 45
+        //};
+        //
+        //$http.post('http://app.caterfull.com:8000/api/test', obj)
+        //    .success(function (data, status, headers, config) {
+        //        console.log(status);
+        //        console.log(data);
+        //    })
+        //    .error(function (data, status, headers, config) {
+        //        console.log(status);
+        //        console.log(data);
+        //    });
+
+        //console.log( analysis1.getList().$object);
+
+        var item = {
+            icon: PlaceholderTextService.createIcon(true),
+            editing: true,
+            creating: true
+        };
+        $scope.item = item;
+        $scope.settings.cmd = 'New';
+        showForm();
+    };
+
+    $scope.saveItem = function () {
+
+
+        if ($scope.settings.cmd == 'New') {
+            $scope.data.push($scope.item);
+        }
+        console.debug($scope.item);
+        hideForm();
+    };
+
+    $scope.remove = function (item) {
+        console.log(item);
+
+        swal({
+                title: "Confirma que desea eliminar?",
+                text: "Si acepta ya no podrá deshacer los cambios!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Aceptar",
+                cancelButtonText: "Cancelar",
+                closeOnConfirm: false,
+                closeOnCancel: false
+            },
+            function (isConfirm) {
+                if (isConfirm) {
+
+                    //Llamar al servicio  para eliminar
+                    if (code == 200) {
+                        swal("Eliminado!", "Se ha eliminado correctamente el elemento seleccionado.", "success");
+                        //actualizar tabla
+                    } else if (code == 400) {
+                        swal("Error!", "Ha existido un error al eliminar el elemento seleccionado", "error");
+                    }
+
+
+                } else {
+                    swal("Cancelado", "No se ha realizado ninguna acción", "error");
+                }
+            });
+        //if (confirm('Are you sure?')) {
+        //
+        //
+        //    if (item) {
+        //        $scope.data.splice($scope.data.indexOf(item), 1);
+        //    } else {
+        //        var seleccionados = $scope.data.filter(
+        //            function (item) {
+        //                return item.selected;
+        //            }
+        //        );
+        //        //eliminar estos objetos
+        //        console.log(seleccionados);
+        //        $scope.selectAll = false;
+        //    }
+        //}
+    };
+
+    showForm = function () {
+        angular.element('.tooltip').remove();
+        formTpl.show();
+    };
+
+    hideForm = function () {
+        formTpl.hide();
+    };
+
+    $scope.$on('$destroy', function () {
+        hideForm();
+    });
+
+    $scope.search = function () {
+        $.getJSON('/static/assets/js/data/customers_data.json', function (data) {
+            $scope.data = data;
+        })
+    }
+
+    $scope.print = function () {
+        return $window.print();
+    }
+
+}]);

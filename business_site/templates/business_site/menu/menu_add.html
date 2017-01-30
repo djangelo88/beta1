@@ -1,0 +1,167 @@
+{% load admin_static %}
+{% load staticfiles %}
+{% load i18n admin_static %}
+{% load widget_tweaks %}
+
+
+<form action="" method="post" enctype="multipart/form-data" id="menu_form">
+    {% csrf_token %}
+
+    <div class="form-group col-xs-12 col-sm-3 {% if form.category.errors %} has-error {% endif %} menu-category-container">
+        <label> {{ form.category.label }} <span class="required-field">*</span> </label>
+
+        <div id="field_container">{% render_field form.category class="form-control" %}</div>
+
+        <button id="add_category" class="btn btn-success btn-flat add from-event"
+                style="margin-left: -16px; height: 34px"
+                type="button"><i class="fa fa-plus"></i></button>
+        {% for error in  form.category.errors %}
+            <div class="text-validation-error" style="clear:both"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group col-xs-12  col-sm-4 {% if form.image.errors %} has-error {% endif %}">
+        <label> {{ form.image.label }} </label>
+        {% render_field form.image class="form-control" %}
+        {% for error in  form.image.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+    <div id="items_list" class="col-xs-12 col-sm-5 form-group pull-right">
+     <div id="item_price" class="form-group col-xs-12 no-padding">
+                <div class="form-group col-xs-3 no-padding-right">
+                    <label> min <span class="required-field">*</span> </label>
+                    {% render_field form.min class="form-control" type='number'  name="ni" value="1" readonly="readonly" %}
+                </div>
+                <div class="form-group col-xs-3 no-padding-right">
+                    <label> max <span class="required-field">*</span> </label>
+                    {% render_field form.max class="form-control col-xs-4" name="na" onkeypress="return soloLetras(event)" type='number' value="2" %}
+                </div>
+                <div class="form-group col-xs-3 no-padding-right">
+                    <label> precio <span class="required-field">*</span> </label>
+                    {% render_field form.price class="form-control col-xs-4" name="no" onkeypress="return soloLetras(event)" type='number' value="0.00" %}
+                    {% for error in  form.price.errors %}
+                        <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group col-xs-3 no-padding">
+                    <label class="col-xs-12" style="height: 19px; display: block"> </label>
+                    <button type="button" id="plus_item" name="plus_item" onclick="Adicionar()"  class="btn btn-success btn-flat"><i class="fa fa-plus"></i> </button>
+                    <button type='button'  name='less_item' onclick="Eliminar()"   class="btn btn-danger btn-flat less_item"><i class="fa fa-minus"></i> </button>
+                </div>
+<h4 class="rango">   Rangos de precios</h4>
+
+                {#              <input type="button" value="-" id="less_item" name="less_item"/>#}
+            </div>
+     {% if list %}
+     <script>
+        $(document).ready(function(){
+           if($('.max_value').last().val()!=0)
+           {
+             $('#id_min').val(parseInt($('.max_value').last().val())+1);
+             $('#id_max').val(parseInt($('.max_value').last().val())+2);
+             $('#id_price').val(parseFloat($('.price_value').last().val()));
+           }
+        });
+        </script>
+            {% for item in list %}
+                <div id='item_price' class='form-group col-xs-12 item_price no-padding'>
+                    <div class="form-group col-xs-3 no-padding-right">
+                        <input class='form-control min_value' id='min_value' readonly='readonly' value='{{ item.min }}'
+                               name='min' rows='5' type='number'>
+
+                    </div>
+                    <div class="form-group col-xs-3 no-padding-right">
+
+                        <input class='form-control max_value' id='max_value' readonly='readonly' name='max'
+                               type='number'
+                               rows='5' value='{{ item.max }}'>
+
+                    </div>
+                    <div class="form-group col-xs-3 no-padding-right">
+                        <input class='form-control price_value' id='price_value' name='price'
+                               type='number' rows='5' value='{{ item.price }}' step='0.01' min='0'>
+                        {% for error in  form.price.errors %}
+                            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="form-group col-xs-12  col-sm-7 {% if form.image.errors %} has-error {% endif %} collapse"
+         id="category_container">
+        <label> {{ form.image.label }} </label>
+        {% render_field form.image class="form-control" %}
+        {% for error in  form.image.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group col-xs-12 col-sm-7 {% if form.name.errors %} has-error {% endif %}">
+        <label> {{ form.name.label }} <span class="required-field">*</span> </label>
+        {% render_field form.name class="form-control" %}
+        {% for error in  form.name.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+    <div class="form-group col-xs-12  col-sm-7 {% if form.description.errors %} has-error {% endif %}">
+        <label> {{ form.description.label }} </label>
+        {% render_field form.description class="form-control" rows="3" %}
+        {% for error in  form.description.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+    <div class="form-group col-xs-12  col-sm-7 {% if form.comments.errors %} has-error {% endif %}">
+        <label> {{ form.comments.label }} </label>
+        {% render_field form.comments class="form-control" rows="3" %}
+        {% for error in  form.comments.errors %}
+            <div class="text-validation-error"><i class="fa fa-warning"></i> {% trans error %} </div>
+        {% endfor %}
+    </div>
+    <span id="error" style="display: none">{{ error }}</span>
+    <span id="index" style="display: none">{{ index }}</span>
+
+    <div class="clearfix"></div>
+    {#    {{ form }}#}
+    {#        <input type="submit"/>#}
+</form>
+<script>
+    $(document).ready(function(){
+        if ($('#error').text() != "") {
+            toastr.error($('#error').text());
+        }
+        if ($('#index').text() != "") {
+            $($('.item_price')[[parseInt($('#index').text())]].children[2].children.price_value).focus()
+        }
+
+      $('#saveAdd').click(function(){
+         $('.item_price').remove();
+          $('#id_min').val('1');
+          $('#id_max').val('2');
+           $('#id_price').val('0.00');
+      });
+
+    });
+     $("#add_category").click(function(){
+            $.get({
+            url:'category/add',
+            success:function(response){
+                $("#category_container").empty().append(response);
+                $("#category_container").removeClass('collapse');
+                $("#form_category #id_description").focus();
+            },
+            error:function(response){
+
+            }
+        });
+    });
+    $("#reset_category").click(function(){
+         $("#category_container").empty();  $("#category_container").addClass('collapse');
+    });
+</script>
+{% block js_block_one %}
+    <script type="text/javascript" src="{% static 'js/itemprice.js' %}"></script>
+{% endblock %}

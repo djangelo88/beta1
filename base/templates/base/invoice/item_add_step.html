@@ -1,0 +1,20 @@
+{% load staticfiles %}
+<script src="{% static 'js/jquery.js' %}"></script>
+<div id="items_container" data-url-load="{% url 'proposal_items' proposal.id %}">
+    {% include 'base/invoice/includes/items.html' with items=proposal.get_items %}
+</div>
+
+<div id="form_container" hidden>
+    {% include 'base/invoice/includes/item_form.html' %}
+</div>
+<button id="add_item">Agregar Item</button>
+
+<script src="{% static 'base/js/invoice/item.js' %}"></script>
+
+
+
+
+
+
+
+

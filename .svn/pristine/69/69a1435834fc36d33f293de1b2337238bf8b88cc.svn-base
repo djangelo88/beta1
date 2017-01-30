@@ -1,0 +1,147 @@
+"""caterfull URL Configuration
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/1.9/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
+Including another URLconf
+    1. Add an import:  from blog import urls as blog_urls
+    2. Import the include() function: from django.conf.urls import url, include
+    3. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
+"""
+from django.conf.urls import url
+from django.contrib.auth.decorators import login_required, permission_required
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.decorators.csrf import csrf_exempt
+from base.decorators import has_permission
+from base.views.bookings import Booking, Event, EventView, test_products, test_servicios
+from base.views.business import BusinessRegister, BusinessProfile
+#from easy_pdf.views import PDFTemplateView
+from base.views.customer_view import CustomerView, CustomeRegisterView, CustomerRemoveView, CustomerEditView, \
+    CustomerSelectView, ExportView, ImportView, TestRest
+from base.views.dashboard_view import Dashboard
+from base.views.invoice import ProposalEvent, ProposalItemsView, ProposalView, ItemView, ItemDelete, ProposalAccept, \
+    ProposalDeny, ProposalEmailSend, InvoiceView, InvoiceEvent, InvoiceEmailSend, ProposalDeleteView, InvoiceDeleteView,invoice_downloadpdf, proposal_downloadpdf
+    # finish_send_proposal, finish_send_invoice
+
+from base.views.nomenclator import Nomenclator
+from base.views.prodserv_views import MeasureList, IngredientsList, \
+    IngredientsAdd, IngredientsEdit, IngredientsRemove, RecipeList, RecipeAdd, RecipeEdit, RecipeRemove, ProductList, \
+    ProductAdd, CategoryList, CategoryAdd, ProductRemove, ProductEdit, PositionList, PositionAdd, PositionEdit, \
+    PositionRemove, ProductServiceList, WorkerAdd, WorkerList, WorkerRemove, WorkerEdit, ServicesList, ServicesAdd, \
+    ServicesRemove, ServicesEdit, CategoryEdit, CategoryRemove
+from base.views.stripe_views import StripeAuthorizeView, StripeCallbackView, StripeRenewSubscribeView, InvoiceCharge, \
+    CancelSubscription, ChangeCard, SubscriptionDetails, UpdateBillingEmail, Subscribe
+
+urlpatterns = [
+
+    url(r'^customers/$', login_required(CustomerView.as_view()), name="customers"),
+    url(r'^customers/(?P<id>\d+)/$', login_required(CustomerView.as_view()), name="customer"),
+    url(r'^customers/add$', login_required(CustomeRegisterView.as_view()), name="add_customer"),
+    url(r'^customers/delete/(?P<id>\d+)/$', login_required(CustomerRemoveView.as_view()), name="delete_customer"),
+    url(r'^customers/edit/(?P<id>\d+)/$', login_required(CustomerEditView.as_view()), name="edit_customer"),
+    url(r'^customers/list/$', login_required(CustomerSelectView.as_view()), name="customer_list"),
+    url(r'^customers/export/$', login_required(ExportView.as_view()), name="customers_export"),
+    url(r'^customers/import/$', login_required(ImportView.as_view()), name="customers_import"),
+    url(r'^business/register$', BusinessRegister.as_view(), name="business_register"),
+    url(r'^business/profile/$', login_required(BusinessProfile.as_view()), name="business_profile"),
+    # url(r'^business/subscription/payment/$', login_required(PaymentOrder.as_view()), name="payment_subs"),
+    url(r'^proposal/$', login_required(ProposalView.as_view()), name="proposal_list"),
+    url(r'^proposal/event/$', login_required(ProposalEvent.as_view()), name="proposal_event_create"),
+    url(r'^proposal/(?P<id>\d+)/event/$', login_required(ProposalEvent.as_view()), name="proposal_event_edit"),
+    url(r'^proposal/(?P<id>\d+)/items/$', login_required(ProposalItemsView.as_view()), name="proposal_items_step"),
+    url(r'^proposal/(?P<id>\d+)/items/list/$', login_required(ItemView.as_view()), name="proposal_items"),
+    url(r'^proposal/(?P<id>\d+)/items/(?P<id_item>\d+)/$', login_required(ItemView.as_view()), name="proposal_item_edit"),
+    url(r'^proposal/(?P<id>\d+)/items/(?P<id_item>\d+)/delete/$', login_required(ItemDelete.as_view()), name="proposal_item_delete"),
+    url(r'^proposal/(?P<id>\d+)/$', login_required(ProposalView.as_view()), name="proposal_detalles"),
+    url(r'^proposal/send/(?P<id>\d+)/$', login_required(ProposalEmailSend.as_view()), name="proposal_send"),
+    url(r'^proposal/accept/(?P<pidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z_\-]+)/$', ProposalAccept.as_view(), name="accept_proposal"),
+    url(r'^proposal/deny/(?P<pidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z_\-]+)/$', ProposalDeny.as_view(), name="deny_proposal"),
+    # url(r'^proposal/accept/(?P<id>\d+)/$', login_required(ProposalAccept.as_view()), name="accept_proposal_sys"),
+    url(r'^proposal/deny/(?P<id>\d+)/$',( ProposalDeny.as_view()), name="deny_proposal_sys"),
+    url(r'^proposal/delete/(?P<id>\d+)/$',( ProposalDeleteView.as_view()), name="delete_proposal"),
+    url(r'^proposal/download/(?P<id_proposal>\d+)/$', login_required(proposal_downloadpdf), name="proposal_download"),
+    # url(r'^proposal/finish_send/(?P<id_proposal>\d+)/$', login_required(finish_send_proposal), name="proposal_finish_send"),
+
+    url(r'^invoice/$', login_required(InvoiceView.as_view()), name="invoice_list"),
+    url(r'^invoice/event/$', login_required(InvoiceEvent.as_view()), name="invoice_event_create"),
+
+    url(r'^invoice/(?P<id>\d+)/event/$', login_required(InvoiceEvent.as_view()), name="invoice_event_edit"),
+    url(r'^invoice/(?P<id>\d+)/$', login_required(InvoiceView.as_view()), name="invoice_detalles"),
+    url(r'^invoice/(?P<id_invoice>\d+)/items/$', login_required(ProposalItemsView.as_view()), name="invoice_items_step"),
+    url(r'^invoice/send/(?P<id>\d+)/$', login_required(InvoiceEmailSend.as_view()), name="invoice_send"),
+    url(r'^invoice/download/(?P<id_invoice>\d+)/$', login_required(invoice_downloadpdf), name="invoice_download"),
+    # url(r'^invoice/accept/(?P<iidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z_\-]+)/$', InvoiceAccept.as_view(), name="accept_invoice"),
+    # url(r'^invoice/cancel/(?P<iidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z_\-]+)/$', InvoiceCancell.as_view(), name="cancel_invoice"),
+    url(r'^invoice/delete/(?P<id>\d+)/$',(InvoiceDeleteView.as_view()), name="delete_invoice"),
+    # url(r'^invoice/finish_send/(?P<id_invoice>\d+)/$', login_required(finish_send_invoice), name="invoice_finish_send"),
+
+    url(r'^business/stripe/authorize/(?P<business_id>\d+)/$', StripeAuthorizeView.as_view(), name='connect_stripe'),
+    url(r'^business/stripe/callback/$', StripeCallbackView.as_view(), name='stripe_callback'),
+    url(r'^business/stripe/subscribe/$',login_required(Subscribe.as_view()), name='stripe_subscribe'),
+    url(r'^business/stripe/subscribe/renew/(?P<business_id>\d+)/$', StripeRenewSubscribeView.as_view(), name='stripe_renew_subscribe'),
+    url(r'^business/stripe/invoice/charge/(?P<iidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z_\-]+)/$', InvoiceCharge.as_view(), name='stripe_invoice_charge'),
+    url(r'^business/stripe/subscription/cancel/$',login_required(CancelSubscription.as_view()), name='cancel_subcription'),
+    url(r'^business/stripe/customer/card/$',login_required(ChangeCard.as_view()), name='change_card'),
+    url(r'^business/stripe/subscription/$',login_required(SubscriptionDetails.as_view()), name='subscription'),
+    url(r'^business/stripe/subscription/email/$',login_required(UpdateBillingEmail.as_view()), name='change_billing_email'),
+    url(r'^business/stripe/subscription/email/$',login_required(UpdateBillingEmail.as_view()), name='change_billing_email'),
+    url(r'^booking/widget/(?P<bsk64>[0-9A-Za-z_\-]+)$', csrf_exempt(xframe_options_exempt(Booking.as_view())), name='booking_widget'),
+    url(r'^events/$', login_required(EventView.as_view()), name='events'),
+    url(r'^events/(?P<id>\d+)/$', login_required(EventView.as_view()), name='event_details'),
+    url(r'^booking/test/products/$', test_products, name="test_products"),
+    url(r'^booking/test/services/$', test_servicios, name="test_services"),
+    # url(r'^business/stripe/customer/card/refresh',login_required(RefreshCard.as_view()), name='refresh_card'),
+    
+    url(r'^measure/$', login_required(MeasureList.as_view()), name='measure'),
+    # url(r'^measure/add/$', login_required(MeasureAdd.as_view()), name='measure_add'),
+    # url(r'^measure/edit/(?P<id>\d+)/$', login_required(MeasureEdit.as_view()), name='measure_edit'),
+    # url(r'^measure/remove/(?P<id>\d+)/$', login_required(MeasureRemove.as_view()), name='measure_remove'),
+
+    url(r'^ingredients/$', login_required(IngredientsList.as_view()), name='ingredients'),
+    url(r'^ingredients/add/$', login_required(IngredientsAdd.as_view()), name='ingredients_add'),
+    url(r'^ingredients/edit/(?P<id>\d+)/$', login_required(IngredientsEdit.as_view()), name='ingredients_edit'),
+    url(r'^ingredients/remove/(?P<id>\d+)/$', login_required(IngredientsRemove.as_view()), name='ingredients_remove'),
+    url(r'^recipe/$', login_required(RecipeList.as_view()), name='recipe'),
+    url(r'^recipe/add/$', login_required(RecipeAdd.as_view()), name='recipe_add'),
+    url(r'^recipe/edit/(?P<id>\d+)/$', login_required(RecipeEdit.as_view()), name='recipe_edit'),
+    url(r'^recipe/remove/(?P<id>\d+)/$', login_required(RecipeRemove.as_view()), name='recipe_remove'),
+    url(r'^category/$', login_required(CategoryList.as_view()), name='category'),
+    url(r'^category/add/$', login_required(CategoryAdd.as_view()), name='category_add'),
+    url(r'^category/edit/(?P<id>\d+)/$', login_required(CategoryEdit.as_view()), name='category_edit'),
+    url(r'^category/remove/(?P<id>\d+)/$', login_required(CategoryRemove.as_view()), name='category_remove'),
+    url(r'^product/$', login_required(ProductList.as_view()), name='product'),
+    url(r'^product/add/$', login_required(ProductAdd.as_view()), name='product_add'),
+    url(r'^product/edit/(?P<id>\d+)/$', login_required(ProductEdit.as_view()), name='product_edit'),
+    url(r'^product/remove/(?P<id>\d+)/$', login_required(ProductRemove.as_view()), name='product_remove'),
+    url(r'^positions/$', login_required(PositionList.as_view()), name='positions'),
+    url(r'^positions/add/$', login_required(PositionAdd.as_view()), name='position_add'),
+    url(r'^positions/edit/(?P<id>\d+)/$', login_required(PositionEdit.as_view()), name='position_edit'),
+    url(r'^positions/remove/(?P<id>\d+)/$', login_required(PositionRemove.as_view()), name='position_remove'),
+    url(r'^worker/$', login_required(WorkerList.as_view()), name='worker'),
+    url(r'^worker/add/$', login_required(WorkerAdd.as_view()), name='worker_add'),
+    url(r'^worker/edit/(?P<id>\d+)/$', login_required(WorkerEdit.as_view()), name='worker_edit'),
+    url(r'^worker/remove/(?P<id>\d+)/$', login_required(WorkerRemove.as_view()), name='worker_remove'),
+    url(r'^service/$', login_required(ServicesList.as_view()), name='service'),
+    url(r'^service/add/$', login_required(ServicesAdd.as_view()), name='service_add'),
+    url(r'^service/edit/(?P<id>\d+)/$', login_required(ServicesEdit.as_view()), name='service_edit'),
+    url(r'^service/remove/(?P<id>\d+)/$', login_required(ServicesRemove.as_view()), name='service_remove'),
+    # url(r'^products_service/$', ProductServiceList(), name='products_service'),
+
+    url(r'^api/test$', csrf_exempt(TestRest.as_view()), name='test_rest'),
+    url(r'^api/nomenclator$', csrf_exempt(Nomenclator.as_view()), name='api_nomenclator'),
+    # url(r'^measure/test/$',login_required(MeT.as_view()), name='measure_test'),
+
+    
+    #url(r'^pdf/$', PDFTemplateView.as_view(template_name='pdf.html',
+    #                                           filename='my_pdf.pdf'), name='proposal_list_pdf'),
+
+    # url(r'^proposal/pdf/$',(PrintPDF.as_view()), name="print_pdf"),
+
+    # url(r'^pdf/$', genpdf, name='pdf'),
+]

@@ -1,0 +1,62 @@
+__author__ = 'maykel'
+
+from django.db import models
+from base.models import Business
+
+class Service(models.Model):
+    name = models.CharField(max_length=250)
+    description = models.TextField(max_length=350)
+    tarifa_horaria = models.CharField(max_length=250)
+    bussines = models.ForeignKey(Business)
+
+class Position(models.Model):
+    description = models.TextField(max_length=350)
+
+class Worker(models.Model):
+    name = models.CharField(max_length=250)
+    last_name = models.CharField(max_length=250)
+    position = models.ForeignKey(Position)
+
+class ServiceWorkers(models.Model):
+    service = models.ForeignKey(Service)
+    worker = models.ForeignKey(Worker)
+
+class Measure(models.Model):
+    name = models.CharField(max_length=250, null=False, blank=False)
+    description = models.TextField(max_length=300, null=True, blank=True)
+    siglas = models.CharField(max_length=250, null=False, blank=False, default="")
+    def __str__(self):
+        return self.name
+
+class Ingredients(models.Model):
+    name = models.CharField(max_length=250, null=False, blank=False)
+    description = models.TextField(null=True, blank=True)
+    measure = models.ForeignKey(Measure)
+
+class Recipe(models.Model):
+    name = models.CharField(max_length=250)
+
+class RecipeIngredients(models.Model):
+    ingredient = models.ForeignKey(Ingredients)
+    recipe = models.ForeignKey(Recipe)
+
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=250)
+    description = models.TextField(max_length=350)
+    recipe = models.OneToOneField(Recipe)
+    business = models.ForeignKey(Business)
+
+class ProductPrice(models.Model):
+    min = models.IntegerField(null=False)
+    max = models.IntegerField(null=False)
+    price = models.FloatField(null=False, default=0.00)
+    product = models.ForeignKey(Product)
+    def get_total(self):
+        return round(self.max*self.price, 2)
+
+
+
+
+

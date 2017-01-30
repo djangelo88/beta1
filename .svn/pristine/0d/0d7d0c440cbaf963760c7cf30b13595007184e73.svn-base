@@ -1,0 +1,55 @@
+<section class="forms-advanced" ng-controller="ProfileController">
+  <div class="page-header">
+    <h1>
+      <i class="md md-input"></i>
+      Advanced elements
+    </h1>
+    <p class="lead">
+      All form elements we created for you which you can use for your successful web projects!
+    </p>
+  </div>
+
+
+  <div class="row m-b-40">
+    <div class="col-md-3 col-md-push-9" id="general-elements-intro">
+      <h5>General form elements used in basic forms</h5>
+      <p>All the elements are just default bootstrap markup in execption of the selection box which is a <a target="_blank" href="https://github.com/angular-ui/ui-select">Angular ui-select directive</a>.</p>
+    </div>
+
+    <div class="col-md-8 col-md-pull-3">
+      <div class="well white">
+        <form class="form-floating placeholder-form">
+          <fieldset>
+            <legend>General elements</legend>
+            <div class="form-group">
+              <label for="input" class="control-label">NOMBRE</label>
+              <input type="text" class="form-control" ng-model="business.owner.first_name">
+            </div>
+           <div class="form-group">
+              <label for="input" class="control-label">APELLIDOS</label>
+              <input type="text" class="form-control" ng-model="business.owner.last_name">
+            </div>
+          <div class="form-group">
+              <label for="input" class="control-label">NOMBRE DEL NEGOCIO</label>
+              <input type="text" class="form-control" ng-model="business.name">
+            </div>
+          <div class="form-group">
+              <label for="inputEmail" class="control-label">CORREO ELECTRÓNICO</label>
+              <input type="text" class="form-control" ng-model="business.owner.email">
+            </div>
+            <div class="form-group">
+              <label for="input" class="control-label">NOMBRE DEL NEGOCIO</label>
+              <input type="text" class="form-control" ng-model="business.name">
+            </div>
+            <div class="form-group">
+              <label for="input" class="control-label">TELÉFONO</label>
+              <input type="text" class="form-control" ng-model="business.phone">
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+</section>
